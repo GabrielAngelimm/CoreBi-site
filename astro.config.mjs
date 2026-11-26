@@ -2,7 +2,7 @@
 import { defineConfig } from "astro/config";
 
 // O domínio próprio entra aqui (ou na variável SITE_URL da Vercel) quando existir.
-const site = process.env.SITE_URL ?? "https://corebi-site.vercel.app";
+const site = process.env.SITE_URL ?? "https://corebi.vercel.app";
 
 export default defineConfig({
   site,
