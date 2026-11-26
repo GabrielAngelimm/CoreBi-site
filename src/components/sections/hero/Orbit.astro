@@ -16,8 +16,9 @@ const items = orbit.map((item) => ({
     : undefined,
 }));
 
+// raio de cada anel no computador (-d) e no celular (-m); o CSS escolhe qual vale em --rN
 const radius = (id: 1 | 2 | 3) => ({
-  [`--r${id}`]: `calc(${rings[id].radius} * var(--u))`,
+  [`--r${id}-d`]: `calc(${rings[id].radius} * var(--u))`,
   [`--r${id}-m`]: `${rings[id].mobile}px`,
 });
 const vars = { ...radius(1), ...radius(2), ...radius(3) };
@@ -52,7 +53,6 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
         "--angle": `${item.angle}deg`,
         "--angle-m": `${item.mobileAngle}deg`,
         "--ring": `var(--r${item.ring})`,
-        "--ring-m": `var(--r${item.ring}-m)`,
         "--float": `${item.float.duration}s`,
         "--delay": `${item.float.delay}s`,
         "--amp": `${-item.float.amplitude}px`,
@@ -88,16 +88,26 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   .dial {
     --u: min(1px, 100vw / 1920, 100vh / 900);
     --cy: 50%;
+    --r1: var(--r1-d);
+    --r2: var(--r2-d);
+    --r3: var(--r3-d);
     position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
   }
 
+  /* tudo parte do centro do mostrador */
   .dial > * {
     position: absolute;
     left: 50%;
     top: var(--cy);
+  }
+
+  /* anéis se centralizam pelo próprio tamanho; as peças se centralizam no .float */
+  .ring,
+  .ticks,
+  .sweep {
     translate: -50% -50%;
   }
 
@@ -216,12 +226,13 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   /* peças: girar até o ângulo, andar o raio e desgirar para o ícone ficar em pé */
   .sat {
     --a: var(--angle);
-    --rr: var(--ring);
-    translate: none;
-    transform: rotate(var(--a)) translateX(var(--rr)) rotate(calc(-1 * var(--a)));
+    width: 0;
+    height: 0;
+    transform: rotate(var(--a)) translateX(var(--ring)) rotate(calc(-1 * var(--a)));
   }
 
   .float {
+    width: max-content;
     translate: -50% -50%;
     animation: bob var(--float) ease-in-out infinite;
     animation-delay: var(--delay);
@@ -335,7 +346,6 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
 
     .sat {
       --a: var(--angle-m);
-      --rr: var(--ring-m);
     }
 
     .float :global(.xl) {

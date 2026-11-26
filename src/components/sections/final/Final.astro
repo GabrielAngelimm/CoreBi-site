@@ -134,9 +134,10 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
   .backdrop {
     position: absolute;
     top: 50%;
-    right: max(-6vw, -120px);
+    /* a borda direita do símbolo acompanha a borda do conteúdo (.wrap), sem vazar da tela */
+    right: max(24px, (100vw - var(--wrap)) / 2);
     z-index: -1;
-    width: min(64vw, 900px, 88svh);
+    width: min(44vw, 680px, 70svh);
     translate: 0 -54%;
     pointer-events: none;
   }
@@ -322,8 +323,8 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
 
     .backdrop {
       top: 36px;
-      right: -30vw;
-      width: 90vw;
+      right: -16vw;
+      width: 84vw;
       translate: none;
       opacity: 0.6;
     }

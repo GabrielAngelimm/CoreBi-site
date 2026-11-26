@@ -13,9 +13,9 @@ export type RingId = 1 | 2 | 3;
 export type RingTone = "vivid" | "medium" | "mono";
 
 export const rings: Readonly<Record<RingId, { radius: number; mobile: number; tone: RingTone }>> = {
-  1: { radius: 500, mobile: 104, tone: "vivid" },
-  2: { radius: 700, mobile: 140, tone: "medium" },
-  3: { radius: 900, mobile: 178, tone: "mono" },
+  1: { radius: 500, mobile: 100, tone: "vivid" },
+  2: { radius: 700, mobile: 134, tone: "medium" },
+  3: { radius: 900, mobile: 166, tone: "mono" },
 };
 
 /** Uma peça num anel. Ângulo em graus (0° às 3 horas, sentido horário). */
@@ -45,7 +45,7 @@ export const orbit: readonly OrbitItem[] = [
     part: "gpu",
     size: "xl",
     ring: 1,
-    angle: 22,
+    angle: 10,
     mobileAngle: -30,
     readout: { min: 95, max: 98, digits: 0, unit: "%" },
     float: { duration: 8.4, delay: -1.1, amplitude: 9 },
