@@ -1,12 +1,16 @@
 ---
 import { features } from "@/data/features";
-import FeatureTile from "./FeatureTile.astro";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+
+interface Props {
+  class?: string;
+}
 
 // Gráfico de 600 × 170: 60 pontos, um por segundo, entre 46 °C e 72 °C.
 const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 ---
 
-<FeatureTile {...features.sensors} part="cpu" span={7}>
+<FeatureTile {...features.sensors} part="cpu" class={Astro.props.class}>
   <div
     class="live"
     data-sensors

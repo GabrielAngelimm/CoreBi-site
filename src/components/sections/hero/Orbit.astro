@@ -1,72 +1,65 @@
 ---
 /**
- * O mostrador atrás da abertura: dois anéis com as peças orbitando, marcas girando devagar
- * e, no desktop, uma moldura cinza externa com um arco por peça que acompanha a leitura.
+ * O mostrador atrás da abertura: três anéis bem espaçados em volta do ícone do app.
+ * O de dentro é o mais colorido, o do meio tem cor média e o de fora é cinza.
+ * Cada anel leva uma ou duas peças em posições soltas.
  */
 import Bubble from "@/components/ui/Bubble.astro";
-import { dial, orbit } from "@/data/hero";
+import { orbit, rings } from "@/data/hero";
 import { decimal } from "@/lib/format";
-import { arcPath, polar } from "@/lib/geometry";
 
-const { radius: R, span } = dial.bezel;
+const items = orbit.map((item) => ({
+  ...item,
+  tone: rings[item.ring].tone,
+  text: item.readout
+    ? decimal((item.readout.min + item.readout.max) / 2, item.readout.digits)
+    : undefined,
+}));
 
-const items = orbit.map((item) => {
-  const value = item.readout ? (item.readout.min + item.readout.max) / 2 : undefined;
-  const fraction =
-    item.readout && value !== undefined ? value / item.readout.scale : (item.level ?? 0);
-  const from = polar(item.angle, dial.rings[item.ring] + dial.bubble[item.size] / 2 + 10);
-  const to = polar(item.angle, R - 8);
-  return {
-    ...item,
-    text: value === undefined || !item.readout ? undefined : decimal(value, item.readout.digits),
-    spoke: `M${from.x} ${from.y}L${to.x} ${to.y}`,
-    arc: arcPath(item.angle - span / 2, item.angle + span / 2, R),
-    fill: Math.min(1, fraction) * 100,
-  };
+const radius = (id: 1 | 2 | 3) => ({
+  [`--r${id}`]: `calc(${rings[id].radius} * var(--u))`,
+  [`--r${id}-m`]: `${rings[id].mobile}px`,
 });
+const vars = { ...radius(1), ...radius(2), ...radius(3) };
 ---
 
-<div class="dial" aria-hidden="true" data-dial>
-  <span class="ring ring-1"></span>
-  <span class="ring ring-2"></span>
-  <span class="ring ring-3"></span>
-  <svg class="scale" viewBox="-570 -570 1140 1140">
-    <circle r="560" class="minor"></circle>
-    <circle r="560" class="major"></circle>
+<div class="dial" aria-hidden="true" data-dial style={vars}>
+  <!-- anel 1: colorido, com as marcas finas e um arco que corre -->
+  <span class="ring vivid"></span>
+  <svg class="ticks t1" viewBox="-100 -100 200 200">
+    <circle r="98" pathLength="720" class="minor"></circle>
+    <circle r="98" pathLength="720" class="major"></circle>
   </svg>
-  <svg class="bezel" viewBox="-1000 -1000 2000 2000">
-    <circle r={R + 26} class="bezel-ticks"></circle>
-    {items.map((item, i) => (
-      <g>
-        <path d={item.spoke} class="bezel-spoke" />
-        <path d={item.arc} class="bezel-track" />
-        <path
-          d={item.arc}
-          class="bezel-value"
-          pathLength="100"
-          stroke-dasharray={`${item.fill.toFixed(1)} 100`}
-          data-gauge={i}
-        />
-      </g>
-    ))}
+  <span class="sweep s1"></span>
+
+  <!-- anel 2: cor média, tracejado andando devagar -->
+  <span class="ring medium"></span>
+  <svg class="ticks t2" viewBox="-100 -100 200 200">
+    <circle r="99" pathLength="480" class="dash"></circle>
   </svg>
-  <span class="sweep"></span>
-  <span class="sweep slow"></span>
+  <span class="sweep s2"></span>
+
+  <!-- anel 3: só cinza -->
+  <span class="ring mono"></span>
+  <svg class="ticks t3" viewBox="-100 -100 200 200">
+    <circle r="99" pathLength="900" class="dots"></circle>
+  </svg>
+
   {items.map((item, i) => (
     <div
       class="sat"
       style={{
         "--angle": `${item.angle}deg`,
-        "--angle-m": `${item.mobile.angle}deg`,
+        "--angle-m": `${item.mobileAngle}deg`,
         "--ring": `var(--r${item.ring})`,
-        "--ring-m": `var(--r${item.mobile.ring})`,
+        "--ring-m": `var(--r${item.ring}-m)`,
         "--float": `${item.float.duration}s`,
         "--delay": `${item.float.delay}s`,
         "--amp": `${-item.float.amplitude}px`,
       }}
     >
       <div class="float">
-        <Bubble part={item.part} class={`orb ${item.size}`}>
+        <Bubble part={item.part} class={`orb ${item.size} ${item.tone}`}>
           {item.readout && (
             <span class="readout">
               <b
@@ -75,7 +68,6 @@ const items = orbit.map((item) => {
                 data-min={item.readout.min}
                 data-max={item.readout.max}
                 data-digits={item.readout.digits}
-                data-scale={item.readout.scale}
               >
                 {item.text}
               </b>
@@ -96,9 +88,6 @@ const items = orbit.map((item) => {
   .dial {
     --u: min(1px, 100vw / 1920, 100vh / 900);
     --cy: 50%;
-    --r1: calc(560 * var(--u));
-    --r2: calc(760 * var(--u));
-    --r3: calc(830 * var(--u));
     position: absolute;
     inset: 0;
     z-index: -1;
@@ -109,114 +98,126 @@ const items = orbit.map((item) => {
     position: absolute;
     left: 50%;
     top: var(--cy);
+    translate: -50% -50%;
   }
 
-  .ring {
-    translate: -50% -50%;
+  .ring,
+  .ticks,
+  .sweep {
     aspect-ratio: 1;
-    border: 1px solid var(--rule);
     border-radius: 50%;
   }
 
-  .ring-1 {
+  .vivid,
+  .t1,
+  .s1 {
     width: calc(var(--r1) * 2);
   }
 
-  .ring-2 {
+  .medium,
+  .t2,
+  .s2 {
     width: calc(var(--r2) * 2);
-    border-color: var(--dial-tick);
   }
 
-  .ring-3 {
+  .mono,
+  .t3 {
     width: calc(var(--r3) * 2);
-    border-color: var(--rule-soft);
   }
 
-  .scale {
-    width: calc(var(--r1) * 2.036);
-    translate: -50% -50%;
+  /* anel 1: um traço com as cores das peças, girando devagar */
+  .ring.vivid {
+    background: conic-gradient(
+      from 20deg,
+      var(--cpu),
+      var(--signal-hi),
+      var(--net),
+      var(--gpu),
+      var(--memory),
+      var(--storage),
+      var(--cpu)
+    );
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+    opacity: 0.55;
+    animation: spin 90s linear infinite;
+  }
+
+  .ring.medium {
+    border: 1.5px solid color-mix(in srgb, var(--signal-hi) 26%, var(--dial-tick));
+  }
+
+  .ring.mono {
+    border: 1px solid var(--dial-line);
+  }
+
+  .ticks {
     overflow: visible;
-    animation: spin 400s linear infinite;
   }
 
-  .scale circle {
+  .ticks circle {
     fill: none;
+  }
+
+  /* marcas logo por dentro do anel 1 */
+  .t1 {
+    width: calc(var(--r1) * 2 - 36 * var(--u));
+    animation: spin 400s linear infinite;
   }
 
   .minor {
     stroke: var(--dial-mark);
-    stroke-width: 6;
-    stroke-dasharray: 1 16.1;
+    stroke-width: 1.2;
+    stroke-dasharray: 0.5 5.5;
   }
 
   .major {
-    stroke: var(--dial-major);
-    stroke-width: 12;
-    stroke-dasharray: 1.5 127.3;
+    stroke: var(--dial-mark);
+    stroke-width: 1.8;
+    stroke-dasharray: 0.7 59.3;
   }
 
+  .dash {
+    stroke: color-mix(in srgb, var(--storage) 30%, var(--dial-tick));
+    stroke-width: 0.3;
+    stroke-dasharray: 0.25 3.75;
+    animation: flow 6s linear infinite;
+  }
+
+  .t2 {
+    width: calc(var(--r2) * 2 + 28 * var(--u));
+  }
+
+  .dots {
+    stroke: var(--dial-tick);
+    stroke-width: 0.5;
+    stroke-dasharray: 0.2 2.8;
+  }
+
+  .t3 {
+    width: calc(var(--r3) * 2 - 30 * var(--u));
+    animation: spin 600s linear infinite reverse;
+  }
+
+  /* arcos que correm por cima dos anéis 1 e 2 */
   .sweep {
-    width: calc(var(--r1) * 2);
-    aspect-ratio: 1;
-    translate: -50% -50%;
     border: 2px solid transparent;
+  }
+
+  .s1 {
     border-top-color: var(--signal-hi);
-    border-radius: 50%;
-    opacity: 0.9;
     animation: spin 26s linear infinite;
   }
 
-  .sweep.slow {
-    width: calc(var(--r2) * 2);
-    border-top-color: var(--storage);
-    opacity: 0.5;
-    animation-duration: 48s;
-    animation-direction: reverse;
-  }
-
-  /* moldura externa, só no desktop: cinza, discreta, com o arco de cada peça */
-  .bezel {
-    width: calc(2000 * var(--u));
-    translate: -50% -50%;
-    overflow: visible;
-    mask-image: linear-gradient(#000 66%, transparent 76%);
-  }
-
-  .bezel path {
-    fill: none;
-    stroke-linecap: round;
-  }
-
-  .bezel-ticks {
-    fill: none;
-    stroke: var(--rule-soft);
-    stroke-width: 8;
-    stroke-dasharray: 1.2 13.3;
-  }
-
-  .bezel-track {
-    stroke: var(--dial-track);
-    stroke-width: 4;
-  }
-
-  .bezel-value {
-    stroke: var(--dial-mark);
-    stroke-width: 4;
-    transition: stroke-dasharray 1.2s var(--ease-out);
-  }
-
-  .bezel-spoke {
-    stroke: var(--tick);
-    stroke-width: 1.4;
-    stroke-dasharray: 1.5 10;
-    opacity: 0.55;
-    animation: flow 1.6s linear infinite;
+  .s2 {
+    border-top-color: color-mix(in srgb, var(--storage) 55%, transparent);
+    animation: spin 48s linear infinite reverse;
   }
 
   /* peças: girar até o ângulo, andar o raio e desgirar para o ícone ficar em pé */
   .sat {
     --a: var(--angle);
     --rr: var(--ring);
+    translate: none;
     transform: rotate(var(--a)) translateX(var(--rr)) rotate(calc(-1 * var(--a)));
   }
 
@@ -234,19 +235,31 @@ const items = orbit.map((item) => {
   }
 
   .float :global(.xl) {
-    --s: calc(104 * var(--u));
+    --s: calc(108 * var(--u));
   }
 
   .float :global(.md) {
-    --s: calc(84 * var(--u));
+    --s: calc(86 * var(--u));
   }
 
   .float :global(.sm) {
-    --s: calc(60 * var(--u));
+    --s: calc(58 * var(--u));
   }
 
-  .float :global(.xs) {
-    --s: calc(48 * var(--u));
+  /* anel 1: bolhas cheias na cor da peça */
+  .float :global(.vivid) {
+    border-color: transparent;
+    background: var(--c);
+    box-shadow:
+      0 1px 0 color-mix(in srgb, #fff 30%, transparent) inset,
+      0 18px 38px -14px color-mix(in srgb, var(--c) 70%, transparent);
+    color: var(--on-ink);
+  }
+
+  /* anel 3: tudo em cinza */
+  .float :global(.mono) {
+    box-shadow: var(--shadow-sm);
+    color: var(--soft);
   }
 
   .float :global(.orb:has(.readout) .icon) {
@@ -261,7 +274,7 @@ const items = orbit.map((item) => {
   }
 
   .readout b {
-    font: 600 calc(20 * var(--u)) / 1 var(--font-readout);
+    font: 600 calc(21 * var(--u)) / 1 var(--font-readout);
     color: var(--ink);
   }
 
@@ -274,12 +287,20 @@ const items = orbit.map((item) => {
     color: var(--faint);
   }
 
+  .float :global(.vivid) .readout b,
+  .float :global(.vivid) .readout small {
+    color: var(--on-ink);
+  }
+
+  .float :global(.vivid) .readout small {
+    opacity: 0.8;
+  }
+
   @media (max-width: 900px) {
     .dial {
       --u: calc(100vw / 1300);
     }
 
-    .bezel,
     .readout {
       display: none;
     }
@@ -293,12 +314,23 @@ const items = orbit.map((item) => {
   /* celular: a órbita envolve o ícone do app, no topo, e some antes do título */
   @media (max-width: 560px) {
     .dial {
-      --u: 1px;
       --cy: 238px;
-      --r1: 118px;
-      --r2: 150px;
-      --r3: 210px;
-      mask-image: linear-gradient(#000 0 260px, transparent 362px);
+      --r1: var(--r1-m);
+      --r2: var(--r2-m);
+      --r3: var(--r3-m);
+      mask-image: linear-gradient(#000 0 262px, transparent 360px);
+    }
+
+    .t1 {
+      width: calc(var(--r1) * 2 - 14px);
+    }
+
+    .t2 {
+      width: calc(var(--r2) * 2 + 12px);
+    }
+
+    .t3 {
+      width: calc(var(--r3) * 2 - 12px);
     }
 
     .sat {
@@ -307,18 +339,14 @@ const items = orbit.map((item) => {
     }
 
     .float :global(.xl) {
-      --s: 54px;
+      --s: 52px;
     }
 
     .float :global(.md) {
-      --s: 48px;
+      --s: 46px;
     }
 
     .float :global(.sm) {
-      --s: 44px;
-    }
-
-    .float :global(.xs) {
       --s: 38px;
     }
   }

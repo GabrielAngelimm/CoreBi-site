@@ -1,14 +1,14 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import SiteFooter from "@/components/layout/SiteFooter.astro";
 import SiteHeader from "@/components/layout/SiteHeader.astro";
 import About from "@/components/sections/about/About.astro";
 import Apps from "@/components/sections/apps/Apps.astro";
 import Drivers from "@/components/sections/drivers/Drivers.astro";
 import Faq from "@/components/sections/faq/Faq.astro";
-import Features from "@/components/sections/features/Features.astro";
+import Gaming from "@/components/sections/gaming/Gaming.astro";
 import Final from "@/components/sections/final/Final.astro";
 import Hero from "@/components/sections/hero/Hero.astro";
+import Monitoring from "@/components/sections/monitoring/Monitoring.astro";
 import InstallSteps from "@/components/sections/install-steps/InstallSteps.astro";
 import StressTest from "@/components/sections/stress-test/StressTest.astro";
 import { getLatestRelease } from "@/lib/release";
@@ -21,7 +21,8 @@ const release = await getLatestRelease();
   <main id="inicio">
     <Hero release={release} />
     <About />
-    <Features />
+    <Monitoring />
+    <Gaming />
     <StressTest />
     <Drivers />
     <Apps />
@@ -29,5 +30,4 @@ const release = await getLatestRelease();
     <Faq />
     <Final release={release} />
   </main>
-  <SiteFooter />
 </BaseLayout>

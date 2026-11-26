@@ -10,6 +10,7 @@
   --tint: #eef2f4;
   --glass: rgb(255 255 255 / 86%); /* superfície clara sobre o fundo pontilhado */
   --glass-soft: rgb(255 255 255 / 55%);
+  --glass-strong: rgb(255 255 255 / 78%); /* cabeçalho depois da abertura */
 
   /* texto */
   --ink: #0f1a20;
@@ -62,7 +63,11 @@
   --night-fg: #e6eaec;
   --night-muted: #a3aaae;
   --night-faint: #80878b;
+  --night-soft: #6f797f; /* segunda linha dos títulos sobre o fundo escuro */
   --night-signal: #10373a; /* botão marcado sobre fundo escuro */
+
+  /* o aviso do SmartScreen do Windows, desenhado na seção Instalar */
+  --win-blue: #0f4c95;
 
   /* cena de jogo por trás do OverlayBi */
   --scene-sky: #2e3e4c;
@@ -92,7 +97,15 @@
   /* layout */
   --wrap: 1280px;
   --gutter: 24px;
-  --nav-height: 60px;
+  --nav-height: 64px;
+  --nav-top: 14px;
+  /* espaço que o cabeçalho fixo ocupa no topo de cada tela */
+  --header-space: calc(var(--nav-top) + var(--nav-height) + 24px);
+  /*
+   * Escala do conteúdo das seções. Cada seção ocupa uma tela; em telas mais baixas
+   * o conteúdo encolhe junto para caber inteiro, e em telas altas cresce um pouco.
+   */
+  --fit: 1;
 
   /* movimento */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -100,6 +113,37 @@
   --ease-spring: cubic-bezier(0.3, 1.6, 0.5, 1);
 
   color-scheme: light;
+}
+
+@media (min-height: 1000px) and (min-width: 1600px) {
+  :root {
+    --fit: 1.1;
+  }
+}
+
+@media (max-height: 899px) {
+  :root {
+    --fit: 0.92;
+  }
+}
+
+@media (max-height: 819px) {
+  :root {
+    --fit: 0.84;
+  }
+}
+
+@media (max-height: 739px) {
+  :root {
+    --fit: 0.76;
+  }
+}
+
+/* sem rolagem por seção (celular, tablet, janela baixa): tamanho natural */
+@media (max-width: 900px), (max-height: 639px) {
+  :root {
+    --fit: 1;
+  }
 }
 
 @media (max-width: 560px) {

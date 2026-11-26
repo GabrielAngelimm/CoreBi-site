@@ -1,32 +1,39 @@
-/** Instalar apps: a fila instala um app de cada vez e recomeça depois de uma pausa. */
-import { onceVisible, prefersReducedMotion, random, required, wait } from "@/scripts/motion";
+/**
+ * Instalar apps: os dez apps instalam em cascata, cada um enchendo o próprio anel,
+ * e tudo termina em uns dois segundos. Depois de uma pausa, a fila recomeça.
+ */
+import { onceVisible, prefersReducedMotion, required, wait, whenVisible } from "@/scripts/motion";
+
+const FILL_MS = 480;
+const STAGGER_MS = 150;
+const HOLD_MS = 2800;
 
 const demo = required(document, "[data-apps]");
 const items = [...demo.querySelectorAll<HTMLLIElement>("li")];
 const counter = required(demo, "[data-count]");
 
-const setProgress = (item: HTMLLIElement, p: number) => item.style.setProperty("--p", p.toFixed(0));
+demo.style.setProperty("--fill-ms", `${FILL_MS}ms`);
 
-async function install(): Promise<void> {
-  for (const item of items) {
-    item.className = "";
-    setProgress(item, 0);
-  }
+async function cycle(): Promise<void> {
+  await whenVisible(demo);
+  items.forEach((item) => (item.className = ""));
   counter.textContent = "0";
+  let installed = 0;
+  // um quadro para o navegador aplicar o estado vazio antes de animar
+  await wait(60);
 
-  for (const [i, item] of items.entries()) {
-    item.className = "active";
-    for (let p = 0; p < 100;) {
-      p = Math.min(100, p + random(10, 24));
-      setProgress(item, p);
-      await wait(150);
-    }
-    item.className = "done";
-    counter.textContent = String(i + 1);
-  }
+  items.forEach((item, i) => {
+    window.setTimeout(() => {
+      item.className = "active";
+      window.setTimeout(() => {
+        item.className = "done";
+        counter.textContent = String(++installed);
+      }, FILL_MS);
+    }, i * STAGGER_MS);
+  });
 
-  await wait(3000);
-  void install();
+  await wait((items.length - 1) * STAGGER_MS + FILL_MS + HOLD_MS);
+  void cycle();
 }
 
-if (!prefersReducedMotion()) onceVisible(demo, () => void install(), 0.4);
+if (!prefersReducedMotion()) onceVisible(demo, () => void cycle(), 0.4);

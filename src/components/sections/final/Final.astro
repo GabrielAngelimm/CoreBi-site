@@ -1,277 +1,356 @@
 ---
-import AppTile from "@/components/ui/AppTile.astro";
-import Icon from "@/components/ui/Icon.astro";
-import type { IconName } from "@/components/ui/icons";
+/**
+ * A última tela: uma segunda abertura, escura. Texto e botões à esquerda, o símbolo do
+ * CoreBi gigante em traço à direita e, embaixo, uma faixa com leituras passando.
+ */
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import Button from "@/components/ui/Button.astro";
 import { site } from "@/config/site";
-import { formatSize } from "@/lib/format";
+import { readings } from "@/data/final";
+import { parts } from "@/data/parts";
+import { formatSize, shortHash } from "@/lib/format";
 import type { Release } from "@/lib/release";
 
 interface Props {
   release: Release;
 }
 
-interface Card {
-  href: string;
-  icon: IconName;
-  title: string;
-  detail: string;
-  arrow: IconName;
-  tone: "ink" | "tint";
-  external: boolean;
-}
-
 const { release } = Astro.props;
-
-const cards: Card[] = [
-  {
-    href: release.installer.url,
-    icon: "download",
-    title: "Instalador para Windows",
-    detail: `Versão ${release.version} · ${formatSize(release.installer.sizeBytes)}`,
-    arrow: "arrowDown",
-    tone: "ink",
-    external: false,
-  },
-  {
-    href: site.links.code,
-    icon: "github",
-    title: "Código no GitHub",
-    detail: "Aberto, licença MIT",
-    arrow: "arrowUpRight",
-    tone: "tint",
-    external: true,
-  },
-];
-
-const rings = [420, 620, 820];
+const { installer } = release;
+const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anúncio"];
 ---
 
-<section id="baixar" class="final" aria-labelledby="final-title">
-  <div class="rings" aria-hidden="true">
-    {rings.map((r) => (
-      <i style={{ "--r": `${r}px` }} />
-    ))}
-    <svg viewBox="-310 -310 620 620">
-      <circle r="300"></circle>
+<section id="baixar" class="final" data-tone="dark" aria-labelledby="final-title">
+  <div class="backdrop" aria-hidden="true">
+    <svg class="mark" viewBox="0 0 256 256">
+      <polygon
+        class="frame"
+        points="141,35 81,35 34,82 34,174 81,221 141,221 141,195 93,195 60,162 60,94 93,61 141,61"
+      ></polygon>
+      <polygon
+        class="frame"
+        points="155,35 184,35 218,69 218,108 202,124 222,144 222,185 186,221 155,221 155,195 175,195 196,174 196,156 178,138 155,138 155,112 177,112 192,97 192,81 173,61 155,61"
+      ></polygon>
+      <polygon class="core" points="95,84 117,84 117,106 95,106"></polygon>
+      <polygon class="core" points="95,121 117,121 117,172 95,172"></polygon>
     </svg>
   </div>
 
   <div class="wrap content" data-reveal>
-    <AppTile size="sm" />
-    <h2 id="final-title" class="h2">
-      Abra uma vez e veja <span class="soft">o seu PC por inteiro.</span>
+    <p class="eyebrow">
+      <span class="led"></span>
+      Versão {release.version} · Windows 10 e 11
+    </p>
+    <h2 id="final-title" class="title">
+      Abra uma vez <span class="soft">e veja o seu PC por inteiro.</span>
     </h2>
-    <div class="cards">
-      {cards.map((c) => (
-        <a
-          class:list={["card", c.arrow]}
-          href={c.href}
-          {...(c.external ? { target: "_blank", rel: "noopener" } : {})}
-        >
-          <span class:list={["badge", c.tone]}>
-            <Icon name={c.icon} />
-          </span>
-          <span class="text">
-            <b>{c.title}</b>
-            <small>{c.detail}</small>
-          </span>
-          <Icon name={c.arrow} class="arrow" />
-        </a>
+    <div class="actions">
+      <Button href={installer.url} variant="light" icon="download">
+        Baixar para Windows · {formatSize(installer.sizeBytes)}
+      </Button>
+      <Button href={site.links.code} variant="ghost" icon="githubSolid" external>
+        Ver o código
+      </Button>
+    </div>
+    <ul class="facts">
+      {facts.map((f) => (
+        <li>{f}</li>
+      ))}
+      {installer.sha256 && <li class="num">SHA256 {shortHash(installer.sha256)}</li>}
+    </ul>
+  </div>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="track">
+      {[0, 1].map(() => (
+        <ul>
+          {readings.map((r) => (
+            <li style={`--c:${parts[r.part].color}`}>
+              <i />
+              <span>{r.label}</span>
+              <b class="num">{r.value}</b>
+            </li>
+          ))}
+        </ul>
       ))}
     </div>
   </div>
+
+  <SiteFooter tone="dark" />
 </section>
 
 <style>
   .final {
     position: relative;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 88vh;
-    margin-top: 40px;
-    padding: 120px 0 140px;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: var(--header-space);
     overflow: hidden;
     isolation: isolate;
+    background: var(--night);
+    color: var(--night-fg);
+    scroll-snap-align: start;
   }
 
-  /* textura de pontos, apagando nas bordas */
+  /* luzes frias e quentes no fundo, e uma grade fina que some nas bordas */
   .final::before {
     content: "";
     position: absolute;
     inset: 0;
     z-index: -2;
-    background-image: radial-gradient(circle at 1px 1px, var(--dial-line) 1px, transparent 1.2px);
-    background-size: 22px 22px;
-    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%);
+    background:
+      radial-gradient(
+        ellipse 45% 55% at 12% 18%,
+        color-mix(in srgb, var(--signal-hi) 16%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 40% 45% at 88% 86%,
+        color-mix(in srgb, var(--gpu) 12%, transparent),
+        transparent 70%
+      );
   }
 
-  .rings {
+  .final::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--night-fg) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--night-fg) 5%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 70% 60% at 60% 45%, #000 20%, transparent 75%);
+    pointer-events: none;
+  }
+
+  /* o símbolo gigante, só em traço, desenhando-se devagar */
+  .backdrop {
     position: absolute;
     top: 50%;
-    left: 50%;
+    right: max(-6vw, -120px);
     z-index: -1;
-    width: 0;
-    height: 0;
+    width: min(64vw, 900px, 88svh);
+    translate: 0 -54%;
+    pointer-events: none;
   }
 
-  .rings i {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: var(--r);
-    height: var(--r);
-    border: 1px solid var(--dial-line);
-    border-radius: 50%;
-    translate: -50% -50%;
-  }
-
-  .rings i:nth-child(3) {
-    border-color: var(--dial-ring);
-  }
-
-  .rings svg {
-    position: absolute;
-    top: -310px;
-    left: -310px;
-    width: 620px;
-    height: 620px;
+  .mark {
+    width: 100%;
     overflow: visible;
-    animation: spin 300s linear infinite;
   }
 
-  .rings circle {
+  .mark polygon {
     fill: none;
-    stroke: var(--dial-tick);
-    stroke-width: 6;
-    stroke-dasharray: 1 14.7;
+    stroke-width: 0.6;
+    stroke-linejoin: round;
+  }
+
+  .frame {
+    stroke: color-mix(in srgb, var(--night-fg) 22%, transparent);
+    stroke-dasharray: 900;
+    animation: draw 3.2s var(--ease-out) both;
+  }
+
+  .core {
+    fill: color-mix(in srgb, var(--signal-hi) 12%, transparent) !important;
+    stroke: var(--signal-hi);
+    stroke-width: 0.8 !important;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--signal-hi) 60%, transparent));
+    animation: glow 4s ease-in-out infinite;
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 900;
+    }
+  }
+
+  @keyframes glow {
+    50% {
+      opacity: 0.55;
+    }
   }
 
   .content {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    padding-block: 24px 48px;
+    zoom: var(--fit);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-self: flex-start;
     align-items: center;
-    text-align: center;
+    gap: 10px;
+    margin: 0 0 28px;
+    padding: 8px 14px;
+    border: 1px solid color-mix(in srgb, var(--night-fg) 14%, transparent);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--night-fg) 5%, transparent);
+    font: 500 14px/1 var(--font-display);
+    color: var(--night-muted);
   }
 
-  .content :global(.tile) {
-    margin-bottom: 34px;
+  .led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--signal-hi);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal-hi) 20%, transparent);
+    animation: blink 2.4s ease-in-out infinite;
   }
 
-  .h2 {
-    max-width: 14ch;
+  .title {
+    max-width: 12ch;
+    margin: 0;
+    font: 600 clamp(48px, 6.4vw, 104px) / 0.96 var(--font-display);
+    letter-spacing: -0.035em;
+    color: var(--night-fg);
   }
 
-  .cards {
+  .title .soft {
+    display: block;
+    color: var(--night-soft);
+  }
+
+  .actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 12px;
     margin-top: 44px;
   }
 
-  .card {
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 26px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    font: 500 14px/1.3 var(--font-display);
+    color: var(--night-faint);
+  }
+
+  .facts li {
     display: flex;
     align-items: center;
-    gap: 14px;
-    min-width: 270px;
-    padding: 12px 18px 12px 12px;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--glass);
-    box-shadow: var(--shadow-sm);
-    text-align: left;
-    text-decoration: none;
-    backdrop-filter: blur(8px);
-    transition:
-      transform 0.2s,
-      box-shadow 0.2s,
-      border-color 0.2s;
+    gap: 10px;
   }
 
-  .card:hover {
-    transform: translateY(-2px);
-    border-color: var(--line-2);
-    box-shadow: var(--shadow-md);
+  .facts li + li::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    margin-left: -16px;
+    border-radius: 50%;
+    background: var(--night-line);
   }
 
-  .badge {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-sm);
+  /* faixa de leituras correndo, como o painel do app */
+  .ticker {
+    border-block: 1px solid var(--night-line);
+    background: color-mix(in srgb, var(--night-2) 70%, transparent);
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   }
 
-  .badge :global(svg) {
-    width: 22px;
-    height: 22px;
-    stroke-width: 1.7;
+  .track {
+    display: flex;
+    width: max-content;
+    animation: ticker 48s linear infinite;
   }
 
-  .ink {
-    background: var(--ink);
-    color: var(--on-ink);
+  .ticker ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .tint {
-    background: var(--tint);
-    color: var(--ink);
+  .ticker li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 34px;
+    border-right: 1px solid var(--night-line);
+    white-space: nowrap;
   }
 
-  .text b {
-    display: block;
-    color: var(--ink);
-    font: 600 15.5px/1.2 var(--font-display);
+  .ticker i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: 0 0 10px var(--c);
   }
 
-  .text small {
-    color: var(--faint);
-    font: 500 13px/1.3 var(--font-display);
+  .ticker span {
+    font: 500 14px/1 var(--font-display);
+    color: var(--night-muted);
   }
 
-  .card :global(.arrow) {
-    width: 18px;
-    height: 18px;
-    margin-left: auto;
-    color: var(--faint);
-    stroke-width: 1.7;
-    transition:
-      transform 0.2s,
-      color 0.2s;
+  .ticker b {
+    font: 600 17px/1 var(--font-readout);
+    color: var(--night-fg);
   }
 
-  .card:hover :global(.arrow) {
-    color: var(--ink);
+  @keyframes ticker {
+    to {
+      transform: translateX(-50%);
+    }
   }
 
-  .arrowDown:hover :global(.arrow) {
-    transform: translateY(2px);
-  }
-
-  .arrowUpRight:hover :global(.arrow) {
-    transform: translate(2px, -2px);
-  }
-
-  @media (max-width: 700px) {
+  @media (max-width: 900px), (max-height: 639px) {
     .final {
       min-height: 0;
-      padding: 104px 0 120px;
+      padding-top: 120px;
+    }
+
+    .content {
+      padding-bottom: 88px;
+    }
+
+    .backdrop {
+      top: 36px;
+      right: -30vw;
+      width: 90vw;
+      translate: none;
+      opacity: 0.6;
     }
   }
 
   @media (max-width: 560px) {
-    .cards {
+    .actions {
       flex-direction: column;
       align-items: stretch;
-      width: 100%;
-      max-width: 330px;
-      margin-inline: auto;
     }
 
-    .card {
-      min-width: 0;
+    .actions :global(.btn) {
+      justify-content: center;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+    }
+
+    .facts li + li::before {
+      display: none;
+    }
+
+    .ticker li {
+      padding: 14px 22px;
     }
   }
 </style>

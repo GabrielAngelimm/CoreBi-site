@@ -69,3 +69,24 @@ export function required<T extends Element = HTMLElement>(root: ParentNode, sele
 }
 
 export const random = (min: number, max: number) => min + Math.random() * (max - min);
+
+/** Resolve quando `el` está na tela e a aba está aberta; serve para pausar laços longos. */
+export function whenVisible(el: Element): Promise<void> {
+  return new Promise((resolve) => {
+    const check = (visible: boolean) => {
+      if (!visible || document.visibilityState !== "visible") return false;
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onTab);
+      resolve();
+      return true;
+    };
+    let inView = false;
+    const observer = new IntersectionObserver((entries) => {
+      inView = entries.some((e) => e.isIntersecting);
+      check(inView);
+    });
+    const onTab = () => check(inView);
+    document.addEventListener("visibilitychange", onTab);
+    observer.observe(el);
+  });
+}

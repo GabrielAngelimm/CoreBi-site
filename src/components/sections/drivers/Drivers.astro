@@ -45,15 +45,15 @@ import { driverExample as d } from "@/data/drivers";
           <b class="num">{d.latest}</b>
         </div>
       </div>
-      <ol class="steps">
+      <ol class="steps" data-rail style="--progress: 1">
         {d.steps.map((s) => (
-          <li class="done" data-ms={s.ms}>
+          <li class="done" data-ms={s.ms} data-count={"count" in s ? s.count : undefined}>
             <span class="mark">
               <Icon name="check" />
             </span>
             <div>
               <b>{s.title}</b>
-              <em>{s.detail}</em>
+              <em data-detail>{s.detail}</em>
             </div>
           </li>
         ))}
@@ -92,7 +92,7 @@ import { driverExample as d } from "@/data/drivers";
   .demo {
     justify-self: center;
     width: 100%;
-    max-width: 520px;
+    max-width: 600px;
   }
 
   .device {
@@ -132,7 +132,7 @@ import { driverExample as d } from "@/data/drivers";
 
   .versions b {
     position: relative;
-    font: 600 56px/1 var(--font-readout);
+    font: 600 76px/1 var(--font-readout);
     letter-spacing: -0.01em;
     transition: color 0.5s;
   }
@@ -176,12 +176,44 @@ import { driverExample as d } from "@/data/drivers";
 
   .done .new b {
     color: var(--signal);
+    animation: pop 0.5s var(--ease-spring);
   }
 
+  @keyframes pop {
+    40% {
+      transform: scale(1.06);
+    }
+  }
+
+  /* uma linha liga os passos e enche de verde conforme eles terminam */
   .steps {
-    margin: 0 0 30px;
+    --step-ms: 0ms;
+    position: relative;
+    margin: 0 0 34px;
     padding: 0;
     list-style: none;
+  }
+
+  .steps::before,
+  .steps::after {
+    content: "";
+    position: absolute;
+    top: 33px;
+    bottom: 33px;
+    left: 21px;
+    width: 2px;
+    border-radius: 2px;
+  }
+
+  .steps::before {
+    background: var(--dial-ring);
+  }
+
+  .steps::after {
+    background: var(--signal-hi);
+    transform: scaleY(var(--progress));
+    transform-origin: top;
+    transition: transform var(--step-ms) linear;
   }
 
   li {
@@ -189,22 +221,7 @@ import { driverExample as d } from "@/data/drivers";
     display: flex;
     align-items: center;
     gap: 18px;
-    padding: 11px 0;
-  }
-
-  li + li::before {
-    content: "";
-    position: absolute;
-    left: 19px;
-    top: -11px;
-    height: 22px;
-    border-left: 1.5px dashed var(--dial-tick);
-    transition: border-color 0.4s;
-  }
-
-  li.done + li::before {
-    border-left-style: solid;
-    border-color: var(--signal-hi);
+    padding: 12px 0;
   }
 
   .mark {
@@ -212,15 +229,16 @@ import { driverExample as d } from "@/data/drivers";
     display: grid;
     place-items: center;
     flex: none;
-    width: 40px;
-    height: 40px;
+    z-index: 1;
+    width: 44px;
+    height: 44px;
     border: 1px solid var(--line);
     border-radius: 50%;
     background: var(--paper);
     color: var(--on-ink);
     transition:
-      background-color 0.35s,
-      border-color 0.35s;
+      background-color 0.2s,
+      border-color 0.2s;
   }
 
   .mark :global(.icon) {
@@ -228,10 +246,10 @@ import { driverExample as d } from "@/data/drivers";
     height: 18px;
     stroke-width: 2.2;
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.4) rotate(-20deg);
     transition:
-      opacity 0.3s,
-      transform 0.3s;
+      opacity 0.2s,
+      transform 0.35s var(--ease-spring);
   }
 
   li.done .mark {
@@ -251,14 +269,14 @@ import { driverExample as d } from "@/data/drivers";
     border: 2px solid transparent;
     border-top-color: var(--signal-hi);
     border-radius: 50%;
-    animation: spin 0.9s linear infinite;
+    animation: spin 0.6s linear infinite;
   }
 
   li b {
     display: block;
-    font: 600 16px/1.25 var(--font-display);
+    font: 600 17px/1.25 var(--font-display);
     color: var(--muted);
-    transition: color 0.3s;
+    transition: color 0.2s;
   }
 
   li.done b,
@@ -267,8 +285,9 @@ import { driverExample as d } from "@/data/drivers";
   }
 
   li em {
-    font: 500 13px/1.3 var(--font-display);
+    font: 500 13.5px/1.3 var(--font-display);
     font-style: normal;
+    font-variant-numeric: tabular-nums;
     color: var(--faint);
   }
 
@@ -321,7 +340,7 @@ import { driverExample as d } from "@/data/drivers";
     }
 
     .versions b {
-      font-size: 42px;
+      font-size: 46px;
     }
 
     .versions :global(.arrow) {

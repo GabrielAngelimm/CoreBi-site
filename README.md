@@ -32,10 +32,11 @@ src/
 ├── components/
 │   ├── layout/       cabeçalho, rodapé e Section (a casca de cada seção)
 │   ├── sections/     uma pasta por seção da página, na ordem em que aparecem
-│   │   ├── hero/     abertura com o mostrador e as peças em órbita
-│   │   ├── features/ os blocos de "Do sensor ao jogo", um componente por bloco
-│   │   └── ...       about, stress-test, drivers, apps, install-steps, faq, final
-│   └── ui/           peças pequenas reutilizadas (botão, ícone, bolha, logo...)
+│   │   ├── hero/       abertura com os três arcos e as peças em órbita
+│   │   ├── monitoring/ sensores, armazenamento e rede, um componente por bloco
+│   │   ├── gaming/     OverlayBi e Benchmark, a seção escura
+│   │   └── ...         about, stress-test, drivers, apps, install-steps, faq, final
+│   └── ui/           peças reutilizadas (botão, ícone, bolha, logo, FeatureTile, WindowFrame...)
 ├── data/             textos e números das seções, tipados
 ├── config/site.ts    nome, links e menu: tudo que aparece em mais de um lugar
 ├── lib/              funções puras usadas no build (release, geometria, formatos)
@@ -51,6 +52,8 @@ Regras que o projeto segue:
 - **Geometria no build.** Arcos, marcas do mostrador e posições em órbita são calculados em `lib/geometry.ts` durante o build. O navegador recebe o SVG pronto.
 - **Animação só quando aparece.** `scripts/motion.ts` pausa os laços fora da tela ou com a aba escondida, e tudo respeita `prefers-reduced-motion`.
 - **Cada seção na sua pasta.** O componente (`Apps.astro`) e o script que roda no navegador (`apps.client.ts`) ficam juntos. O sufixo `.client.ts` separa o que vai para o navegador dos dados em `src/data/`, que só existem no build.
+- **Uma seção, uma tela.** `Section.astro` dá a cada seção a altura da janela e o encaixe da rolagem (`scroll-snap`, só no computador). O conteúdo fica num `.frame` que encolhe por `--fit` em telas baixas, então nada é cortado num notebook de 768 px. No celular as seções têm a altura do conteúdo.
+- **Seção escura é um tom, não uma cópia.** `<Section tone="dark">` troca as cores e marca `data-tone="dark"`, que o cabeçalho lê para escurecer junto.
 - **Estilo com escopo.** Cada componente tem o próprio `<style>`; `:global()` só para elementos de componentes filhos.
 
 ## A versão do app
@@ -79,7 +82,7 @@ Para o site acompanhar cada release nova sem ninguém mexer aqui, crie um Deploy
 O CI (`.github/workflows/ci.yml`) roda em todo PR:
 
 1. Prettier, ESLint, `astro check` e build.
-2. Playwright em três telas (1920×1080, 1366×768 e celular): página sem erros no console, sem rolagem lateral, todas as seções visíveis, link de download válido, FAQ abrindo uma pergunta por vez, botão Copiar e movimento reduzido. As capturas de cada seção ficam no relatório do job.
+2. Playwright em três telas (1920×1080, 1366×768 e celular): página sem erros no console, sem rolagem lateral, todas as seções visíveis, links de download válidos, FAQ abrindo uma pergunta por vez, botão Copiar, movimento reduzido, a seta da abertura, o cabeçalho com vidro e as abas da instalação. As capturas de cada seção ficam no relatório do job.
 3. Lighthouse com nota mínima de 90 em desempenho e 100 em acessibilidade, boas práticas e SEO.
 
 ## Licença

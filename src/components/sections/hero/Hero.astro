@@ -13,7 +13,7 @@ interface Props {
 const { release } = Astro.props;
 ---
 
-<section class="hero" aria-labelledby="hero-title">
+<section id="abertura" class="hero" aria-labelledby="hero-title" data-hero>
   <Orbit />
   <div class="wrap content">
     <AppTile size="lg" class="enter" />
@@ -58,9 +58,9 @@ const { release } = Astro.props;
     justify-content: center;
     min-height: 100vh;
     min-height: 100svh;
-    margin-top: calc(-1 * (var(--nav-height) + 14px));
-    padding: 112px 0 120px;
+    padding: var(--header-space) 0 96px;
     overflow: hidden;
+    scroll-snap-align: start;
   }
 
   /* textura de pontos e fade para a próxima seção */

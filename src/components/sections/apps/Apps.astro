@@ -34,7 +34,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     <div class="demo" data-apps>
       <ul class="hive" aria-label="Exemplo de instalação em fila">
         {apps.map((app) => (
-          <li class="done" style={`--x:${app.x}%;--y:${app.y}%;--p:100`}>
+          <li class="done" style={`--x:${app.x}%;--y:${app.y}%`}>
             <svg class="progress" viewBox="0 0 100 100" aria-hidden="true">
               <circle cx="50" cy="50" r="47" class="rail" />
               <circle cx="50" cy="50" r="47" class="bar" pathLength="100" />
@@ -90,7 +90,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
   .hive {
     position: relative;
     width: 100%;
-    max-width: 540px;
+    max-width: 640px;
     aspect-ratio: 1 / 0.8;
     margin: 0;
     padding: 0;
@@ -98,7 +98,8 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
   }
 
   li {
-    --s: 76px;
+    --s: 92px;
+    --p: 0;
     position: absolute;
     left: var(--x);
     top: var(--y);
@@ -133,10 +134,18 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
   .bar {
     stroke: var(--signal-hi);
     stroke-linecap: round;
-    stroke-dasharray: calc(var(--p, 0) * 1) 100;
-    transition:
-      stroke-dasharray 0.15s linear,
-      opacity 0.4s;
+    stroke-dasharray: var(--p) 100;
+    transition: opacity 0.3s;
+  }
+
+  /* o anel enche sozinho: o script só troca a classe */
+  li.active,
+  li.done {
+    --p: 100;
+  }
+
+  li.active {
+    transition: --p var(--fill-ms, 480ms) var(--ease-out);
   }
 
   .icon-wrap {
@@ -155,7 +164,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     width: 50%;
     height: 50%;
     filter: grayscale(1) opacity(0.45);
-    transition: filter 0.5s;
+    transition: filter 0.3s;
   }
 
   .ok {
@@ -171,7 +180,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     box-shadow: 0 0 0 3px var(--bg);
     color: var(--on-ink);
     transform: scale(0);
-    transition: transform 0.3s var(--ease-spring);
+    transition: transform 0.35s var(--ease-spring);
   }
 
   .ok :global(.icon) {
@@ -181,7 +190,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
   }
 
   em {
-    font: 500 13px/1 var(--font-display);
+    font: 500 14px/1 var(--font-display);
     font-style: normal;
     color: var(--faint);
     white-space: nowrap;
@@ -210,6 +219,13 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
 
   li.done .icon-wrap {
     border-color: color-mix(in srgb, var(--signal) 28%, transparent);
+    animation: settle 0.45s var(--ease-spring);
+  }
+
+  @keyframes settle {
+    40% {
+      transform: scale(1.07);
+    }
   }
 
   li.done .ok {
@@ -264,7 +280,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     }
 
     li {
-      --s: 58px;
+      --s: 60px;
       gap: 10px;
     }
 

@@ -1,6 +1,10 @@
 ---
 import { features } from "@/data/features";
-import FeatureTile from "./FeatureTile.astro";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+
+interface Props {
+  class?: string;
+}
 
 // 24 barras de download e 8 de upload, com alturas iniciais fixas (o script faz elas variarem).
 const bars = Array.from({ length: 32 }, (_, i) => ({
@@ -14,7 +18,7 @@ const speeds = [
 ] as const;
 ---
 
-<FeatureTile {...features.network} part="net" span={4}>
+<FeatureTile {...features.network} part="net" class={Astro.props.class}>
   <div class="bars" data-network aria-hidden="true">
     {bars.map((b) => (
       <i class:list={{ up: b.upload }} style={`height:${b.height}%`} />

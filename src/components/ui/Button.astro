@@ -4,7 +4,8 @@ import Icon from "./Icon.astro";
 import type { IconName } from "./icons";
 
 type Props = HTMLAttributes<"a"> & {
-  variant?: "ink" | "line";
+  /** ink e line para fundo claro; light e ghost para fundo escuro. */
+  variant?: "ink" | "line" | "light" | "ghost";
   size?: "md" | "sm";
   icon?: IconName;
   external?: boolean;
@@ -66,6 +67,27 @@ const target = external ? { target: "_blank", rel: "noopener" } : {};
 
   .line:hover {
     border-color: var(--faint);
+  }
+
+  .light {
+    background: var(--night-fg);
+    color: var(--night);
+    box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--signal-hi) 45%, transparent);
+  }
+
+  .light:hover {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+
+  .ghost {
+    border-color: color-mix(in srgb, var(--night-fg) 18%, transparent);
+    background: color-mix(in srgb, var(--night-fg) 4%, transparent);
+    color: var(--night-fg);
+  }
+
+  .ghost:hover {
+    border-color: color-mix(in srgb, var(--night-fg) 36%, transparent);
   }
 
   .sm {

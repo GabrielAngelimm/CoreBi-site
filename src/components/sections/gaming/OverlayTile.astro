@@ -1,6 +1,10 @@
 ---
 import { features } from "@/data/features";
-import FeatureTile from "./FeatureTile.astro";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+
+interface Props {
+  class?: string;
+}
 
 const rows = [
   ["GPU", "RTX 4060 Ti", "97 %", "66 °C"],
@@ -17,7 +21,13 @@ const positions = [
 ] as const;
 ---
 
-<FeatureTile {...features.overlay} icon="gauge" color="var(--signal-hi)" span={5} dark>
+<FeatureTile
+  {...features.overlay}
+  icon="gauge"
+  color="var(--signal-hi)"
+  class={Astro.props.class}
+  dark
+>
   <div slot="head" class="keys" role="group" aria-label="Atalho Ctrl + Shift + O">
     <kbd>Ctrl</kbd>
     <span>+</span>

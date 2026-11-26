@@ -10,8 +10,14 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--nav-height) + 24px);
   -webkit-text-size-adjust: 100%;
+}
+
+/* no desktop, a rolagem para em cada seção, e cada seção é uma tela inteira */
+@media (min-width: 901px) and (min-height: 640px) {
+  html {
+    scroll-snap-type: y mandatory;
+  }
 }
 
 body {
@@ -74,7 +80,7 @@ button {
 /* títulos e textos de seção */
 .h2 {
   margin: 0;
-  font: 600 clamp(36px, 4.8vw, 62px) / 1 var(--font-display);
+  font: 600 clamp(36px, 4.6vw, 70px) / 1 var(--font-display);
   letter-spacing: -0.03em;
   color: var(--ink);
   text-wrap: balance;
@@ -87,7 +93,7 @@ button {
 .lead {
   max-width: 58ch;
   margin: 22px 0 0;
-  font-size: 19px;
+  font-size: 20px;
   color: var(--muted);
   text-wrap: pretty;
 }

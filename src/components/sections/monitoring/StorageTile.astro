@@ -1,12 +1,16 @@
 ---
 import { features } from "@/data/features";
-import FeatureTile from "./FeatureTile.astro";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+
+interface Props {
+  class?: string;
+}
 
 const life = 97;
 const path = "M30 140 A80 80 0 1 1 170 140";
 ---
 
-<FeatureTile {...features.storage} part="storage" span={4}>
+<FeatureTile {...features.storage} part="storage" class={Astro.props.class}>
   <div class="gauge">
     <svg viewBox="0 0 200 160" role="img" aria-label={`Vida útil de ${life} %`}>
       <defs>

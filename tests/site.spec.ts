@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 const sections = [
   "sobre",
-  "recursos",
+  "monitoramento",
+  "jogos",
   "teste",
   "drivers",
   "apps",
@@ -51,12 +52,15 @@ test.describe("página inicial", () => {
     }
   });
 
-  test("o botão de download aponta para o instalador da release", async ({ page }) => {
+  test("os botões de download apontam para o instalador da release", async ({ page }) => {
     await page.goto("/");
-    const href = await page.getByRole("link", { name: "Baixar para Windows" }).getAttribute("href");
-    expect(href).toMatch(
-      /^https:\/\/github\.com\/GabrielAngelimm\/CoreBi\/releases\/download\/v[\d.]+\/CoreBi-[\d.]+-win-x64-setup\.exe$/,
-    );
+    const links = page.getByRole("link", { name: /^Baixar para Windows/ });
+    await expect(links).toHaveCount(2);
+    for (const href of await links.evaluateAll((els) => els.map((a) => a.getAttribute("href")))) {
+      expect(href).toMatch(
+        /^https:\/\/github\.com\/GabrielAngelimm\/CoreBi\/releases\/download\/v[\d.]+\/CoreBi-[\d.]+-win-x64-setup\.exe$/,
+      );
+    }
   });
 
   test("as perguntas abrem uma de cada vez", async ({ page }) => {
@@ -86,7 +90,41 @@ test.describe("página inicial", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     // sem rolar: com movimento reduzido nada fica escondido esperando a entrada
-    await expect(page.locator("#recursos .bento > *").first()).toHaveCSS("opacity", "1");
+    await expect(page.locator("#monitoramento .grid > *").first()).toHaveCSS("opacity", "1");
+  });
+});
+
+test.describe("navegação", () => {
+  test("a seta da abertura leva ao Sobre alinhado no topo da tela", async ({ page, isMobile }) => {
+    test.skip(isMobile, "no celular não há rolagem por seção");
+    await page.goto("/");
+    await page.getByRole("link", { name: "Ir para as seções" }).click();
+    await expect
+      .poll(() => page.locator("#sobre").evaluate((el) => Math.abs(el.getBoundingClientRect().top)))
+      .toBeLessThan(1);
+  });
+
+  test("o cabeçalho ganha vidro depois da abertura e acende a seção atual", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "o menu fica escondido no celular");
+    await page.goto("/");
+    const header = page.locator("[data-header]");
+    await expect(header).not.toHaveClass(/is-stuck/);
+    await page.locator("#perguntas").evaluate((el) => el.scrollIntoView({ behavior: "instant" }));
+    await expect(header).toHaveClass(/is-stuck/);
+    await expect(page.locator('[data-nav="perguntas"]')).toHaveClass(/active/);
+  });
+
+  test("os passos da instalação trocam ao clicar", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#instalar").evaluate((el) => el.scrollIntoView({ behavior: "instant" }));
+    const tab = page.getByRole("tab", { name: /Passe pelo aviso/ });
+    await tab.click();
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator("#panel-aviso")).toBeVisible();
+    await expect(page.locator("#panel-conferir")).toBeHidden();
   });
 });
 

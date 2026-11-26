@@ -1,4 +1,4 @@
-/** Abertura: as leituras das peças variam como no app, e a moldura externa acompanha. */
+/** Abertura: as leituras das peças variam como no app. */
 import { decimal } from "@/lib/format";
 import { loopWhileVisible, random, required } from "@/scripts/motion";
 
@@ -7,11 +7,8 @@ const readouts = [...dial.querySelectorAll<HTMLElement>("[data-live]")];
 
 function tick(): void {
   for (const el of readouts) {
-    const { min, max, digits, scale, live } = el.dataset;
-    const value = random(Number(min), Number(max));
-    el.textContent = decimal(value, Number(digits));
-    const gauge = dial.querySelector(`[data-gauge="${live}"]`);
-    gauge?.setAttribute("stroke-dasharray", `${((value / Number(scale)) * 100).toFixed(1)} 100`);
+    const { min, max, digits } = el.dataset;
+    el.textContent = decimal(random(Number(min), Number(max)), Number(digits));
   }
 }
 

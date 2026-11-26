@@ -1,0 +1,62 @@
+---
+import Section from "@/components/layout/Section.astro";
+import NetworkTile from "./NetworkTile.astro";
+import SensorsTile from "./SensorsTile.astro";
+import StorageTile from "./StorageTile.astro";
+---
+
+<Section id="monitoramento" label="monitoring-title">
+  <div class="wrap">
+    <div class="center">
+      <h2 id="monitoring-title" class="h2">
+        Cada peça do PC, ao vivo. <span class="soft">Antes de virar problema.</span>
+      </h2>
+      <p class="lead">Temperatura, saúde do disco e conexão, lidas direto do hardware.</p>
+    </div>
+    <div class="grid" data-reveal>
+      <SensorsTile class="sensors" />
+      <StorageTile class="storage" />
+      <NetworkTile class="network" />
+    </div>
+  </div>
+</Section>
+
+<style>
+  .h2 {
+    max-width: 20ch;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "sensors storage network";
+    gap: 16px;
+    margin-top: 52px;
+  }
+
+  .grid :global(.sensors) {
+    grid-area: sensors;
+  }
+
+  .grid :global(.storage) {
+    grid-area: storage;
+  }
+
+  .grid :global(.network) {
+    grid-area: network;
+  }
+
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "sensors sensors" "storage network";
+    }
+  }
+
+  @media (max-width: 700px) {
+    .grid {
+      grid-template-columns: 1fr;
+      grid-template-areas: "sensors" "storage" "network";
+    }
+  }
+</style>

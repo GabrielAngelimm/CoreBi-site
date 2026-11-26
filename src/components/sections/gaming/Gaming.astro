@@ -1,0 +1,62 @@
+---
+import Section from "@/components/layout/Section.astro";
+import BenchmarkTile from "./BenchmarkTile.astro";
+import OverlayTile from "./OverlayTile.astro";
+---
+
+<Section id="jogos" label="gaming-title" tone="dark">
+  <div class="wrap">
+    <div class="center">
+      <h2 id="gaming-title" class="h2">
+        Feito para quem joga. <span class="soft">Sem sair da partida.</span>
+      </h2>
+      <p class="lead">
+        O overlay mostra o desempenho por cima do jogo, e o benchmark diz se a troca de peça valeu a
+        pena.
+      </p>
+    </div>
+    <div class="grid" data-reveal>
+      <OverlayTile class="overlay" />
+      <BenchmarkTile class="bench" />
+    </div>
+  </div>
+  <div class="glow" aria-hidden="true" slot="after"></div>
+</Section>
+
+<style>
+  .h2 {
+    max-width: 22ch;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 16px;
+    margin-top: 52px;
+  }
+
+  /* um brilho frio atrás dos cartões, para o fundo escuro não ficar chapado */
+  .glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(
+        ellipse 50% 38% at 32% 70%,
+        color-mix(in srgb, var(--signal-hi) 10%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 38% 32% at 76% 66%,
+        color-mix(in srgb, var(--gpu) 9%, transparent),
+        transparent 70%
+      );
+    pointer-events: none;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -2,10 +2,15 @@
 import Logo from "@/components/ui/Logo.astro";
 import { footerLinks } from "@/config/site";
 
+interface Props {
+  tone?: "light" | "dark";
+}
+
+const { tone = "light" } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
-<footer class="footer">
+<footer class:list={["footer", tone]}>
   <div class="wrap">
     <a class="brand" href="#inicio">
       <Logo />
@@ -67,6 +72,23 @@ const year = new Date().getFullYear();
 
   .credit {
     margin-left: auto;
+  }
+
+  .dark .wrap {
+    color: var(--night-faint);
+  }
+
+  .dark .brand {
+    --logo-frame: var(--night-fg);
+    color: var(--night-fg);
+  }
+
+  .dark nav a {
+    color: var(--night-muted);
+  }
+
+  .dark nav a:hover {
+    color: var(--night-fg);
   }
 
   @media (max-width: 700px) {

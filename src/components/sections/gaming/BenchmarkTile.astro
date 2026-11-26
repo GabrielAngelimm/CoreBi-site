@@ -2,7 +2,11 @@
 import RunButton from "@/components/ui/RunButton.astro";
 import { features } from "@/data/features";
 import { GAUGE_END, GAUGE_START, arcPath, ticks } from "@/lib/geometry";
-import FeatureTile from "./FeatureTile.astro";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+
+interface Props {
+  class?: string;
+}
 
 // Resultado de exemplo: o "depois" é 12,6 % mais rápido que o "antes".
 const before = 3420;
@@ -23,7 +27,7 @@ const inner = arcPath(GAUGE_START, GAUGE_END, 62);
 const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
 ---
 
-<FeatureTile {...features.benchmark} part="gpu" icon="gauge" span={4}>
+<FeatureTile {...features.benchmark} part="gpu" icon="gauge" class={Astro.props.class} dark>
   <div class="gauge" data-bench data-before={before} data-after={after} data-top={top}>
     <svg viewBox="-110 -110 220 220" aria-hidden="true">
       <g class="ticks">
@@ -87,17 +91,17 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
   }
 
   .ticks path {
-    stroke: var(--dial-tick);
+    stroke: var(--night-line);
     stroke-width: 1.2;
   }
 
   .track {
-    stroke: var(--dial-track);
+    stroke: color-mix(in srgb, var(--night-fg) 7%, transparent);
     stroke-width: 9;
   }
 
   .before {
-    stroke: var(--dial-mark);
+    stroke: var(--night-faint);
     stroke-width: 9;
   }
 
@@ -119,18 +123,18 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
 
   .center b {
     font: 600 40px/1 var(--font-readout);
-    color: var(--ink);
+    color: var(--night-fg);
   }
 
   .center small {
     margin-left: 2px;
     font: 500 16px/1 var(--font-display);
-    color: var(--faint);
+    color: var(--night-muted);
   }
 
   .center span {
     font: 500 13px/1 var(--font-display);
-    color: var(--faint);
+    color: var(--night-muted);
   }
 
   .legend {
@@ -155,7 +159,7 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
   }
 
   .dot-before {
-    background: var(--dial-mark);
+    background: var(--night-faint);
   }
 
   .dot-after {
@@ -164,16 +168,23 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
 
   .legend span {
     font: 500 12.5px/1 var(--font-display);
-    color: var(--faint);
+    color: var(--night-muted);
   }
 
   .legend b {
     grid-column: 2;
     font: 600 22px/1.2 var(--font-readout);
-    color: var(--ink);
+    color: var(--night-fg);
   }
 
   .legend :global(.run) {
     margin-left: auto;
+    background: var(--night-fg);
+    color: var(--night);
+  }
+
+  .legend :global(.run:disabled) {
+    background: var(--night-line);
+    color: var(--night-muted);
   }
 </style>

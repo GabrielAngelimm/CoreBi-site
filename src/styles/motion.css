@@ -1,4 +1,11 @@
 /* Animações compartilhadas. Quem desativa animações no sistema vê tudo parado e completo. */
+
+/* progresso de 0 a 100 que o CSS consegue animar (anéis de instalação) */
+@property --p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);

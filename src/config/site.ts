@@ -25,12 +25,20 @@ export interface NavItem {
   readonly external?: boolean;
 }
 
-export const nav: readonly NavItem[] = [
-  { label: "Sobre", href: "#sobre" },
-  { label: "Recursos", href: "#recursos" },
-  { label: "Instalar", href: "#instalar" },
-  { label: "Perguntas", href: "#perguntas" },
-  { label: "GitHub", href: site.links.code, external: true },
+/** Um item do menu do topo. `sections` são as seções que acendem este item ao rolar. */
+export interface SectionLink {
+  readonly label: string;
+  readonly href: `#${string}`;
+  readonly sections: readonly string[];
+}
+
+export const nav: readonly SectionLink[] = [
+  { label: "Sobre", href: "#sobre", sections: ["sobre"] },
+  { label: "Monitoramento", href: "#monitoramento", sections: ["monitoramento"] },
+  { label: "Jogos", href: "#jogos", sections: ["jogos"] },
+  { label: "Ferramentas", href: "#teste", sections: ["teste", "drivers", "apps"] },
+  { label: "Instalar", href: "#instalar", sections: ["instalar"] },
+  { label: "Perguntas", href: "#perguntas", sections: ["perguntas"] },
 ];
 
 export const footerLinks: readonly NavItem[] = [

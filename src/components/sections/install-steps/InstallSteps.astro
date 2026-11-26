@@ -1,7 +1,9 @@
 ---
 import Section from "@/components/layout/Section.astro";
 import CopyButton from "@/components/ui/CopyButton.astro";
-import { installerExtras, installSteps } from "@/data/install";
+import Icon from "@/components/ui/Icon.astro";
+import WindowFrame from "@/components/ui/WindowFrame.astro";
+import { installerExtras, installSteps, STEP_MS } from "@/data/install";
 import { shortHash } from "@/lib/format";
 import type { Release } from "@/lib/release";
 
@@ -10,365 +12,714 @@ interface Props {
 }
 
 const { installer } = Astro.props.release;
-const hashCommand = `Get-FileHash .\\${installer.name} -Algorithm SHA256`;
-const [check, warning, extras] = installSteps;
+const command = `Get-FileHash .\\${installer.name}`;
+const folder = "C:\\Users\\voce\\Downloads";
+const hash = installer.sha256;
 ---
 
-<Section id="instalar" label="install-title" space="roomy">
+<Section id="instalar" label="install-title">
   <div class="wrap">
     <div class="center">
       <h2 id="install-title" class="h2">
-        Pronto em um minuto.
+        Pronto em um minuto. <span class="soft">Em três passos.</span>
       </h2>
-      <p class="lead">Três passos e o CoreBi está aberto no seu PC.</p>
+      <p class="lead">Do download ao app aberto, sem nada escondido no caminho.</p>
     </div>
 
-    <ol class="steps" data-reveal>
-      <li class="step">
-        <span class="no num">1</span>
-        <h3>{check.title}</h3>
-        <p>{check.text}</p>
-        <div class="mock">
-          <div class="code">
-            <code>
-              <span class="prompt">PS&gt;</span> Get-FileHash .\{installer.name}
-            </code>
-            <CopyButton text={hashCommand} tone="dark" label="Copiar o comando" />
-          </div>
-          {installer.sha256 && (
-            <div class="hash">
-              <span>Tem que dar</span>
-              <code title={installer.sha256}>{shortHash(installer.sha256)}</code>
-              <CopyButton text={installer.sha256} label="Copiar o SHA256 esperado" />
+    <div class="layout" data-install style={`--step-ms:${STEP_MS}ms`} data-reveal>
+      <div class="tabs" role="tablist" aria-label="Passos da instalação">
+        {installSteps.map((step, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tab-${step.id}`}
+            aria-controls={`panel-${step.id}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
+            class="tab"
+            data-tab={i}
+          >
+            <span class="no num">{String(i + 1).padStart(2, "0")}</span>
+            <span class="tab-text">
+              <b>{step.title}</b>
+              <span>{step.text}</span>
+            </span>
+            <span class="timer" aria-hidden="true"></span>
+          </button>
+        ))}
+      </div>
+
+      <div class="stage">
+        <!-- 1. conferir o arquivo -->
+        <div
+          class="panel playing"
+          role="tabpanel"
+          id="panel-conferir"
+          aria-labelledby="tab-conferir"
+          data-panel
+        >
+          <WindowFrame title="Windows PowerShell" tone="dark" class="win">
+            <div class="shell num">
+              <p class="cmd">
+                <span class="path">PS {folder}&gt;</span>
+                <span class="typed" style={`--chars:${command.length}`}>
+                  {command}
+                </span>
+              </p>
+              {hash && (
+                <div class="out">
+                  <span class="col">Algorithm</span>
+                  <span class="col">Hash</span>
+                  <span class="col">---------</span>
+                  <span class="col">----</span>
+                  <span>SHA256</span>
+                  <span class="hash">{hash.toUpperCase()}</span>
+                </div>
+              )}
+            </div>
+          </WindowFrame>
+          {hash && (
+            <div class="check">
+              <span class="match">
+                <Icon name="check" />
+              </span>
+              <span class="check-text">
+                <b>Tem que dar este código</b>
+                <code title={hash}>{shortHash(hash, 10, 10)}</code>
+              </span>
+              <CopyButton text={`${command} -Algorithm SHA256`} label="Copiar o comando" />
+              <CopyButton text={hash} label="Copiar o SHA256 esperado" />
             </div>
           )}
         </div>
-      </li>
 
-      <li class="step">
-        <span class="no num">2</span>
-        <h3>{warning.title}</h3>
-        <p>{warning.text}</p>
-        <div class="mock smartscreen" aria-hidden="true">
-          <b>O Windows protegeu o computador</b>
-          <i></i>
-          <i class="short"></i>
-          <span class="more">Mais informações</span>
-          <span class="run">Executar assim mesmo</span>
+        <!-- 2. aviso do SmartScreen -->
+        <div
+          class="panel"
+          role="tabpanel"
+          id="panel-aviso"
+          aria-labelledby="tab-aviso"
+          data-panel
+          hidden
+        >
+          <div class="smartscreen" aria-hidden="true">
+            <b class="ss-title">O Windows protegeu o computador</b>
+            <p>
+              O Microsoft Defender SmartScreen impediu a inicialização de um aplicativo não
+              reconhecido. A execução desse aplicativo pode representar um risco para o computador.
+            </p>
+            <span class="ss-more">Mais informações</span>
+            <dl class="ss-details">
+              <dt>Aplicativo:</dt>
+              <dd>{installer.name}</dd>
+              <dt>Editor:</dt>
+              <dd>Editor desconhecido</dd>
+            </dl>
+            <div class="ss-actions">
+              <span class="ss-run">Executar assim mesmo</span>
+              <span class="ss-no">Não executar</span>
+            </div>
+          </div>
+          <p class="note">
+            Clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.
+          </p>
         </div>
-      </li>
 
-      <li class="step">
-        <span class="no num">3</span>
-        <h3>{extras.title}</h3>
-        <p>{extras.text}</p>
-        <ul class="mock extras" aria-label="Extras do instalador">
-          {installerExtras.map((x) => (
-            <li>
-              <span class="switch" aria-hidden="true" />
-              <b>{x.name}</b>
-              <em>{x.detail}</em>
-            </li>
-          ))}
-        </ul>
-      </li>
-    </ol>
+        <!-- 3. extras do instalador -->
+        <div
+          class="panel"
+          role="tabpanel"
+          id="panel-extras"
+          aria-labelledby="tab-extras"
+          data-panel
+          hidden
+        >
+          <WindowFrame title="Instalação do CoreBi" class="win">
+            <div class="setup">
+              <b class="setup-title">Selecionar componentes</b>
+              <p>Quais componentes devem ser instalados?</p>
+              <ul>
+                <li class="fixed">
+                  <span class="box">
+                    <Icon name="check" />
+                  </span>
+                  <b>CoreBi</b>
+                  <em>obrigatório</em>
+                </li>
+                {installerExtras.map((x) => (
+                  <li>
+                    <span class="box">
+                      <Icon name="check" />
+                    </span>
+                    <b>{x.name}</b>
+                    <em>{x.detail}</em>
+                  </li>
+                ))}
+              </ul>
+              <div class="setup-actions" aria-hidden="true">
+                <span>Voltar</span>
+                <span class="primary">Instalar</span>
+              </div>
+            </div>
+          </WindowFrame>
+        </div>
+      </div>
+    </div>
   </div>
 </Section>
 
+<script>
+  import "./install-steps.client";
+</script>
+
 <style>
-  .steps {
-    position: relative;
+  .h2 {
+    max-width: 20ch;
+  }
+
+  .layout {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 48px;
-    margin: 88px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  /* a linha tracejada que liga os números, com um ponto que corre por ela */
-  .steps::before {
-    content: "";
-    position: absolute;
-    top: 28px;
-    right: 28px;
-    left: 28px;
-    border-top: 1.5px dashed var(--rule);
-  }
-
-  .steps::after {
-    content: "";
-    position: absolute;
-    top: 24.5px;
-    left: 28px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--signal-hi);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal-hi) 18%, transparent);
-    animation: travel 6s var(--ease-in-out) infinite;
-  }
-
-  @keyframes travel {
-    0% {
-      left: 28px;
-      opacity: 0;
-    }
-
-    8%,
-    92% {
-      opacity: 1;
-    }
-
-    100% {
-      left: calc(100% - 36px);
-      opacity: 0;
-    }
-  }
-
-  .step {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 0;
-  }
-
-  .no {
-    display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    margin-bottom: 18px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    background: var(--paper);
-    box-shadow: var(--shadow-md);
-    color: var(--ink);
-    font: 600 22px/1 var(--font-readout);
-  }
-
-  .step h3 {
-    margin: 0;
-    font: 600 23px/1.2 var(--font-display);
-    color: var(--ink);
-  }
-
-  .step p {
-    max-width: 36ch;
-    min-height: 3em;
-    margin: 0;
-    color: var(--muted);
-    font-size: 15.5px;
-  }
-
-  .mock {
-    margin-top: 22px;
-    border-radius: var(--radius-md);
-  }
-
-  /* passo 1: comando e hash */
-  .code {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 14px 10px 14px 16px;
-    border-radius: 14px;
-    background: var(--night);
-  }
-
-  .code code {
-    flex: 1;
-    min-width: 0;
-    color: var(--night-fg);
-    font: 400 12.5px/1.6 var(--font-mono);
-    overflow-wrap: anywhere;
-  }
-
-  .prompt {
-    color: var(--signal-hi);
-  }
-
-  .hash {
-    display: flex;
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    gap: 56px;
     align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--paper);
+    margin-top: 64px;
   }
 
-  .hash span {
-    color: var(--faint);
-    font: 500 12.5px/1 var(--font-display);
-  }
-
-  .hash code {
-    flex: 1;
-    min-width: 0;
-    color: var(--ink);
-    font: 500 13px/1 var(--font-mono);
-  }
-
-  /* passo 2: o aviso do SmartScreen, com os dois cliques em destaque */
-  .smartscreen {
+  /* passos à esquerda: o ativo ganha fundo e uma barra que mostra quando o próximo entra */
+  .tabs {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 18px 18px 16px;
-    border: 1px solid var(--line);
+    gap: 6px;
+  }
+
+  .tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    padding: 22px 24px;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color 0.25s,
+      border-color 0.25s,
+      box-shadow 0.25s;
+  }
+
+  .tab:hover {
+    background: color-mix(in srgb, var(--paper) 60%, transparent);
+  }
+
+  .tab[aria-selected="true"] {
+    border-color: var(--line);
     background: var(--paper);
     box-shadow: var(--shadow-sm);
   }
 
-  .smartscreen b {
-    margin-bottom: 4px;
-    color: var(--ink);
-    font: 600 15px/1.2 var(--font-display);
+  .no {
+    font: 600 22px/1.1 var(--font-readout);
+    color: var(--soft);
+    transition: color 0.25s;
   }
 
-  .smartscreen i {
-    display: block;
-    width: 92%;
-    height: 7px;
-    border-radius: 4px;
-    background: var(--tint);
-  }
-
-  .smartscreen i.short {
-    width: 64%;
-  }
-
-  .more,
-  .run {
-    font: 600 13px/1 var(--font-display);
-    animation: highlight 4s infinite;
-  }
-
-  .more {
-    align-self: flex-start;
-    margin: 6px 0 0 -6px;
-    padding: 5px 6px;
-    border-radius: 8px;
+  .tab[aria-selected="true"] .no {
     color: var(--signal);
   }
 
-  .run {
-    align-self: flex-end;
-    padding: 9px 14px;
-    border: 1px solid var(--line-2);
-    border-radius: var(--radius-pill);
+  .tab-text b {
+    display: block;
+    font: 600 21px/1.2 var(--font-display);
     color: var(--ink);
-    animation-delay: 2s;
   }
 
-  @keyframes highlight {
-    0%,
-    10%,
-    50%,
-    100% {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal-hi) 0%, transparent);
-    }
+  .tab-text span {
+    display: block;
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    font-size: 15.5px;
+    line-height: 1.5;
+    color: var(--muted);
+    opacity: 0;
+    transition:
+      max-height 0.4s var(--ease-out),
+      margin-top 0.4s var(--ease-out),
+      opacity 0.3s;
+  }
 
-    20%,
-    40% {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal-hi) 35%, transparent);
+  .tab[aria-selected="true"] .tab-text span {
+    max-height: 4.6em;
+    margin-top: 8px;
+    opacity: 1;
+  }
+
+  .timer {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--signal-hi);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .layout:global(.auto) .tab[aria-selected="true"] .timer {
+    animation: timer var(--step-ms) linear forwards;
+  }
+
+  @keyframes timer {
+    to {
+      transform: scaleX(1);
     }
   }
 
-  /* passo 3: os extras, já marcados */
-  .extras {
+  /* palco à direita: uma tela por passo */
+  .stage {
+    display: grid;
+    min-height: 430px;
+    align-items: center;
+  }
+
+  .panel {
+    grid-area: 1 / 1;
+    animation: panel-in 0.45s var(--ease-out);
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .panel :global(.win) {
+    width: 100%;
+  }
+
+  /* passo 1 */
+  .shell {
+    padding: 26px 28px 32px;
+    color: var(--night-fg);
+    font: 400 14.5px/1.75 var(--font-mono);
+  }
+
+  .shell p {
+    margin: 0;
+  }
+
+  .cmd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1ch;
+  }
+
+  .path {
+    color: var(--night-muted);
+  }
+
+  .typed {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .playing .typed {
+    animation: type 0.9s steps(var(--chars)) both;
+  }
+
+  @keyframes type {
+    from {
+      width: 0;
+    }
+    to {
+      width: calc(var(--chars) * 1ch);
+    }
+  }
+
+  .out {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 3ch;
+    margin-top: 16px;
+  }
+
+  .col {
+    color: var(--night-muted);
+  }
+
+  .hash {
+    color: var(--signal-hi);
+    overflow-wrap: anywhere;
+  }
+
+  .playing .out {
+    animation: show 0.3s 1s both;
+  }
+
+  @keyframes show {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .playing .check {
+    animation: show 0.35s 1.4s both;
+  }
+
+  .match {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--signal);
+    color: var(--on-ink);
+  }
+
+  .match :global(.icon) {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.4;
+  }
+
+  .check-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .check-text b {
+    display: block;
+    font: 600 14.5px/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .check-text code {
+    font: 500 13px/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+
+  /* passo 2: o aviso azul do Windows, com os dois cliques destacados */
+  .smartscreen {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
+    padding: 34px 36px 26px;
+    border-radius: 14px;
+    background: var(--win-blue);
+    box-shadow: 0 30px 60px -24px color-mix(in srgb, var(--win-blue) 70%, transparent);
+    color: var(--on-ink);
+  }
+
+  .ss-title {
+    font: 400 28px/1.2 var(--font-text);
+  }
+
+  .smartscreen p {
+    max-width: 52ch;
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+    opacity: 0.92;
+  }
+
+  .ss-more {
+    align-self: flex-start;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border-radius: 6px;
+    font-size: 14.5px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .ss-details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 14px;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .ss-details dd {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ss-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .ss-actions span {
+    padding: 9px 22px;
+    border: 1px solid color-mix(in srgb, #fff 55%, transparent);
+    font-size: 14px;
+  }
+
+  .ss-no {
+    background: color-mix(in srgb, #fff 14%, transparent);
+  }
+
+  .playing .ss-more {
+    animation: tap 0.9s 0.4s both;
+  }
+
+  .playing .ss-details {
+    animation: show 0.35s 1.1s both;
+  }
+
+  .playing .ss-run {
+    animation: tap 0.9s 1.8s both;
+  }
+
+  @keyframes tap {
+    0% {
+      box-shadow: 0 0 0 0 rgb(255 255 255 / 0%);
+    }
+    40% {
+      box-shadow: 0 0 0 4px rgb(255 255 255 / 55%);
+      background: rgb(255 255 255 / 16%);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(255 255 255 / 0%);
+    }
+  }
+
+  .note {
+    margin: 16px 0 0;
+    font-size: 15px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .note b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* passo 3: a tela de componentes do instalador */
+  .setup {
+    display: flex;
+    flex-direction: column;
+    padding: 26px 28px 22px;
+  }
+
+  .setup-title {
+    font: 600 19px/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .setup p {
+    margin: 6px 0 18px;
+    font-size: 14.5px;
+    color: var(--muted);
+  }
+
+  .setup ul {
+    margin: 0;
     padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
     list-style: none;
   }
 
-  .extras li {
+  .setup li {
     display: grid;
     grid-template-columns: auto auto 1fr;
     align-items: center;
-    gap: 6px 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--paper);
+    gap: 12px;
+    padding: 14px 16px;
   }
 
-  .extras b {
-    color: var(--ink);
-    font: 600 14.5px/1 var(--font-display);
+  .setup li + li {
+    border-top: 1px solid var(--line);
   }
 
-  .extras em {
-    justify-self: end;
-    color: var(--faint);
-    font: 500 13px/1 var(--font-display);
-    font-style: normal;
-  }
-
-  .switch {
-    position: relative;
-    width: 34px;
-    height: 20px;
-    border-radius: var(--radius-pill);
+  .box {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
     background: var(--signal);
+    color: var(--on-ink);
   }
 
-  .switch::after {
-    content: "";
-    position: absolute;
-    top: 3px;
-    right: 3px;
+  .box :global(.icon) {
     width: 14px;
     height: 14px;
-    border-radius: 50%;
-    background: var(--paper);
+    stroke-width: 2.6;
   }
 
-  @media (max-width: 860px) {
-    .steps {
+  .fixed .box {
+    background: var(--soft);
+  }
+
+  .setup li b {
+    font: 600 15px/1 var(--font-display);
+    color: var(--ink);
+  }
+
+  .setup li em {
+    justify-self: end;
+    font: 500 13.5px/1 var(--font-display);
+    font-style: normal;
+    color: var(--faint);
+  }
+
+  .playing .setup li:not(.fixed) .box {
+    animation: tick 0.4s var(--ease-spring) both;
+  }
+
+  .playing .setup li:nth-child(2) .box {
+    animation-delay: 0.4s;
+  }
+
+  .playing .setup li:nth-child(3) .box {
+    animation-delay: 0.8s;
+  }
+
+  @keyframes tick {
+    from {
+      transform: scale(0.4);
+      background: var(--line-2);
+    }
+  }
+
+  .setup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .setup-actions span {
+    padding: 10px 20px;
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    font: 500 14px/1 var(--font-display);
+    color: var(--muted);
+  }
+
+  .setup-actions .primary {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+
+  .playing .setup-actions .primary {
+    animation: press 0.6s 1.4s both;
+  }
+
+  @keyframes press {
+    50% {
+      transform: scale(0.96);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 18%, transparent);
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .layout {
       grid-template-columns: 1fr;
       gap: 32px;
-      margin-top: 56px;
     }
 
-    .steps::before {
-      top: 28px;
-      right: auto;
-      bottom: 28px;
-      border-top: 0;
-      border-left: 1.5px dashed var(--rule);
+    .tabs {
+      flex-direction: row;
     }
 
-    .steps::after {
+    .tab {
+      flex: 1;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 16px 18px;
+    }
+
+    .tab-text span {
       display: none;
     }
 
-    .step {
-      padding-left: 80px;
-    }
-
-    .no {
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    .step p {
+    .stage {
       min-height: 0;
     }
   }
 
   @media (max-width: 560px) {
-    .hash code {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .tab {
+      padding: 12px;
+    }
+
+    .tab-text b {
+      font-size: 15px;
+    }
+
+    .no {
+      font-size: 17px;
+    }
+
+    .shell {
+      padding: 16px;
+      font-size: 12px;
+    }
+
+    .out {
+      grid-template-columns: 1fr;
+    }
+
+    .out .col {
+      display: none;
+    }
+
+    .check {
+      flex-wrap: wrap;
+    }
+
+    .check-text {
+      flex-basis: calc(100% - 48px);
+    }
+
+    .smartscreen {
+      padding: 24px 22px 20px;
+    }
+
+    .ss-title {
+      font-size: 22px;
+    }
+
+    .setup {
+      padding: 20px 18px 18px;
+    }
+
+    .setup li {
+      grid-template-columns: auto 1fr;
+    }
+
+    .setup li em {
+      grid-column: 2;
+      justify-self: start;
     }
   }
 </style>
