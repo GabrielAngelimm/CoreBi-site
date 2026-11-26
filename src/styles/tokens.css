@@ -6,7 +6,10 @@
   /* superfícies */
   --bg: #f5f7f8;
   --paper: #ffffff;
+  --paper-soft: #fbfcfc;
   --tint: #eef2f4;
+  --glass: rgb(255 255 255 / 86%); /* superfície clara sobre o fundo pontilhado */
+  --glass-soft: rgb(255 255 255 / 55%);
 
   /* texto */
   --ink: #0f1a20;
@@ -15,6 +18,7 @@
   --muted: #55636b;
   --faint: #68737a; /* 4,5:1 sobre o fundo, para texto pequeno */
   --soft: #848f96; /* 3:1 sobre o fundo, só para texto grande */
+  --on-ink: #ffffff; /* texto sobre fundo escuro ou colorido */
 
   /* linhas */
   --line: #e2e7ea;
@@ -23,6 +27,14 @@
   --rule-soft: #dce3e7;
   --tick: #aab5bb;
 
+  /* mostradores (anéis, trilhos e marcas dos medidores), do mais claro ao mais escuro */
+  --dial-track: #edf1f3;
+  --dial-ring: #e3e8eb;
+  --dial-line: #d6dee2;
+  --dial-tick: #cdd5da;
+  --dial-mark: #b7c1c7;
+  --dial-major: #8d9aa2;
+
   /* marca */
   --signal: #0a857c;
   --signal-hi: #27c9bc;
@@ -30,6 +42,7 @@
   --signal-text: #087a72; /* o verde da marca escurecido para texto corrido */
   --danger: #c8392e;
   --danger-soft: #fbe9e7;
+  --danger-text: #8a2a22;
   --success: #2f8f4e;
 
   /* cor de cada peça, como no app */
@@ -49,6 +62,14 @@
   --night-fg: #e6eaec;
   --night-muted: #a3aaae;
   --night-faint: #80878b;
+  --night-signal: #10373a; /* botão marcado sobre fundo escuro */
+
+  /* cena de jogo por trás do OverlayBi */
+  --scene-sky: #2e3e4c;
+  --scene-moon: #dce4e8;
+  --scene-far: #3d5061;
+  --scene-near: #2a3845;
+  --scene-ground: #1c2730;
 
   /* tipografia */
   --font-display: "Barlow", "Bahnschrift", "Segoe UI", sans-serif;

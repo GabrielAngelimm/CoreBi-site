@@ -32,23 +32,23 @@ const positions = [
     aria-label="Exemplo do OverlayBi por cima de um jogo"
   >
     <svg class="land" viewBox="0 0 600 340" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <rect width="600" height="340" fill="#2e3e4c"></rect>
-      <circle cx="430" cy="120" r="34" fill="#dce4e8"></circle>
+      <rect width="600" height="340" class="sky"></rect>
+      <circle cx="430" cy="120" r="34" class="moon"></circle>
       <polygon
         points="0,220 90,150 160,200 250,120 340,195 420,140 510,200 600,160 600,340 0,340"
-        fill="#3d5061"
+        class="far"
       ></polygon>
       <polygon
         points="0,260 110,205 200,245 300,190 390,240 490,205 600,245 600,340 0,340"
-        fill="#2a3845"
+        class="near"
       ></polygon>
       <polygon
         points="0,340 0,290 140,268 280,296 420,272 600,292 600,340"
-        fill="#1c2730"
+        class="ground"
       ></polygon>
-      <polygon points="70,292 84,240 98,292" fill="#1c2730"></polygon>
-      <polygon points="96,292 112,226 128,292" fill="#1c2730"></polygon>
-      <polygon points="500,294 515,236 530,294" fill="#1c2730"></polygon>
+      <polygon points="70,292 84,240 98,292" class="ground"></polygon>
+      <polygon points="96,292 112,226 128,292" class="ground"></polygon>
+      <polygon points="500,294 515,236 530,294" class="ground"></polygon>
     </svg>
     <div class="hud num" data-hud data-pos="tl" aria-hidden="true">
       <div class="fps">
@@ -84,10 +84,30 @@ const positions = [
 </FeatureTile>
 
 <script>
-  import "./overlay";
+  import "./overlay.client";
 </script>
 
 <style>
+  .land .sky {
+    fill: var(--scene-sky);
+  }
+
+  .land .moon {
+    fill: var(--scene-moon);
+  }
+
+  .land .far {
+    fill: var(--scene-far);
+  }
+
+  .land .near {
+    fill: var(--scene-near);
+  }
+
+  .land .ground {
+    fill: var(--scene-ground);
+  }
+
   .keys {
     display: flex;
     align-items: center;
@@ -114,7 +134,7 @@ const positions = [
     margin: 24px 24px 16px;
     overflow: hidden;
     border-radius: var(--radius-md);
-    background: #2e3e4c;
+    background: var(--scene-sky);
   }
 
   .land {
@@ -130,7 +150,7 @@ const positions = [
     left: 14px;
     padding: 10px 13px 11px;
     border-radius: 10px;
-    background: rgb(14 18 20 / 92%);
+    background: color-mix(in srgb, var(--night) 92%, transparent);
     font: 500 11px/1.3 var(--font-readout);
     color: var(--night-fg);
     transition:
@@ -243,7 +263,7 @@ const positions = [
 
   .positions button[aria-pressed="true"] {
     border-color: var(--signal-hi);
-    background: #10373a;
+    background: var(--night-signal);
   }
 
   .positions button[aria-pressed="true"] i {

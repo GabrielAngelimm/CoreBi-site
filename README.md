@@ -31,9 +31,10 @@ src/
 ├── layouts/          BaseLayout: <head>, fontes, metadados
 ├── components/
 │   ├── layout/       cabeçalho, rodapé e Section (a casca de cada seção)
-│   ├── sections/     uma seção da página por arquivo; o script de cada uma fica ao lado
+│   ├── sections/     uma pasta por seção da página, na ordem em que aparecem
 │   │   ├── hero/     abertura com o mostrador e as peças em órbita
-│   │   └── features/ os blocos de "Do sensor ao jogo"
+│   │   ├── features/ os blocos de "Do sensor ao jogo", um componente por bloco
+│   │   └── ...       about, stress-test, drivers, apps, install-steps, faq, final
 │   └── ui/           peças pequenas reutilizadas (botão, ícone, bolha, logo...)
 ├── data/             textos e números das seções, tipados
 ├── config/site.ts    nome, links e menu: tudo que aparece em mais de um lugar
@@ -46,9 +47,10 @@ src/
 Regras que o projeto segue:
 
 - **Conteúdo fora da marcação.** Textos, listas e números ficam em `src/data/` e `src/config/`. Para mudar uma pergunta do FAQ, mexa só em `data/faq.ts`.
-- **Cores e medidas só por token.** `styles/tokens.css` define cores (uma por peça, como no app), fontes, raios, sombras e curvas de movimento. Componentes não usam valores soltos.
+- **Cores e medidas só por token.** `styles/tokens.css` define cores (uma por peça, como no app), fontes, raios, sombras e curvas de movimento. Componentes não usam valores soltos; a única exceção são o preto e o branco das máscaras, que valem como transparência e não como cor.
 - **Geometria no build.** Arcos, marcas do mostrador e posições em órbita são calculados em `lib/geometry.ts` durante o build. O navegador recebe o SVG pronto.
 - **Animação só quando aparece.** `scripts/motion.ts` pausa os laços fora da tela ou com a aba escondida, e tudo respeita `prefers-reduced-motion`.
+- **Cada seção na sua pasta.** O componente (`Apps.astro`) e o script que roda no navegador (`apps.client.ts`) ficam juntos. O sufixo `.client.ts` separa o que vai para o navegador dos dados em `src/data/`, que só existem no build.
 - **Estilo com escopo.** Cada componente tem o próprio `<style>`; `:global()` só para elementos de componentes filhos.
 
 ## A versão do app

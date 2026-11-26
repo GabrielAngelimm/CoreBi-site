@@ -46,10 +46,10 @@ const target = external ? { target: "_blank", rel: "noopener" } : {};
 
   .ink {
     background: var(--ink);
-    color: #fff;
+    color: var(--on-ink);
     box-shadow:
-      0 1px 0 rgb(255 255 255 / 12%) inset,
-      0 6px 16px -6px rgb(15 26 32 / 50%);
+      0 1px 0 color-mix(in srgb, var(--paper) 12%, transparent) inset,
+      0 6px 16px -6px color-mix(in srgb, var(--ink) 50%, transparent);
   }
 
   .ink:hover {

@@ -106,7 +106,7 @@ const [check, warning, extras] = installSteps;
     height: 8px;
     border-radius: 50%;
     background: var(--signal-hi);
-    box-shadow: 0 0 0 4px rgb(39 201 188 / 18%);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal-hi) 18%, transparent);
     animation: travel 6s var(--ease-in-out) infinite;
   }
 
@@ -270,12 +270,12 @@ const [check, warning, extras] = installSteps;
     10%,
     50%,
     100% {
-      box-shadow: 0 0 0 0 rgb(39 201 188 / 0%);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal-hi) 0%, transparent);
     }
 
     20%,
     40% {
-      box-shadow: 0 0 0 3px rgb(39 201 188 / 35%);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal-hi) 35%, transparent);
     }
   }
 
@@ -327,7 +327,7 @@ const [check, warning, extras] = installSteps;
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--paper);
   }
 
   @media (max-width: 860px) {

@@ -64,7 +64,7 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
 </FeatureTile>
 
 <script>
-  import "./benchmark";
+  import "./benchmark.client";
 </script>
 
 <style>
@@ -87,17 +87,17 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
   }
 
   .ticks path {
-    stroke: #cdd5da;
+    stroke: var(--dial-tick);
     stroke-width: 1.2;
   }
 
   .track {
-    stroke: #edf1f3;
+    stroke: var(--dial-track);
     stroke-width: 9;
   }
 
   .before {
-    stroke: #b7c1c7;
+    stroke: var(--dial-mark);
     stroke-width: 9;
   }
 
@@ -155,7 +155,7 @@ const fill = (score: number) => `${((score / top) * 100).toFixed(1)} 100`;
   }
 
   .dot-before {
-    background: #b7c1c7;
+    background: var(--dial-mark);
   }
 
   .dot-after {

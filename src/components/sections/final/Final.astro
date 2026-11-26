@@ -101,7 +101,7 @@ const rings = [420, 620, 820];
     position: absolute;
     inset: 0;
     z-index: -2;
-    background-image: radial-gradient(circle at 1px 1px, #d9e0e4 1px, transparent 1.2px);
+    background-image: radial-gradient(circle at 1px 1px, var(--dial-line) 1px, transparent 1.2px);
     background-size: 22px 22px;
     mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%);
   }
@@ -121,13 +121,13 @@ const rings = [420, 620, 820];
     left: 0;
     width: var(--r);
     height: var(--r);
-    border: 1px solid #d6dee2;
+    border: 1px solid var(--dial-line);
     border-radius: 50%;
     translate: -50% -50%;
   }
 
   .rings i:nth-child(3) {
-    border-color: #e3e8eb;
+    border-color: var(--dial-ring);
   }
 
   .rings svg {
@@ -142,7 +142,7 @@ const rings = [420, 620, 820];
 
   .rings circle {
     fill: none;
-    stroke: #c9d2d7;
+    stroke: var(--dial-tick);
     stroke-width: 6;
     stroke-dasharray: 1 14.7;
   }
@@ -178,7 +178,7 @@ const rings = [420, 620, 820];
     padding: 12px 18px 12px 12px;
     border: 1px solid var(--line);
     border-radius: 18px;
-    background: rgb(255 255 255 / 75%);
+    background: var(--glass);
     box-shadow: var(--shadow-sm);
     text-align: left;
     text-decoration: none;
@@ -212,7 +212,7 @@ const rings = [420, 620, 820];
 
   .ink {
     background: var(--ink);
-    color: #fff;
+    color: var(--on-ink);
   }
 
   .tint {

@@ -54,8 +54,8 @@ const color = Astro.props.color ?? (part ? parts[part].color : "var(--signal)");
   }
 
   .dark .mark {
-    background: #1a2024;
-    border-color: #2a3236;
+    background: var(--night-2);
+    border-color: var(--night-line);
     box-shadow: none;
   }
 </style>

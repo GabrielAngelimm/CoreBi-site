@@ -46,7 +46,7 @@ const { release } = Astro.props;
 </section>
 
 <script>
-  import "./hero";
+  import "./hero.client";
 </script>
 
 <style>
@@ -69,7 +69,7 @@ const { release } = Astro.props;
     position: absolute;
     inset: 0;
     z-index: -2;
-    background-image: radial-gradient(circle at 1px 1px, #d9e0e4 1px, transparent 1.2px);
+    background-image: radial-gradient(circle at 1px 1px, var(--dial-line) 1px, transparent 1.2px);
     background-size: 22px 22px;
     mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 85%);
   }
@@ -156,10 +156,10 @@ const { release } = Astro.props;
     place-items: center;
     width: 56px;
     height: 56px;
-    border: 1px solid rgb(15 26 32 / 8%);
+    border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
     border-radius: 50%;
-    background: rgb(255 255 255 / 55%);
-    box-shadow: 0 10px 30px -12px rgb(15 26 32 / 35%);
+    background: var(--glass-soft);
+    box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--ink) 35%, transparent);
     color: var(--ink);
     backdrop-filter: blur(12px) saturate(1.4);
     -webkit-backdrop-filter: blur(12px) saturate(1.4);
@@ -168,7 +168,7 @@ const { release } = Astro.props;
   }
 
   .cue:hover {
-    background: rgb(255 255 255 / 85%);
+    background: var(--glass);
   }
 
   .cue :global(.icon) {

@@ -66,7 +66,7 @@ import { driverExample as d } from "@/data/drivers";
 </Section>
 
 <script>
-  import "./drivers";
+  import "./drivers.client";
 </script>
 
 <style>
@@ -198,7 +198,7 @@ import { driverExample as d } from "@/data/drivers";
     left: 19px;
     top: -11px;
     height: 22px;
-    border-left: 1.5px dashed #cbd3d8;
+    border-left: 1.5px dashed var(--dial-tick);
     transition: border-color 0.4s;
   }
 
@@ -217,7 +217,7 @@ import { driverExample as d } from "@/data/drivers";
     border: 1px solid var(--line);
     border-radius: 50%;
     background: var(--paper);
-    color: #fff;
+    color: var(--on-ink);
     transition:
       background-color 0.35s,
       border-color 0.35s;
@@ -278,7 +278,7 @@ import { driverExample as d } from "@/data/drivers";
     border: 0;
     border-radius: var(--radius-pill);
     background: var(--ink);
-    color: #fff;
+    color: var(--on-ink);
     font: 600 14px/1 var(--font-display);
     cursor: pointer;
     transition:
@@ -293,7 +293,7 @@ import { driverExample as d } from "@/data/drivers";
   }
 
   .done .update:disabled {
-    background: rgb(10 133 124 / 10%);
+    background: color-mix(in srgb, var(--signal) 10%, transparent);
     color: var(--signal);
   }
 

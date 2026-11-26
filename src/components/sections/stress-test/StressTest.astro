@@ -154,7 +154,7 @@ const loads: readonly { part: Part; label: string }[] = [
 </Section>
 
 <script>
-  import "./stress";
+  import "./stress-test.client";
 </script>
 
 <style>
@@ -229,8 +229,8 @@ const loads: readonly { part: Part; label: string }[] = [
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+    background: var(--paper);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 20%, transparent);
     transition: transform 0.2s var(--ease-out);
   }
 
@@ -265,7 +265,7 @@ const loads: readonly { part: Part; label: string }[] = [
   }
 
   .ticks path {
-    stroke: #cdd5da;
+    stroke: var(--dial-tick);
     stroke-width: 1.2;
   }
 
@@ -276,7 +276,7 @@ const loads: readonly { part: Part; label: string }[] = [
   }
 
   .track {
-    stroke: #edf1f3;
+    stroke: var(--dial-track);
     stroke-width: 12;
   }
 
@@ -421,7 +421,7 @@ const loads: readonly { part: Part; label: string }[] = [
 
   .message.stop {
     background: var(--danger-soft);
-    color: #8a2a22;
+    color: var(--danger-text);
   }
 
   .message.stop i {

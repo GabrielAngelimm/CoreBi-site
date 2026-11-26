@@ -68,7 +68,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 </FeatureTile>
 
 <script>
-  import "./sensors";
+  import "./sensors.client";
 </script>
 
 <style>
@@ -80,7 +80,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
     padding: 18px 20px 16px;
     border: 1px solid var(--line);
     border-radius: 18px;
-    background: #fbfcfc;
+    background: var(--paper-soft);
   }
 
   .top {
@@ -148,7 +148,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 
   .tip {
     fill: var(--cpu);
-    stroke: #fff;
+    stroke: var(--paper);
     stroke-width: 2;
     vector-effect: non-scaling-stroke;
   }

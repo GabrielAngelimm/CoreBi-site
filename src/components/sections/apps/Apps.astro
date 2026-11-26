@@ -60,7 +60,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
 </Section>
 
 <script>
-  import "./apps";
+  import "./apps.client";
 </script>
 
 <style>
@@ -169,7 +169,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     border-radius: 50%;
     background: var(--signal);
     box-shadow: 0 0 0 3px var(--bg);
-    color: #fff;
+    color: var(--on-ink);
     transform: scale(0);
     transition: transform 0.3s var(--ease-spring);
   }
@@ -190,7 +190,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
 
   /* instalando agora */
   li.active .rail {
-    stroke: #e3e8eb;
+    stroke: var(--dial-ring);
   }
 
   li.active .icon-wrap :global(img),
@@ -209,7 +209,7 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
   }
 
   li.done .icon-wrap {
-    border-color: rgb(10 133 124 / 28%);
+    border-color: color-mix(in srgb, var(--signal) 28%, transparent);
   }
 
   li.done .ok {
