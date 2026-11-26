@@ -1,0 +1,331 @@
+---
+import Section from "@/components/layout/Section.astro";
+import Bubble from "@/components/ui/Bubble.astro";
+import Icon from "@/components/ui/Icon.astro";
+import Tag from "@/components/ui/Tag.astro";
+import { driverExample as d } from "@/data/drivers";
+---
+
+<Section id="drivers" label="drivers-title">
+  <div class="wrap duo">
+    <div class="text">
+      <Tag icon="driver" color="var(--gpu)">
+        Drivers
+      </Tag>
+      <h2 id="drivers-title" class="h2">
+        Driver novo, <span class="soft">sem medo de quebrar.</span>
+      </h2>
+      <p class="lead">
+        Baixa o driver da placa de vídeo direto da NVIDIA ou da AMD e guarda um backup antes de
+        instalar. Deu problema? É só restaurar.
+      </p>
+    </div>
+
+    <div
+      class="demo done"
+      data-drivers
+      role="group"
+      aria-label="Exemplo de atualização do driver da placa de vídeo"
+    >
+      <div class="device">
+        <Bubble part="gpu" class="device-icon" />
+        <div>
+          <b>{d.device}</b>
+          <span>Placa de vídeo · {d.vendor}</span>
+        </div>
+      </div>
+      <div class="versions">
+        <div class="old">
+          <span>Instalado</span>
+          <b class="num">{d.installed}</b>
+        </div>
+        <Icon name="arrowRight" class="arrow" />
+        <div class="new">
+          <span>Mais recente</span>
+          <b class="num">{d.latest}</b>
+        </div>
+      </div>
+      <ol class="steps">
+        {d.steps.map((s) => (
+          <li class="done" data-ms={s.ms}>
+            <span class="mark">
+              <Icon name="check" />
+            </span>
+            <div>
+              <b>{s.title}</b>
+              <em>{s.detail}</em>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <button type="button" class="update" data-run>
+        Atualizar driver
+      </button>
+    </div>
+  </div>
+</Section>
+
+<script>
+  import "./drivers";
+</script>
+
+<style>
+  .duo {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 96px;
+    align-items: center;
+  }
+
+  .text {
+    order: 2;
+  }
+
+  .text :global(.tag) {
+    margin-bottom: 26px;
+  }
+
+  .text .lead {
+    max-width: 44ch;
+  }
+
+  .demo {
+    justify-self: center;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .device {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .device :global(.device-icon) {
+    --s: 52px;
+  }
+
+  .device b {
+    display: block;
+    font: 600 19px/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .device span {
+    font: 500 13.5px/1.3 var(--font-display);
+    color: var(--faint);
+  }
+
+  .versions {
+    display: flex;
+    align-items: flex-end;
+    gap: 22px;
+    margin: 30px 0 34px;
+  }
+
+  .versions span {
+    display: block;
+    margin-bottom: 8px;
+    font: 500 13px/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  .versions b {
+    position: relative;
+    font: 600 56px/1 var(--font-readout);
+    letter-spacing: -0.01em;
+    transition: color 0.5s;
+  }
+
+  .versions :global(.arrow) {
+    width: 48px;
+    height: 24px;
+    margin-bottom: 14px;
+    stroke-width: 1.6;
+    color: var(--tick);
+  }
+
+  /* ao terminar: a versão antiga é riscada e a nova acende em verde */
+  .old b {
+    color: var(--ink);
+  }
+
+  .old b::after {
+    content: "";
+    position: absolute;
+    inset: 52% -2px auto;
+    height: 3px;
+    border-radius: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease-in-out);
+  }
+
+  .new b {
+    color: var(--soft);
+  }
+
+  .done .old b {
+    color: var(--soft);
+  }
+
+  .done .old b::after {
+    transform: none;
+  }
+
+  .done .new b {
+    color: var(--signal);
+  }
+
+  .steps {
+    margin: 0 0 30px;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 11px 0;
+  }
+
+  li + li::before {
+    content: "";
+    position: absolute;
+    left: 19px;
+    top: -11px;
+    height: 22px;
+    border-left: 1.5px dashed #cbd3d8;
+    transition: border-color 0.4s;
+  }
+
+  li.done + li::before {
+    border-left-style: solid;
+    border-color: var(--signal-hi);
+  }
+
+  .mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--paper);
+    color: #fff;
+    transition:
+      background-color 0.35s,
+      border-color 0.35s;
+  }
+
+  .mark :global(.icon) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.2;
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 0.3s,
+      transform 0.3s;
+  }
+
+  li.done .mark {
+    border-color: var(--signal);
+    background: var(--signal);
+  }
+
+  li.done .mark :global(.icon) {
+    opacity: 1;
+    transform: none;
+  }
+
+  li.busy .mark::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 2px solid transparent;
+    border-top-color: var(--signal-hi);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  li b {
+    display: block;
+    font: 600 16px/1.25 var(--font-display);
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  li.done b,
+  li.busy b {
+    color: var(--ink);
+  }
+
+  li em {
+    font: 500 13px/1.3 var(--font-display);
+    font-style: normal;
+    color: var(--faint);
+  }
+
+  .update {
+    height: 46px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--ink);
+    color: #fff;
+    font: 600 14px/1 var(--font-display);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .update:disabled {
+    background: var(--line-2);
+    color: var(--muted);
+    cursor: default;
+  }
+
+  .done .update:disabled {
+    background: rgb(10 133 124 / 10%);
+    color: var(--signal);
+  }
+
+  @media (max-width: 980px) {
+    .duo {
+      grid-template-columns: 1fr;
+      gap: 56px;
+    }
+
+    .text {
+      order: 0;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .duo {
+      gap: 48px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .versions {
+      gap: 14px;
+      margin: 26px 0 28px;
+    }
+
+    .versions b {
+      font-size: 42px;
+    }
+
+    .versions :global(.arrow) {
+      width: 34px;
+    }
+  }
+</style>

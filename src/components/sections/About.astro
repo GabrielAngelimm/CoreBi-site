@@ -1,0 +1,231 @@
+---
+import Section from "@/components/layout/Section.astro";
+import AppTile from "@/components/ui/AppTile.astro";
+import Bubble from "@/components/ui/Bubble.astro";
+import { facts, replacedTools } from "@/data/about";
+import { parts } from "@/data/parts";
+import { linePath, polar } from "@/lib/geometry";
+
+// Os programas ficam num anel de raio 200, num quadro de 500 × 500.
+const nodes = replacedTools.map((tool, i) => {
+  const angle = -90 + i * (360 / replacedTools.length);
+  const p = polar(angle, 200);
+  return {
+    ...tool,
+    color: parts[tool.part].color,
+    x: 50 + (p.x / 500) * 100,
+    y: 50 + (p.y / 500) * 100,
+    spoke: linePath(angle, 156, 60),
+  };
+});
+---
+
+<Section id="sobre" label="sobre-title">
+  <div class="wrap layout">
+    <div class="text">
+      <h2 id="sobre-title" class="h2">
+        Um app no lugar de seis. <span class="soft">Sem pilha de programas.</span>
+      </h2>
+      <p>
+        Em vez de um programa para cada coisa, como temperatura, disco, FPS e drivers, o CoreBi
+        junta tudo num app só.
+      </p>
+      <p>Roda inteiro no seu PC: sem servidor, sem conta e sem anúncio. E o código é aberto.</p>
+    </div>
+    <div
+      class="hub"
+      role="img"
+      aria-label={`${replacedTools.map((t) => t.label).join(", ")} reunidos no CoreBi`}
+    >
+      <svg class="lines" viewBox="-250 -250 500 500" aria-hidden="true">
+        <circle r="200" class="ring"></circle>
+        <circle r="118" class="ring inner"></circle>
+        <circle r="232" class="ticks"></circle>
+        {nodes.map((n) => (
+          <path d={n.spoke} class="spoke" />
+        ))}
+      </svg>
+      {nodes.map((n, i) => (
+        <div class="node" style={{ "--x": `${n.x}%`, "--y": `${n.y}%`, "--i": i }}>
+          <Bubble part={n.part} icon={n.icon} class="node-bubble" />
+          <span>{n.label}</span>
+        </div>
+      ))}
+      <AppTile size="md" class="core" />
+    </div>
+  </div>
+  <div class="wrap">
+    <dl class="facts" data-reveal>
+      {facts.map((f) => (
+        <div>
+          <dt class="num">{f.value}</dt>
+          <dd>{f.text}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</Section>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 72px;
+    align-items: center;
+  }
+
+  .text p {
+    max-width: 52ch;
+    margin: 20px 0 0;
+    font-size: 17.5px;
+    color: var(--muted);
+  }
+
+  .hub {
+    position: relative;
+    justify-self: center;
+    width: min(520px, 100%);
+    aspect-ratio: 1;
+  }
+
+  .lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .lines circle {
+    fill: none;
+  }
+
+  .ring {
+    stroke: #d3dbe0;
+  }
+
+  .ring.inner {
+    stroke: #e3e8eb;
+  }
+
+  .ticks {
+    stroke: #d8dfe3;
+    stroke-width: 6;
+    stroke-dasharray: 1 11.1;
+    transform-origin: center;
+    animation: spin 240s linear infinite;
+  }
+
+  .spoke {
+    stroke: var(--tick);
+    stroke-width: 1.4;
+    stroke-dasharray: 1.5 8;
+    stroke-linecap: round;
+    opacity: 0.7;
+    animation: flow 1.8s linear infinite reverse;
+  }
+
+  .node {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    z-index: 1;
+    translate: -50% -50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .node :global(.node-bubble) {
+    animation: bob 7s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -1.15s);
+    --amp: -5px;
+  }
+
+  .node span {
+    padding: 3px 6px;
+    border-radius: 6px;
+    background: var(--bg);
+    font: 500 13.5px/1 var(--font-display);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .hub :global(.core) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 88px 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts div {
+    padding: 28px 28px 0 0;
+  }
+
+  .facts div + div {
+    padding-left: 28px;
+    border-left: 1px solid var(--line);
+  }
+
+  .facts dt {
+    font: 600 64px/1 var(--font-readout);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .facts dd {
+    max-width: 24ch;
+    margin: 12px 0 0;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
+  @media (max-width: 980px) {
+    .layout {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+
+    .facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .facts div:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .facts div:nth-child(n + 3) {
+      margin-top: 12px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .node :global(.node-bubble) {
+      --s: 50px;
+    }
+
+    .node span {
+      font-size: 12px;
+    }
+
+    .facts dt {
+      font-size: 48px;
+    }
+
+    .facts div,
+    .facts div + div {
+      padding: 22px 14px 0 0;
+      border-left: 0;
+    }
+  }
+</style>

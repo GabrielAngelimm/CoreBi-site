@@ -1,0 +1,277 @@
+---
+import AppTile from "@/components/ui/AppTile.astro";
+import Icon from "@/components/ui/Icon.astro";
+import type { IconName } from "@/components/ui/icons";
+import { site } from "@/config/site";
+import { formatSize } from "@/lib/format";
+import type { Release } from "@/lib/release";
+
+interface Props {
+  release: Release;
+}
+
+interface Card {
+  href: string;
+  icon: IconName;
+  title: string;
+  detail: string;
+  arrow: IconName;
+  tone: "ink" | "tint";
+  external: boolean;
+}
+
+const { release } = Astro.props;
+
+const cards: Card[] = [
+  {
+    href: release.installer.url,
+    icon: "download",
+    title: "Instalador para Windows",
+    detail: `Versão ${release.version} · ${formatSize(release.installer.sizeBytes)}`,
+    arrow: "arrowDown",
+    tone: "ink",
+    external: false,
+  },
+  {
+    href: site.links.code,
+    icon: "github",
+    title: "Código no GitHub",
+    detail: "Aberto, licença MIT",
+    arrow: "arrowUpRight",
+    tone: "tint",
+    external: true,
+  },
+];
+
+const rings = [420, 620, 820];
+---
+
+<section id="baixar" class="final" aria-labelledby="final-title">
+  <div class="rings" aria-hidden="true">
+    {rings.map((r) => (
+      <i style={{ "--r": `${r}px` }} />
+    ))}
+    <svg viewBox="-310 -310 620 620">
+      <circle r="300"></circle>
+    </svg>
+  </div>
+
+  <div class="wrap content" data-reveal>
+    <AppTile size="sm" />
+    <h2 id="final-title" class="h2">
+      Abra uma vez e veja <span class="soft">o seu PC por inteiro.</span>
+    </h2>
+    <div class="cards">
+      {cards.map((c) => (
+        <a
+          class:list={["card", c.arrow]}
+          href={c.href}
+          {...(c.external ? { target: "_blank", rel: "noopener" } : {})}
+        >
+          <span class:list={["badge", c.tone]}>
+            <Icon name={c.icon} />
+          </span>
+          <span class="text">
+            <b>{c.title}</b>
+            <small>{c.detail}</small>
+          </span>
+          <Icon name={c.arrow} class="arrow" />
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .final {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 88vh;
+    margin-top: 40px;
+    padding: 120px 0 140px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* textura de pontos, apagando nas bordas */
+  .final::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image: radial-gradient(circle at 1px 1px, #d9e0e4 1px, transparent 1.2px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 80%);
+  }
+
+  .rings {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: -1;
+    width: 0;
+    height: 0;
+  }
+
+  .rings i {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--r);
+    height: var(--r);
+    border: 1px solid #d6dee2;
+    border-radius: 50%;
+    translate: -50% -50%;
+  }
+
+  .rings i:nth-child(3) {
+    border-color: #e3e8eb;
+  }
+
+  .rings svg {
+    position: absolute;
+    top: -310px;
+    left: -310px;
+    width: 620px;
+    height: 620px;
+    overflow: visible;
+    animation: spin 300s linear infinite;
+  }
+
+  .rings circle {
+    fill: none;
+    stroke: #c9d2d7;
+    stroke-width: 6;
+    stroke-dasharray: 1 14.7;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .content :global(.tile) {
+    margin-bottom: 34px;
+  }
+
+  .h2 {
+    max-width: 14ch;
+  }
+
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 44px;
+  }
+
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 270px;
+    padding: 12px 18px 12px 12px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgb(255 255 255 / 75%);
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+    text-decoration: none;
+    backdrop-filter: blur(8px);
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s,
+      border-color 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--line-2);
+    box-shadow: var(--shadow-md);
+  }
+
+  .badge {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+  }
+
+  .badge :global(svg) {
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.7;
+  }
+
+  .ink {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .tint {
+    background: var(--tint);
+    color: var(--ink);
+  }
+
+  .text b {
+    display: block;
+    color: var(--ink);
+    font: 600 15.5px/1.2 var(--font-display);
+  }
+
+  .text small {
+    color: var(--faint);
+    font: 500 13px/1.3 var(--font-display);
+  }
+
+  .card :global(.arrow) {
+    width: 18px;
+    height: 18px;
+    margin-left: auto;
+    color: var(--faint);
+    stroke-width: 1.7;
+    transition:
+      transform 0.2s,
+      color 0.2s;
+  }
+
+  .card:hover :global(.arrow) {
+    color: var(--ink);
+  }
+
+  .arrowDown:hover :global(.arrow) {
+    transform: translateY(2px);
+  }
+
+  .arrowUpRight:hover :global(.arrow) {
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 700px) {
+    .final {
+      min-height: 0;
+      padding: 104px 0 120px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .cards {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      max-width: 330px;
+      margin-inline: auto;
+    }
+
+    .card {
+      min-width: 0;
+    }
+  }
+</style>

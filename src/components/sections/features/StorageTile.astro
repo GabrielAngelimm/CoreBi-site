@@ -1,0 +1,82 @@
+---
+import { features } from "@/data/features";
+import FeatureTile from "./FeatureTile.astro";
+
+const life = 97;
+const path = "M30 140 A80 80 0 1 1 170 140";
+---
+
+<FeatureTile {...features.storage} part="storage" span={4}>
+  <div class="gauge">
+    <svg viewBox="0 0 200 160" role="img" aria-label={`Vida útil de ${life} %`}>
+      <defs>
+        <mask id="storage-life" maskUnits="userSpaceOnUse">
+          <path class="reach" d={path} pathLength="100" style={`--reach:${life} 100`}></path>
+        </mask>
+      </defs>
+      <path class="track" d={path}></path>
+      <path class="value" d={path} mask="url(#storage-life)"></path>
+      <text x="100" y="112" class="big">
+        {life}
+        <tspan dx="3">%</tspan>
+      </text>
+      <text x="100" y="136" class="caption">
+        vida útil restante
+      </text>
+    </svg>
+  </div>
+</FeatureTile>
+
+<style>
+  .gauge {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding: 14px 0 26px;
+  }
+
+  svg {
+    width: 190px;
+    height: 150px;
+  }
+
+  path {
+    fill: none;
+    stroke-width: 14;
+    stroke-dasharray: 3 3;
+  }
+
+  .track {
+    stroke: var(--line);
+  }
+
+  .value {
+    stroke: var(--storage);
+  }
+
+  /* a máscara corta os segmentos azuis na vida útil restante */
+  .reach {
+    stroke: #fff;
+    stroke-width: 20;
+    stroke-dasharray: var(--reach);
+  }
+
+  text {
+    text-anchor: middle;
+  }
+
+  .big {
+    font: 600 48px var(--font-readout);
+    fill: var(--ink);
+  }
+
+  .big tspan {
+    font-size: 20px;
+    fill: var(--faint);
+  }
+
+  .caption {
+    font: 500 13px var(--font-display);
+    fill: var(--faint);
+  }
+</style>

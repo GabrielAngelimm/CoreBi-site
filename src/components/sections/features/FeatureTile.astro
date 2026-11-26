@@ -1,0 +1,111 @@
+---
+/** Cartão do mosaico de recursos: rótulo, título, texto e a demonstração no espaço que sobra. */
+import Tag from "@/components/ui/Tag.astro";
+import type { IconName } from "@/components/ui/icons";
+import type { Part } from "@/data/parts";
+
+interface Props {
+  tag: string;
+  title: string;
+  text: string;
+  part?: Part;
+  icon?: IconName;
+  color?: string;
+  span: 4 | 5 | 7;
+  dark?: boolean;
+  class?: string;
+}
+
+const { tag, title, text, part, icon, color, span, dark = false, class: className } = Astro.props;
+---
+
+<article class:list={["tile", `span-${span}`, { dark }, className]}>
+  <div class="head">
+    <Tag part={part} icon={icon} color={color} tone={dark ? "dark" : "light"}>
+      {tag}
+    </Tag>
+    <h3>{title}</h3>
+    <p>{text}</p>
+    <slot name="head" />
+  </div>
+  <slot />
+</article>
+
+<style>
+  .tile {
+    --pad: 30px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .head {
+    padding: 28px var(--pad) 0;
+  }
+
+  h3 {
+    margin: 12px 0 8px;
+    font: 600 24px/1.15 var(--font-display);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  p {
+    max-width: 44ch;
+    margin: 0;
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  .span-7 {
+    grid-column: span 7;
+  }
+
+  .span-5 {
+    grid-column: span 5;
+  }
+
+  .span-4 {
+    grid-column: span 4;
+  }
+
+  .dark {
+    border-color: var(--night);
+    background: var(--night);
+    color: var(--night-fg);
+  }
+
+  .dark h3 {
+    color: var(--night-fg);
+  }
+
+  .dark p {
+    color: var(--night-muted);
+  }
+
+  @media (max-width: 980px) {
+    .tile {
+      grid-column: span 6;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .tile {
+      grid-column: span 12;
+    }
+
+    .tile {
+      --pad: 22px;
+    }
+
+    .head {
+      padding-top: 24px;
+    }
+  }
+</style>

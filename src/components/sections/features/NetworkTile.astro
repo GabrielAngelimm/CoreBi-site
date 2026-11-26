@@ -1,0 +1,99 @@
+---
+import { features } from "@/data/features";
+import FeatureTile from "./FeatureTile.astro";
+
+// 24 barras de download e 8 de upload, com alturas iniciais fixas (o script faz elas variarem).
+const bars = Array.from({ length: 32 }, (_, i) => ({
+  upload: i >= 24,
+  height: i >= 24 ? 30 + ((i * 37) % 35) : 40 + ((i * 53) % 60),
+}));
+
+const speeds = [
+  { label: "Download", value: 486, color: "var(--net)" },
+  { label: "Upload", value: 212, color: "var(--signal-hi)" },
+] as const;
+---
+
+<FeatureTile {...features.network} part="net" span={4}>
+  <div class="bars" data-network aria-hidden="true">
+    {bars.map((b) => (
+      <i class:list={{ up: b.upload }} style={`height:${b.height}%`} />
+    ))}
+  </div>
+  <dl class="speeds">
+    {speeds.map((s) => (
+      <div>
+        <dt style={`--c:${s.color}`}>
+          <i />
+          {s.label}
+        </dt>
+        <dd class="num">
+          <span data-count={s.value}>{s.value}</span>
+          <small>Mbps</small>
+        </dd>
+      </div>
+    ))}
+  </dl>
+</FeatureTile>
+
+<script>
+  import "./network";
+</script>
+
+<style>
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    align-items: end;
+    gap: 3px;
+    height: 56px;
+    margin: 22px var(--pad) 0;
+  }
+
+  .bars i {
+    border-radius: 2px 2px 0 0;
+    background: var(--net);
+    opacity: 0.85;
+    transition: height 0.5s var(--ease-out);
+  }
+
+  .bars i.up {
+    background: var(--signal-hi);
+  }
+
+  .speeds {
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+    margin: auto 0 0;
+    padding: 24px var(--pad) var(--pad);
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 10px;
+    font: 500 13px/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  dt i {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--c);
+  }
+
+  dd {
+    margin: 0;
+    font: 600 56px/0.9 var(--font-readout);
+    color: var(--ink);
+  }
+
+  small {
+    margin-left: 3px;
+    font: 500 16px/1 var(--font-display);
+    color: var(--faint);
+  }
+</style>

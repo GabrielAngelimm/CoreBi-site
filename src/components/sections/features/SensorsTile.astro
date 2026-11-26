@@ -1,0 +1,205 @@
+---
+import { features } from "@/data/features";
+import FeatureTile from "./FeatureTile.astro";
+
+// Gráfico de 600 × 170: 60 pontos, um por segundo, entre 46 °C e 72 °C.
+const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
+---
+
+<FeatureTile {...features.sensors} part="cpu" span={7}>
+  <div
+    class="live"
+    data-sensors
+    role="group"
+    aria-label="Exemplo da temperatura do processador no último minuto"
+  >
+    <div class="top">
+      <span class="led"></span>
+      <span>Ao vivo</span>
+      <span class="now">
+        <b class="num" data-now>
+          61,4
+        </b>{" "}
+        °C
+      </span>
+      <span class="range">
+        mín.{" "}
+        <b class="num" data-min>
+          54,0
+        </b>{" "}
+        · máx.{" "}
+        <b class="num" data-max>
+          68,2
+        </b>
+      </span>
+    </div>
+    <svg class="trace" viewBox="0 0 600 170" preserveAspectRatio="none" aria-hidden="true">
+      <path class="grid" d={grid}></path>
+      <path class="area" data-area></path>
+      <path class="line" data-line></path>
+      <circle class="tip" r="4.5" cx="600" data-tip></circle>
+    </svg>
+    <div class="axis">
+      <span>−60 s</span>
+      <span>−30 s</span>
+      <span>agora</span>
+    </div>
+    <dl class="rows">
+      <div>
+        <dt>Tctl/Tdie</dt>
+        <dd class="num" data-row="die">
+          61,4 °C
+        </dd>
+      </div>
+      <div>
+        <dt>CCD1</dt>
+        <dd class="num" data-row="ccd">
+          58,9 °C
+        </dd>
+      </div>
+      <div>
+        <dt>Núcleo mais quente</dt>
+        <dd class="num" data-row="clock">
+          4.650 MHz
+        </dd>
+      </div>
+    </dl>
+  </div>
+</FeatureTile>
+
+<script>
+  import "./sensors";
+</script>
+
+<style>
+  .live {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    margin: 22px var(--pad) var(--pad);
+    padding: 18px 20px 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fbfcfc;
+  }
+
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    font: 500 13px/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  .led {
+    align-self: center;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--signal-hi);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .now {
+    margin-left: 8px;
+    font: 500 16px/1 var(--font-display);
+  }
+
+  .now b {
+    font: 600 34px/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  .range {
+    margin-left: auto;
+  }
+
+  .range b {
+    font: 600 14px/1 var(--font-readout);
+    color: var(--text);
+  }
+
+  .trace {
+    width: 100%;
+    height: 150px;
+    margin-top: 12px;
+    overflow: visible;
+  }
+
+  .grid {
+    fill: none;
+    stroke: var(--line);
+    stroke-dasharray: 3 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .area {
+    fill: var(--cpu-soft);
+  }
+
+  .line {
+    fill: none;
+    stroke: var(--cpu);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .tip {
+    fill: var(--cpu);
+    stroke: #fff;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font: 500 11.5px/1 var(--font-readout);
+    color: var(--faint);
+  }
+
+  .rows {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 16px 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .rows div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 12px 12px 0 0;
+  }
+
+  .rows div + div {
+    padding-left: 14px;
+    border-left: 1px solid var(--line);
+  }
+
+  .rows dt {
+    font: 500 12.5px/1.2 var(--font-display);
+    color: var(--faint);
+  }
+
+  .rows dd {
+    margin: 0;
+    font: 600 19px/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  @media (max-width: 700px) {
+    .rows {
+      grid-template-columns: 1fr;
+    }
+
+    .rows div,
+    .rows div + div {
+      padding: 10px 0 0;
+      border-left: 0;
+    }
+  }
+</style>

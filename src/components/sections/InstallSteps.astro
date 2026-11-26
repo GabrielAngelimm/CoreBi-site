@@ -1,0 +1,374 @@
+---
+import Section from "@/components/layout/Section.astro";
+import CopyButton from "@/components/ui/CopyButton.astro";
+import { installerExtras, installSteps } from "@/data/install";
+import { shortHash } from "@/lib/format";
+import type { Release } from "@/lib/release";
+
+interface Props {
+  release: Release;
+}
+
+const { installer } = Astro.props.release;
+const hashCommand = `Get-FileHash .\\${installer.name} -Algorithm SHA256`;
+const [check, warning, extras] = installSteps;
+---
+
+<Section id="instalar" label="install-title" space="roomy">
+  <div class="wrap">
+    <div class="center">
+      <h2 id="install-title" class="h2">
+        Pronto em um minuto.
+      </h2>
+      <p class="lead">Três passos e o CoreBi está aberto no seu PC.</p>
+    </div>
+
+    <ol class="steps" data-reveal>
+      <li class="step">
+        <span class="no num">1</span>
+        <h3>{check.title}</h3>
+        <p>{check.text}</p>
+        <div class="mock">
+          <div class="code">
+            <code>
+              <span class="prompt">PS&gt;</span> Get-FileHash .\{installer.name}
+            </code>
+            <CopyButton text={hashCommand} tone="dark" label="Copiar o comando" />
+          </div>
+          {installer.sha256 && (
+            <div class="hash">
+              <span>Tem que dar</span>
+              <code title={installer.sha256}>{shortHash(installer.sha256)}</code>
+              <CopyButton text={installer.sha256} label="Copiar o SHA256 esperado" />
+            </div>
+          )}
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="no num">2</span>
+        <h3>{warning.title}</h3>
+        <p>{warning.text}</p>
+        <div class="mock smartscreen" aria-hidden="true">
+          <b>O Windows protegeu o computador</b>
+          <i></i>
+          <i class="short"></i>
+          <span class="more">Mais informações</span>
+          <span class="run">Executar assim mesmo</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="no num">3</span>
+        <h3>{extras.title}</h3>
+        <p>{extras.text}</p>
+        <ul class="mock extras" aria-label="Extras do instalador">
+          {installerExtras.map((x) => (
+            <li>
+              <span class="switch" aria-hidden="true" />
+              <b>{x.name}</b>
+              <em>{x.detail}</em>
+            </li>
+          ))}
+        </ul>
+      </li>
+    </ol>
+  </div>
+</Section>
+
+<style>
+  .steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 48px;
+    margin: 88px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* a linha tracejada que liga os números, com um ponto que corre por ela */
+  .steps::before {
+    content: "";
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    left: 28px;
+    border-top: 1.5px dashed var(--rule);
+  }
+
+  .steps::after {
+    content: "";
+    position: absolute;
+    top: 24.5px;
+    left: 28px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--signal-hi);
+    box-shadow: 0 0 0 4px rgb(39 201 188 / 18%);
+    animation: travel 6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes travel {
+    0% {
+      left: 28px;
+      opacity: 0;
+    }
+
+    8%,
+    92% {
+      opacity: 1;
+    }
+
+    100% {
+      left: calc(100% - 36px);
+      opacity: 0;
+    }
+  }
+
+  .step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .no {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 18px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: var(--shadow-md);
+    color: var(--ink);
+    font: 600 22px/1 var(--font-readout);
+  }
+
+  .step h3 {
+    margin: 0;
+    font: 600 23px/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .step p {
+    max-width: 36ch;
+    min-height: 3em;
+    margin: 0;
+    color: var(--muted);
+    font-size: 15.5px;
+  }
+
+  .mock {
+    margin-top: 22px;
+    border-radius: var(--radius-md);
+  }
+
+  /* passo 1: comando e hash */
+  .code {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 10px 14px 16px;
+    border-radius: 14px;
+    background: var(--night);
+  }
+
+  .code code {
+    flex: 1;
+    min-width: 0;
+    color: var(--night-fg);
+    font: 400 12.5px/1.6 var(--font-mono);
+    overflow-wrap: anywhere;
+  }
+
+  .prompt {
+    color: var(--signal-hi);
+  }
+
+  .hash {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+  }
+
+  .hash span {
+    color: var(--faint);
+    font: 500 12.5px/1 var(--font-display);
+  }
+
+  .hash code {
+    flex: 1;
+    min-width: 0;
+    color: var(--ink);
+    font: 500 13px/1 var(--font-mono);
+  }
+
+  /* passo 2: o aviso do SmartScreen, com os dois cliques em destaque */
+  .smartscreen {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 18px 16px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .smartscreen b {
+    margin-bottom: 4px;
+    color: var(--ink);
+    font: 600 15px/1.2 var(--font-display);
+  }
+
+  .smartscreen i {
+    display: block;
+    width: 92%;
+    height: 7px;
+    border-radius: 4px;
+    background: var(--tint);
+  }
+
+  .smartscreen i.short {
+    width: 64%;
+  }
+
+  .more,
+  .run {
+    font: 600 13px/1 var(--font-display);
+    animation: highlight 4s infinite;
+  }
+
+  .more {
+    align-self: flex-start;
+    margin: 6px 0 0 -6px;
+    padding: 5px 6px;
+    border-radius: 8px;
+    color: var(--signal);
+  }
+
+  .run {
+    align-self: flex-end;
+    padding: 9px 14px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    animation-delay: 2s;
+  }
+
+  @keyframes highlight {
+    0%,
+    10%,
+    50%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(39 201 188 / 0%);
+    }
+
+    20%,
+    40% {
+      box-shadow: 0 0 0 3px rgb(39 201 188 / 35%);
+    }
+  }
+
+  /* passo 3: os extras, já marcados */
+  .extras {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .extras li {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+  }
+
+  .extras b {
+    color: var(--ink);
+    font: 600 14.5px/1 var(--font-display);
+  }
+
+  .extras em {
+    justify-self: end;
+    color: var(--faint);
+    font: 500 13px/1 var(--font-display);
+    font-style: normal;
+  }
+
+  .switch {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    border-radius: var(--radius-pill);
+    background: var(--signal);
+  }
+
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  @media (max-width: 860px) {
+    .steps {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      margin-top: 56px;
+    }
+
+    .steps::before {
+      top: 28px;
+      right: auto;
+      bottom: 28px;
+      border-top: 0;
+      border-left: 1.5px dashed var(--rule);
+    }
+
+    .steps::after {
+      display: none;
+    }
+
+    .step {
+      padding-left: 80px;
+    }
+
+    .no {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .step p {
+      min-height: 0;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hash code {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+</style>
