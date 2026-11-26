@@ -18,7 +18,8 @@ interface Props {
 }
 
 const { title = site.title, description = site.description } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// com build.format "file" o caminho vem como /index.html; o endereço público não tem extensão
+const canonical = new URL(Astro.url.pathname.replace(/(index)?\.html$/, ""), Astro.site);
 ---
 
 <!doctype html>
