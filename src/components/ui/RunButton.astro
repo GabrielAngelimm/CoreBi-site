@@ -1,0 +1,46 @@
+---
+/** Botão pequeno das demonstrações ("Rodar", "Iniciar teste"). */
+import type { HTMLAttributes } from "astro/types";
+import Icon from "./Icon.astro";
+
+type Props = HTMLAttributes<"button"> & { play?: boolean };
+
+const { play = true, class: className, ...rest } = Astro.props;
+---
+
+<button type="button" class:list={["run", className]} {...rest}>
+  {play && <Icon name="play" />}
+  <span data-label>
+    <slot />
+  </span>
+</button>
+
+<style>
+  .run {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px 0 14px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--ink);
+    color: #fff;
+    font: 600 14px/1 var(--font-display);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .run :global(.icon) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .run:disabled {
+    background: var(--line-2);
+    color: var(--muted);
+    cursor: default;
+  }
+</style>

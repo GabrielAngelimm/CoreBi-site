@@ -1,0 +1,88 @@
+/*
+ * Tokens de design do CoreBi.
+ * Cores, tipos, sombras e movimento vêm daqui. Componentes não usam valores soltos.
+ */
+:root {
+  /* superfícies */
+  --bg: #f5f7f8;
+  --paper: #ffffff;
+  --tint: #eef2f4;
+
+  /* texto */
+  --ink: #0f1a20;
+  --ink-2: #1e2a31;
+  --text: #24313a;
+  --muted: #55636b;
+  --faint: #68737a; /* 4,5:1 sobre o fundo, para texto pequeno */
+  --soft: #848f96; /* 3:1 sobre o fundo, só para texto grande */
+
+  /* linhas */
+  --line: #e2e7ea;
+  --line-2: #d2d9de;
+  --rule: #c3cdd3;
+  --rule-soft: #dce3e7;
+  --tick: #aab5bb;
+
+  /* marca */
+  --signal: #0a857c;
+  --signal-hi: #27c9bc;
+  --signal-soft: #ddf3f1;
+  --signal-text: #087a72; /* o verde da marca escurecido para texto corrido */
+  --danger: #c8392e;
+  --danger-soft: #fbe9e7;
+  --success: #2f8f4e;
+
+  /* cor de cada peça, como no app */
+  --cpu: #17703a;
+  --gpu: #c55f1d;
+  --memory: #8a66d9;
+  --storage: #1f5fa8;
+  --board: #9a7430;
+  --net: #8c7a00;
+  --cpu-soft: #e3f1e8;
+  --gpu-soft: #fbeadf;
+
+  /* superfícies escuras (OverlayBi, código) */
+  --night: #0e1214;
+  --night-2: #15191c;
+  --night-line: #2a2f33;
+  --night-fg: #e6eaec;
+  --night-muted: #a3aaae;
+  --night-faint: #80878b;
+
+  /* tipografia */
+  --font-display: "Barlow", "Bahnschrift", "Segoe UI", sans-serif;
+  --font-readout: "Barlow Semi Condensed", "Bahnschrift SemiCondensed", "Barlow", sans-serif;
+  --font-text: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  /* raios */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* sombras */
+  --shadow-sm: 0 1px 2px rgb(15 26 32 / 6%), 0 2px 6px rgb(15 26 32 / 5%);
+  --shadow-md: 0 2px 4px rgb(15 26 32 / 4%), 0 10px 28px -6px rgb(15 26 32 / 12%);
+  --shadow-icon:
+    0 1px 0 #fff inset, 0 2px 4px rgb(15 26 32 / 6%), 0 26px 56px -18px rgb(15 26 32 / 34%);
+
+  /* layout */
+  --wrap: 1280px;
+  --gutter: 24px;
+  --nav-height: 60px;
+
+  /* movimento */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.6, 0, 0.4, 1);
+  --ease-spring: cubic-bezier(0.3, 1.6, 0.5, 1);
+
+  color-scheme: light;
+}
+
+@media (max-width: 560px) {
+  :root {
+    --gutter: 16px;
+  }
+}

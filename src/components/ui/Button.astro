@@ -1,0 +1,76 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Icon from "./Icon.astro";
+import type { IconName } from "./icons";
+
+type Props = HTMLAttributes<"a"> & {
+  variant?: "ink" | "line";
+  size?: "md" | "sm";
+  icon?: IconName;
+  external?: boolean;
+};
+
+const { variant = "ink", size = "md", icon, external, class: className, ...rest } = Astro.props;
+const target = external ? { target: "_blank", rel: "noopener" } : {};
+---
+
+<a class:list={["btn", variant, size, className]} {...target} {...rest}>
+  {icon && <Icon name={icon} />}
+  <slot />
+</a>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 26px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    font: 600 15px/1 var(--font-display);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      transform 0.15s;
+  }
+
+  .btn :global(.icon) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ink {
+    background: var(--ink);
+    color: #fff;
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 12%) inset,
+      0 6px 16px -6px rgb(15 26 32 / 50%);
+  }
+
+  .ink:hover {
+    background: var(--ink-2);
+    transform: translateY(-1px);
+  }
+
+  .line {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--line-2);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .line:hover {
+    border-color: var(--faint);
+  }
+
+  .sm {
+    height: 40px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+</style>

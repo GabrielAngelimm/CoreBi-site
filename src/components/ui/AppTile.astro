@@ -1,0 +1,55 @@
+---
+/** O ícone do app num azulejo branco com borda dupla, como na hero. */
+import Logo from "./Logo.astro";
+
+interface Props {
+  size?: "lg" | "md" | "sm";
+  class?: string;
+}
+
+const { size = "md", class: className } = Astro.props;
+---
+
+<div class:list={["tile", size, className]}>
+  <Logo />
+</div>
+
+<style>
+  .tile {
+    --s: 112px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    border-radius: calc(var(--s) * 0.27);
+    background: var(--paper);
+    box-shadow:
+      var(--shadow-icon),
+      0 0 0 calc(var(--s) * 0.065) rgb(255 255 255 / 55%),
+      0 0 0 calc(var(--s) * 0.065 + 1px) var(--line);
+  }
+
+  .tile :global(.logo) {
+    width: 61%;
+    height: 61%;
+  }
+
+  .lg {
+    --s: 156px;
+  }
+
+  .sm {
+    --s: 96px;
+  }
+
+  @media (max-width: 560px) {
+    .lg {
+      --s: 104px;
+    }
+
+    .md {
+      --s: 84px;
+    }
+  }
+</style>

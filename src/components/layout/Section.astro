@@ -1,0 +1,44 @@
+---
+/**
+ * Seção da página. No desktop cada seção ocupa a tela inteira, com o conteúdo centrado;
+ * no celular ela tem a altura do conteúdo, para não sobrar tela vazia.
+ */
+interface Props {
+  id: string;
+  label?: string;
+  space?: "normal" | "roomy";
+  class?: string;
+}
+
+const { id, label, space = "normal", class: className } = Astro.props;
+---
+
+<section id={id} class:list={["section", space, className]} aria-labelledby={label}>
+  <slot />
+</section>
+
+<style>
+  .section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-block: 120px;
+  }
+
+  .roomy {
+    padding-block: 160px;
+  }
+
+  @media (max-width: 700px) {
+    .section {
+      min-height: 0;
+      padding-block: 96px;
+    }
+
+    .roomy {
+      padding-block: 104px;
+    }
+  }
+</style>

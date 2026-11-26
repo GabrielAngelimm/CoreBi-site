@@ -1,0 +1,43 @@
+---
+/** Bolha branca com o ícone de uma peça na cor dela. */
+import { parts, type Part } from "@/data/parts";
+import Icon from "./Icon.astro";
+import type { IconName } from "./icons";
+
+interface Props {
+  part?: Part | undefined;
+  icon?: IconName | undefined;
+  color?: string | undefined;
+  class?: string;
+}
+
+const { part, class: className } = Astro.props;
+const icon = Astro.props.icon ?? (part ? parts[part].icon : "cpu");
+const color = Astro.props.color ?? (part ? parts[part].color : "var(--signal)");
+---
+
+<span class:list={["bubble", className]} style={`--c:${color}`}>
+  <Icon name={icon} />
+  <slot />
+</span>
+
+<style>
+  .bubble {
+    --s: 64px;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: var(--s);
+    height: var(--s);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: var(--shadow-md);
+    color: var(--c);
+  }
+
+  .bubble :global(.icon) {
+    width: 47%;
+    height: 47%;
+  }
+</style>

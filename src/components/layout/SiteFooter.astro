@@ -1,0 +1,78 @@
+---
+import Logo from "@/components/ui/Logo.astro";
+import { footerLinks } from "@/config/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <a class="brand" href="#inicio">
+      <Logo />
+      CoreBi
+    </a>
+    <nav aria-label="Links">
+      {footerLinks.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener">
+          {link.label}
+        </a>
+      ))}
+    </nav>
+    <span class="credit">Feito por Gabriel · {year}</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: 36px 44px;
+  }
+
+  .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 32px;
+    font: 500 14px/1.4 var(--font-display);
+    color: var(--faint);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 600 17px/1 var(--font-display);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .brand :global(.logo) {
+    width: 22px;
+    height: 22px;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+  }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--ink);
+  }
+
+  .credit {
+    margin-left: auto;
+  }
+
+  @media (max-width: 700px) {
+    .credit {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+</style>

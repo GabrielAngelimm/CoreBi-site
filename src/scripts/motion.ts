@@ -1,0 +1,71 @@
+/** Ferramentas de animação usadas pelos scripts das seções. */
+
+export const prefersReducedMotion = (): boolean =>
+  matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Chama `callback` uma vez, quando `el` aparece na tela. */
+export function onceVisible(el: Element, callback: () => void, threshold = 0.4): void {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        observer.disconnect();
+        callback();
+      }
+    },
+    { threshold },
+  );
+  observer.observe(el);
+}
+
+/**
+ * Repete `tick` a cada `ms` só enquanto `el` está na tela e a aba está aberta.
+ * Assim nenhuma animação gasta CPU fora da vista.
+ */
+export function loopWhileVisible(el: Element, tick: () => void, ms: number): void {
+  if (prefersReducedMotion()) return;
+  let timer: number | undefined;
+  let visible = false;
+  const sync = () => {
+    const run = visible && document.visibilityState === "visible";
+    if (run && timer === undefined) timer = window.setInterval(tick, ms);
+    if (!run && timer !== undefined) {
+      window.clearInterval(timer);
+      timer = undefined;
+    }
+  };
+  new IntersectionObserver((entries) => {
+    visible = entries.some((e) => e.isIntersecting);
+    sync();
+  }).observe(el);
+  document.addEventListener("visibilitychange", sync);
+}
+
+/** Anima um número de 0 até o valor, com desaceleração. */
+export function tween(duration: number, frame: (progress: number) => void): Promise<void> {
+  return new Promise((resolve) => {
+    if (prefersReducedMotion()) {
+      frame(1);
+      resolve();
+      return;
+    }
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      frame(1 - Math.pow(1 - t, 3));
+      if (t < 1) requestAnimationFrame(step);
+      else resolve();
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+export const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+
+/** Busca um elemento obrigatório dentro de `root`; falha cedo se a marcação mudar. */
+export function required<T extends Element = HTMLElement>(root: ParentNode, selector: string): T {
+  const el = root.querySelector<T>(selector);
+  if (!el) throw new Error(`Elemento não encontrado: ${selector}`);
+  return el;
+}
+
+export const random = (min: number, max: number) => min + Math.random() * (max - min);
