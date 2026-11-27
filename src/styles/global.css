@@ -24,7 +24,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 400 16px/1.6 var(--font-text);
+  font: 400 var(--text-base)/1.6 var(--font-text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -77,10 +77,18 @@ button {
   border: 0;
 }
 
+/* texto corrido sem palavra sozinha na última linha */
+p,
+li,
+dd,
+summary {
+  text-wrap: pretty;
+}
+
 /* títulos e textos de seção */
 .h2 {
   margin: 0;
-  font: 600 clamp(36px, 4.6vw, 70px) / 1 var(--font-display);
+  font: 500 var(--display-md) / 1 var(--font-display);
   letter-spacing: -0.03em;
   color: var(--ink);
   text-wrap: balance;
@@ -92,8 +100,8 @@ button {
 
 .lead {
   max-width: 58ch;
-  margin: 22px 0 0;
-  font-size: 20px;
+  margin: 24px 0 0;
+  font-size: var(--text-xl);
   color: var(--muted);
   text-wrap: pretty;
 }

@@ -26,7 +26,7 @@ const hash = installer.sha256;
       <p class="lead">Do download ao app aberto, sem nada escondido no caminho.</p>
     </div>
 
-    <div class="layout" data-install style={`--step-ms:${STEP_MS}ms`} data-reveal>
+    <div class="layout" data-install style={`--step-ms:${STEP_MS}ms`}>
       <div class="tabs" role="tablist" aria-label="Passos da instalação">
         {installSteps.map((step, i) => (
           <button
@@ -180,7 +180,7 @@ const hash = installer.sha256;
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
-    gap: 56px;
+    gap: 48px;
     align-items: center;
     margin-top: 64px;
   }
@@ -196,8 +196,8 @@ const hash = installer.sha256;
     position: relative;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 18px;
-    padding: 22px 24px;
+    gap: 16px;
+    padding: 24px 24px;
     overflow: hidden;
     border: 1px solid transparent;
     border-radius: var(--radius-md);
@@ -221,7 +221,7 @@ const hash = installer.sha256;
   }
 
   .no {
-    font: 600 22px/1.1 var(--font-readout);
+    font: 600 var(--text-2xl)/1.1 var(--font-readout);
     color: var(--soft);
     transition: color 0.25s;
   }
@@ -232,7 +232,7 @@ const hash = installer.sha256;
 
   .tab-text b {
     display: block;
-    font: 600 21px/1.2 var(--font-display);
+    font: 500 var(--text-xl)/1.2 var(--font-display);
     color: var(--ink);
   }
 
@@ -241,9 +241,10 @@ const hash = installer.sha256;
     max-height: 0;
     margin-top: 0;
     overflow: hidden;
-    font-size: 15.5px;
+    font-size: var(--text-base);
     line-height: 1.5;
     color: var(--muted);
+    text-wrap: balance;
     opacity: 0;
     transition:
       max-height 0.4s var(--ease-out),
@@ -304,9 +305,9 @@ const hash = installer.sha256;
 
   /* passo 1 */
   .shell {
-    padding: 26px 28px 32px;
+    padding: 24px 24px 32px;
     color: var(--night-fg);
-    font: 400 14.5px/1.75 var(--font-mono);
+    font: 400 var(--text-base)/1.75 var(--font-mono);
   }
 
   .shell p {
@@ -410,12 +411,12 @@ const hash = installer.sha256;
 
   .check-text b {
     display: block;
-    font: 600 14.5px/1.2 var(--font-display);
+    font: 500 var(--text-base)/1.2 var(--font-display);
     color: var(--ink);
   }
 
   .check-text code {
-    font: 500 13px/1.4 var(--font-mono);
+    font: 500 var(--text-sm)/1.4 var(--font-mono);
     color: var(--muted);
   }
 
@@ -424,21 +425,21 @@ const hash = installer.sha256;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 34px 36px 26px;
+    padding: 32px 32px 24px;
     border-radius: 14px;
     background: var(--win-blue);
-    box-shadow: 0 30px 60px -24px color-mix(in srgb, var(--win-blue) 70%, transparent);
+    box-shadow: var(--shadow-md);
     color: var(--on-ink);
   }
 
   .ss-title {
-    font: 400 28px/1.2 var(--font-text);
+    font: 400 var(--text-3xl)/1.2 var(--font-text);
   }
 
   .smartscreen p {
     max-width: 52ch;
     margin: 0;
-    font-size: 14.5px;
+    font-size: var(--text-base);
     line-height: 1.55;
     opacity: 0.92;
   }
@@ -448,7 +449,7 @@ const hash = installer.sha256;
     padding: 2px 6px;
     margin-left: -6px;
     border-radius: 6px;
-    font-size: 14.5px;
+    font-size: var(--text-base);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -458,7 +459,7 @@ const hash = installer.sha256;
     grid-template-columns: auto 1fr;
     gap: 4px 14px;
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-md);
   }
 
   .ss-details dd {
@@ -474,9 +475,9 @@ const hash = installer.sha256;
   }
 
   .ss-actions span {
-    padding: 9px 22px;
+    padding: 8px 24px;
     border: 1px solid color-mix(in srgb, #fff 55%, transparent);
-    font-size: 14px;
+    font-size: var(--text-md);
   }
 
   .ss-no {
@@ -510,7 +511,7 @@ const hash = installer.sha256;
 
   .note {
     margin: 16px 0 0;
-    font-size: 15px;
+    font-size: var(--text-base);
     color: var(--muted);
     text-align: center;
   }
@@ -524,17 +525,17 @@ const hash = installer.sha256;
   .setup {
     display: flex;
     flex-direction: column;
-    padding: 26px 28px 22px;
+    padding: 24px 24px 24px;
   }
 
   .setup-title {
-    font: 600 19px/1.2 var(--font-display);
+    font: 500 var(--text-xl)/1.2 var(--font-display);
     color: var(--ink);
   }
 
   .setup p {
-    margin: 6px 0 18px;
-    font-size: 14.5px;
+    margin: 6px 0 16px;
+    font-size: var(--text-base);
     color: var(--muted);
   }
 
@@ -579,19 +580,19 @@ const hash = installer.sha256;
   }
 
   .setup li b {
-    font: 600 15px/1 var(--font-display);
+    font: 500 var(--text-base)/1 var(--font-display);
     color: var(--ink);
   }
 
   .setup li em {
     justify-self: end;
-    font: 500 13.5px/1 var(--font-display);
+    font: 500 var(--text-md)/1 var(--font-display);
     font-style: normal;
     color: var(--faint);
   }
 
   .playing .setup li:not(.fixed) .box {
-    animation: tick 0.4s var(--ease-spring) both;
+    animation: tick 0.4s var(--ease-out) both;
   }
 
   .playing .setup li:nth-child(2) .box {
@@ -613,14 +614,14 @@ const hash = installer.sha256;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 22px;
+    margin-top: 24px;
   }
 
   .setup-actions span {
     padding: 10px 20px;
     border: 1px solid var(--line-2);
     border-radius: 8px;
-    font: 500 14px/1 var(--font-display);
+    font: 500 var(--text-md)/1 var(--font-display);
     color: var(--muted);
   }
 
@@ -655,7 +656,7 @@ const hash = installer.sha256;
       flex: 1;
       grid-template-columns: 1fr;
       gap: 6px;
-      padding: 16px 18px;
+      padding: 16px 16px;
     }
 
     .tab-text span {
@@ -673,16 +674,16 @@ const hash = installer.sha256;
     }
 
     .tab-text b {
-      font-size: 15px;
+      font-size: var(--text-base);
     }
 
     .no {
-      font-size: 17px;
+      font-size: var(--text-lg);
     }
 
     .shell {
       padding: 16px;
-      font-size: 12px;
+      font-size: var(--text-xs);
     }
 
     .out {
@@ -702,15 +703,15 @@ const hash = installer.sha256;
     }
 
     .smartscreen {
-      padding: 24px 22px 20px;
+      padding: 24px 24px 20px;
     }
 
     .ss-title {
-      font-size: 22px;
+      font-size: var(--text-xl);
     }
 
     .setup {
-      padding: 20px 18px 18px;
+      padding: 20px 16px 16px;
     }
 
     .setup li {

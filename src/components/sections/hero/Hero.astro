@@ -84,20 +84,22 @@ const { release } = Astro.props;
     pointer-events: none;
   }
 
+  /* em telas baixas a abertura encolhe junto com as outras seções; nunca cresce */
   .content {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    zoom: min(var(--fit), 1);
   }
 
   .content :global(.tile) {
-    margin-bottom: 34px;
+    margin-bottom: 32px;
   }
 
   h1 {
     margin: 0;
-    font: 600 clamp(46px, 6vw, 94px) / 0.97 var(--font-display);
+    font: 500 var(--display-lg) / 0.97 var(--font-display);
     letter-spacing: -0.035em;
     color: var(--ink);
   }
@@ -113,8 +115,8 @@ const { release } = Astro.props;
 
   .lead {
     max-width: 600px;
-    margin-top: 28px;
-    font-size: 20px;
+    margin-top: 24px;
+    font-size: var(--text-xl);
     line-height: 1.55;
   }
 
@@ -195,12 +197,12 @@ const { release } = Astro.props;
     }
 
     .content :global(.tile) {
-      margin-bottom: 36px;
+      margin-bottom: 32px;
     }
 
     .lead {
-      margin-top: 22px;
-      font-size: 16.5px;
+      margin-top: 24px;
+      font-size: var(--text-lg);
     }
 
     .long {

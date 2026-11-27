@@ -18,7 +18,7 @@ const speeds = [
 ] as const;
 ---
 
-<FeatureTile {...features.network} part="net" class={Astro.props.class}>
+<FeatureTile {...features.network} class={Astro.props.class}>
   <div class="bars" data-network aria-hidden="true">
     {bars.map((b) => (
       <i class:list={{ up: b.upload }} style={`height:${b.height}%`} />
@@ -49,9 +49,9 @@ const speeds = [
     display: grid;
     grid-template-columns: repeat(32, 1fr);
     align-items: end;
-    gap: 3px;
+    gap: 4px;
     height: 56px;
-    margin: 22px var(--pad) 0;
+    margin: 24px var(--pad) 0;
   }
 
   .bars i {
@@ -68,7 +68,7 @@ const speeds = [
   .speeds {
     display: flex;
     align-items: flex-end;
-    gap: 30px;
+    gap: 32px;
     margin: auto 0 0;
     padding: 24px var(--pad) var(--pad);
   }
@@ -76,9 +76,9 @@ const speeds = [
   dt {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     margin-bottom: 10px;
-    font: 500 13px/1 var(--font-display);
+    font: 500 var(--text-sm)/1 var(--font-display);
     color: var(--faint);
   }
 
@@ -91,13 +91,13 @@ const speeds = [
 
   dd {
     margin: 0;
-    font: 600 56px/0.9 var(--font-readout);
+    font: 600 var(--num-xl)/0.9 var(--font-readout);
     color: var(--ink);
   }
 
   small {
-    margin-left: 3px;
-    font: 500 16px/1 var(--font-display);
+    margin-left: 4px;
+    font: 500 var(--text-base)/1 var(--font-display);
     color: var(--faint);
   }
 </style>

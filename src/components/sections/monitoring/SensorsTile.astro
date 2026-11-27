@@ -10,7 +10,7 @@ interface Props {
 const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 ---
 
-<FeatureTile {...features.sensors} part="cpu" class={Astro.props.class}>
+<FeatureTile {...features.sensors} class={Astro.props.class}>
   <div
     class="live"
     data-sensors
@@ -80,8 +80,8 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
     display: flex;
     flex: 1;
     flex-direction: column;
-    margin: 22px var(--pad) var(--pad);
-    padding: 18px 20px 16px;
+    margin: 24px var(--pad) var(--pad);
+    padding: 16px 20px 16px;
     border: 1px solid var(--line);
     border-radius: 18px;
     background: var(--paper-soft);
@@ -92,7 +92,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
     flex-wrap: wrap;
     align-items: baseline;
     gap: 10px;
-    font: 500 13px/1 var(--font-display);
+    font: 500 var(--text-sm)/1 var(--font-display);
     color: var(--faint);
   }
 
@@ -107,11 +107,11 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 
   .now {
     margin-left: 8px;
-    font: 500 16px/1 var(--font-display);
+    font: 500 var(--text-base)/1 var(--font-display);
   }
 
   .now b {
-    font: 600 34px/1 var(--font-readout);
+    font: 600 var(--num-sm)/1 var(--font-readout);
     color: var(--ink);
   }
 
@@ -120,7 +120,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
   }
 
   .range b {
-    font: 600 14px/1 var(--font-readout);
+    font: 600 var(--text-md)/1 var(--font-readout);
     color: var(--text);
   }
 
@@ -161,7 +161,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
     display: flex;
     justify-content: space-between;
     margin-top: 6px;
-    font: 500 11.5px/1 var(--font-readout);
+    font: 500 var(--text-xs)/1 var(--font-readout);
     color: var(--faint);
   }
 
@@ -175,7 +175,7 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
   .rows div {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     padding: 12px 12px 0 0;
   }
 
@@ -185,13 +185,13 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
   }
 
   .rows dt {
-    font: 500 12.5px/1.2 var(--font-display);
+    font: 500 var(--text-sm)/1.2 var(--font-display);
     color: var(--faint);
   }
 
   .rows dd {
     margin: 0;
-    font: 600 19px/1 var(--font-readout);
+    font: 600 var(--text-xl)/1 var(--font-readout);
     color: var(--ink);
   }
 

@@ -10,7 +10,7 @@ const life = 97;
 const path = "M30 140 A80 80 0 1 1 170 140";
 ---
 
-<FeatureTile {...features.storage} part="storage" class={Astro.props.class}>
+<FeatureTile {...features.storage} class={Astro.props.class}>
   <div class="gauge">
     <svg viewBox="0 0 200 160" role="img" aria-label={`Vida útil de ${life} %`}>
       <defs>
@@ -36,7 +36,7 @@ const path = "M30 140 A80 80 0 1 1 170 140";
     display: flex;
     justify-content: center;
     margin-top: auto;
-    padding: 14px 0 26px;
+    padding: 14px 0 24px;
   }
 
   svg {
@@ -70,17 +70,17 @@ const path = "M30 140 A80 80 0 1 1 170 140";
   }
 
   .big {
-    font: 600 48px var(--font-readout);
+    font: 600 var(--num-lg) var(--font-readout);
     fill: var(--ink);
   }
 
   .big tspan {
-    font-size: 20px;
+    font-size: var(--text-xl);
     fill: var(--faint);
   }
 
   .caption {
-    font: 500 13px var(--font-display);
+    font: 500 var(--text-sm) var(--font-display);
     fill: var(--faint);
   }
 </style>

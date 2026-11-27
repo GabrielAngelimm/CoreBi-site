@@ -17,7 +17,7 @@ interface Props {
 
 const { release } = Astro.props;
 const { installer } = release;
-const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anúncio"];
+const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem conta"];
 ---
 
 <section id="baixar" class="final" data-tone="dark" aria-labelledby="final-title">
@@ -36,11 +36,7 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     </svg>
   </div>
 
-  <div class="wrap content" data-reveal>
-    <p class="eyebrow">
-      <span class="led"></span>
-      Versão {release.version} · Windows 10 e 11
-    </p>
+  <div class="wrap content">
     <h2 id="final-title" class="title">
       Abra uma vez <span class="soft">e veja o seu PC por inteiro.</span>
     </h2>
@@ -94,25 +90,7 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     scroll-snap-align: start;
   }
 
-  /* luzes frias e quentes no fundo, e uma grade fina que some nas bordas */
-  .final::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    background:
-      radial-gradient(
-        ellipse 45% 55% at 12% 18%,
-        color-mix(in srgb, var(--signal-hi) 16%, transparent),
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse 40% 45% at 88% 86%,
-        color-mix(in srgb, var(--gpu) 12%, transparent),
-        transparent 70%
-      );
-  }
-
+  /* uma grade fina que some nas bordas */
   .final::after {
     content: "";
     position: absolute;
@@ -130,7 +108,7 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     pointer-events: none;
   }
 
-  /* o símbolo gigante, só em traço, desenhando-se devagar */
+  /* o símbolo gigante, só em traço */
   .backdrop {
     position: absolute;
     top: 50%;
@@ -155,28 +133,12 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
 
   .frame {
     stroke: color-mix(in srgb, var(--night-fg) 22%, transparent);
-    stroke-dasharray: 900;
-    animation: draw 3.2s var(--ease-out) both;
   }
 
   .core {
     fill: color-mix(in srgb, var(--signal-hi) 12%, transparent) !important;
     stroke: var(--signal-hi);
     stroke-width: 0.8 !important;
-    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--signal-hi) 60%, transparent));
-    animation: glow 4s ease-in-out infinite;
-  }
-
-  @keyframes draw {
-    from {
-      stroke-dashoffset: 900;
-    }
-  }
-
-  @keyframes glow {
-    50% {
-      opacity: 0.55;
-    }
   }
 
   .content {
@@ -188,33 +150,15 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     zoom: var(--fit);
   }
 
-  .eyebrow {
-    display: inline-flex;
-    align-self: flex-start;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 28px;
-    padding: 8px 14px;
-    border: 1px solid color-mix(in srgb, var(--night-fg) 14%, transparent);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--night-fg) 5%, transparent);
-    font: 500 14px/1 var(--font-display);
-    color: var(--night-muted);
-  }
-
-  .led {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--signal-hi);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal-hi) 20%, transparent);
-    animation: blink 2.4s ease-in-out infinite;
+  /* o rodapé escala junto com o conteúdo, para as bordas baterem */
+  .final :global(.footer) {
+    zoom: var(--fit);
   }
 
   .title {
     max-width: 12ch;
     margin: 0;
-    font: 600 clamp(48px, 6.4vw, 104px) / 0.96 var(--font-display);
+    font: 500 var(--display-lg) / 0.96 var(--font-display);
     letter-spacing: -0.035em;
     color: var(--night-fg);
   }
@@ -228,17 +172,17 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 44px;
+    margin-top: 48px;
   }
 
   .facts {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 26px;
-    margin: 28px 0 0;
+    gap: 8px 24px;
+    margin: 24px 0 0;
     padding: 0;
     list-style: none;
-    font: 500 14px/1.3 var(--font-display);
+    font: 500 var(--text-md)/1.3 var(--font-display);
     color: var(--night-faint);
   }
 
@@ -282,7 +226,7 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 18px 34px;
+    padding: 16px 32px;
     border-right: 1px solid var(--night-line);
     white-space: nowrap;
   }
@@ -292,16 +236,15 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     height: 8px;
     border-radius: 50%;
     background: var(--c);
-    box-shadow: 0 0 10px var(--c);
   }
 
   .ticker span {
-    font: 500 14px/1 var(--font-display);
+    font: 500 var(--text-md)/1 var(--font-display);
     color: var(--night-muted);
   }
 
   .ticker b {
-    font: 600 17px/1 var(--font-readout);
+    font: 600 var(--text-lg)/1 var(--font-readout);
     color: var(--night-fg);
   }
 
@@ -318,7 +261,7 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     }
 
     .content {
-      padding-bottom: 88px;
+      padding-bottom: 96px;
     }
 
     .backdrop {
@@ -351,7 +294,7 @@ const facts = ["Grátis", "Código aberto, licença MIT", "Sem conta e sem anún
     }
 
     .ticker li {
-      padding: 14px 22px;
+      padding: 14px 24px;
     }
   }
 </style>

@@ -27,17 +27,21 @@ const target = external ? { target: "_blank", rel: "noopener" } : {};
     justify-content: center;
     gap: 10px;
     height: 52px;
-    padding: 0 26px;
+    padding: 0 24px;
     border: 1px solid transparent;
     border-radius: var(--radius-pill);
-    font: 600 15px/1 var(--font-display);
+    font: 500 var(--text-base)/1 var(--font-display);
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color 0.15s,
-      border-color 0.15s,
-      transform 0.15s;
+      background-color 0.15s ease-out,
+      border-color 0.15s ease-out,
+      transform 0.15s ease-out;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
   }
 
   .btn :global(.icon) {
@@ -48,14 +52,11 @@ const target = external ? { target: "_blank", rel: "noopener" } : {};
   .ink {
     background: var(--ink);
     color: var(--on-ink);
-    box-shadow:
-      0 1px 0 color-mix(in srgb, var(--paper) 12%, transparent) inset,
-      0 6px 16px -6px color-mix(in srgb, var(--ink) 50%, transparent);
+    box-shadow: var(--shadow-sm);
   }
 
   .ink:hover {
     background: var(--ink-2);
-    transform: translateY(-1px);
   }
 
   .line {
@@ -72,12 +73,10 @@ const target = external ? { target: "_blank", rel: "noopener" } : {};
   .light {
     background: var(--night-fg);
     color: var(--night);
-    box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--signal-hi) 45%, transparent);
   }
 
   .light:hover {
     background: #fff;
-    transform: translateY(-1px);
   }
 
   .ghost {
@@ -92,7 +91,7 @@ const target = external ? { target: "_blank", rel: "noopener" } : {};
 
   .sm {
     height: 40px;
-    padding: 0 18px;
-    font-size: 14px;
+    padding: 0 16px;
+    font-size: var(--text-md);
   }
 </style>

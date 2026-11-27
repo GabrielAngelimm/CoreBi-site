@@ -15,12 +15,11 @@ import OverlayTile from "./OverlayTile.astro";
         pena.
       </p>
     </div>
-    <div class="grid" data-reveal>
+    <div class="grid">
       <OverlayTile class="overlay" />
       <BenchmarkTile class="bench" />
     </div>
   </div>
-  <div class="glow" aria-hidden="true" slot="after"></div>
 </Section>
 
 <style>
@@ -32,26 +31,7 @@ import OverlayTile from "./OverlayTile.astro";
     display: grid;
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: 16px;
-    margin-top: 52px;
-  }
-
-  /* um brilho frio atrás dos cartões, para o fundo escuro não ficar chapado */
-  .glow {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(
-        ellipse 50% 38% at 32% 70%,
-        color-mix(in srgb, var(--signal-hi) 10%, transparent),
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse 38% 32% at 76% 66%,
-        color-mix(in srgb, var(--gpu) 9%, transparent),
-        transparent 70%
-      );
-    pointer-events: none;
+    margin-top: 48px;
   }
 
   @media (max-width: 900px) {

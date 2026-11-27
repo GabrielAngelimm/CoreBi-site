@@ -82,6 +82,29 @@
   --font-text: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
 
+  /*
+   * Escala de tipo: todo tamanho do site sai daqui, sem meio pixel.
+   * text-* para texto e rótulos, num-* para os números grandes das demonstrações,
+   * display-* para os títulos de seção (md) e das duas aberturas (lg).
+   * Pesos: 400 no texto corrido, 500 em títulos, rótulos e botões, 600 só nos números.
+   */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 28px;
+  --num-sm: 32px;
+  --num-md: 40px;
+  --num-lg: 48px;
+  --num-xl: 56px;
+  --num-2xl: 72px;
+  --display-md: clamp(36px, 4.6vw, 72px);
+  --display-lg: clamp(46px, 6vw, 96px);
+
   /* raios */
   --radius-sm: 12px;
   --radius-md: 16px;
@@ -110,7 +133,6 @@
   /* movimento */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-in-out: cubic-bezier(0.6, 0, 0.4, 1);
-  --ease-spring: cubic-bezier(0.3, 1.6, 0.5, 1);
 
   color-scheme: light;
 }
@@ -130,6 +152,12 @@
 @media (max-height: 819px) {
   :root {
     --fit: 0.84;
+  }
+}
+
+@media (max-height: 779px) {
+  :root {
+    --fit: 0.8;
   }
 }
 

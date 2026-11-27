@@ -1,31 +1,21 @@
 ---
 /**
- * Cartão de recurso: rótulo, título, texto e a demonstração no espaço que sobra.
+ * Cartão de recurso: título, texto e a demonstração no espaço que sobra.
  * Quem posiciona o cartão na grade é a seção, pela classe.
  */
-import Tag from "@/components/ui/Tag.astro";
-import type { IconName } from "@/components/ui/icons";
-import type { Part } from "@/data/parts";
 
 interface Props {
-  tag: string;
   title: string;
   text: string;
-  part?: Part;
-  icon?: IconName;
-  color?: string;
   dark?: boolean;
   class?: string | undefined;
 }
 
-const { tag, title, text, part, icon, color, dark = false, class: className } = Astro.props;
+const { title, text, dark = false, class: className } = Astro.props;
 ---
 
 <article class:list={["tile", { dark }, className]}>
   <div class="head">
-    <Tag part={part} icon={icon} color={color} tone={dark ? "dark" : "light"}>
-      {tag}
-    </Tag>
     <h3>{title}</h3>
     <p>{text}</p>
     <slot name="head" />
@@ -35,7 +25,7 @@ const { tag, title, text, part, icon, color, dark = false, class: className } = 
 
 <style>
   .tile {
-    --pad: 30px;
+    --pad: 32px;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -48,12 +38,13 @@ const { tag, title, text, part, icon, color, dark = false, class: className } = 
   }
 
   .head {
-    padding: 28px var(--pad) 0;
+    padding: 24px var(--pad) 0;
   }
 
   h3 {
-    margin: 12px 0 8px;
-    font: 600 24px/1.15 var(--font-display);
+    margin: 0 0 8px;
+    font: 500 var(--text-2xl)/1.15 var(--font-display);
+    text-wrap: balance;
     letter-spacing: -0.01em;
     color: var(--ink);
   }
@@ -61,7 +52,7 @@ const { tag, title, text, part, icon, color, dark = false, class: className } = 
   p {
     max-width: 44ch;
     margin: 0;
-    font-size: 15px;
+    font-size: var(--text-base);
     color: var(--muted);
   }
 
@@ -82,7 +73,7 @@ const { tag, title, text, part, icon, color, dark = false, class: className } = 
 
   @media (max-width: 700px) {
     .tile {
-      --pad: 22px;
+      --pad: 24px;
     }
 
     .head {

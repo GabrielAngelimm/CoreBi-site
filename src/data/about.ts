@@ -15,5 +15,5 @@ export const facts: readonly { value: string; text: string }[] = [
   { value: "14", text: "páginas, do monitoramento às ferramentas" },
   { value: "6", text: "benchmarks de processador, jogo, memória e disco" },
   { value: "73", text: "apps prontos para instalar pelo winget" },
-  { value: "0", text: "servidores: nada sai do PC sem você pedir" },
+  { value: "0", text: "servidores, e nada sai do PC sem você pedir" },
 ];

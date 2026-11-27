@@ -2,16 +2,12 @@
 import Section from "@/components/layout/Section.astro";
 import Bubble from "@/components/ui/Bubble.astro";
 import Icon from "@/components/ui/Icon.astro";
-import Tag from "@/components/ui/Tag.astro";
 import { driverExample as d } from "@/data/drivers";
 ---
 
 <Section id="drivers" label="drivers-title">
   <div class="wrap duo">
     <div class="text">
-      <Tag icon="driver" color="var(--gpu)">
-        Drivers
-      </Tag>
       <h2 id="drivers-title" class="h2">
         Driver novo, <span class="soft">sem medo de quebrar.</span>
       </h2>
@@ -72,17 +68,13 @@ import { driverExample as d } from "@/data/drivers";
 <style>
   .duo {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 96px;
     align-items: center;
   }
 
   .text {
     order: 2;
-  }
-
-  .text :global(.tag) {
-    margin-bottom: 26px;
   }
 
   .text .lead {
@@ -107,32 +99,32 @@ import { driverExample as d } from "@/data/drivers";
 
   .device b {
     display: block;
-    font: 600 19px/1.2 var(--font-display);
+    font: 500 var(--text-xl)/1.2 var(--font-display);
     color: var(--ink);
   }
 
   .device span {
-    font: 500 13.5px/1.3 var(--font-display);
+    font: 500 var(--text-md)/1.3 var(--font-display);
     color: var(--faint);
   }
 
   .versions {
     display: flex;
     align-items: flex-end;
-    gap: 22px;
-    margin: 30px 0 34px;
+    gap: 24px;
+    margin: 32px 0 32px;
   }
 
   .versions span {
     display: block;
     margin-bottom: 8px;
-    font: 500 13px/1 var(--font-display);
+    font: 500 var(--text-sm)/1 var(--font-display);
     color: var(--faint);
   }
 
   .versions b {
     position: relative;
-    font: 600 76px/1 var(--font-readout);
+    font: 600 var(--num-2xl)/1 var(--font-readout);
     letter-spacing: -0.01em;
     transition: color 0.5s;
   }
@@ -176,20 +168,13 @@ import { driverExample as d } from "@/data/drivers";
 
   .done .new b {
     color: var(--signal);
-    animation: pop 0.5s var(--ease-spring);
-  }
-
-  @keyframes pop {
-    40% {
-      transform: scale(1.06);
-    }
   }
 
   /* uma linha liga os passos e enche de verde conforme eles terminam */
   .steps {
     --step-ms: 0ms;
     position: relative;
-    margin: 0 0 34px;
+    margin: 0 0 32px;
     padding: 0;
     list-style: none;
   }
@@ -220,7 +205,7 @@ import { driverExample as d } from "@/data/drivers";
     position: relative;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
     padding: 12px 0;
   }
 
@@ -249,7 +234,7 @@ import { driverExample as d } from "@/data/drivers";
     transform: scale(0.4) rotate(-20deg);
     transition:
       opacity 0.2s,
-      transform 0.35s var(--ease-spring);
+      transform 0.35s var(--ease-out);
   }
 
   li.done .mark {
@@ -274,7 +259,7 @@ import { driverExample as d } from "@/data/drivers";
 
   li b {
     display: block;
-    font: 600 17px/1.25 var(--font-display);
+    font: 500 var(--text-lg)/1.25 var(--font-display);
     color: var(--muted);
     transition: color 0.2s;
   }
@@ -285,7 +270,7 @@ import { driverExample as d } from "@/data/drivers";
   }
 
   li em {
-    font: 500 13.5px/1.3 var(--font-display);
+    font: 500 var(--text-md)/1.3 var(--font-display);
     font-style: normal;
     font-variant-numeric: tabular-nums;
     color: var(--faint);
@@ -293,12 +278,12 @@ import { driverExample as d } from "@/data/drivers";
 
   .update {
     height: 46px;
-    padding: 0 22px;
+    padding: 0 24px;
     border: 0;
     border-radius: var(--radius-pill);
     background: var(--ink);
     color: var(--on-ink);
-    font: 600 14px/1 var(--font-display);
+    font: 500 var(--text-md)/1 var(--font-display);
     cursor: pointer;
     transition:
       background-color 0.2s,
@@ -319,7 +304,7 @@ import { driverExample as d } from "@/data/drivers";
   @media (max-width: 980px) {
     .duo {
       grid-template-columns: 1fr;
-      gap: 56px;
+      gap: 48px;
     }
 
     .text {
@@ -336,11 +321,11 @@ import { driverExample as d } from "@/data/drivers";
   @media (max-width: 560px) {
     .versions {
       gap: 14px;
-      margin: 26px 0 28px;
+      margin: 24px 0 24px;
     }
 
     .versions b {
-      font-size: 46px;
+      font-size: var(--num-lg);
     }
 
     .versions :global(.arrow) {

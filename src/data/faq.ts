@@ -24,7 +24,7 @@ export const faq: readonly FaqItem[] = [
   {
     question: "O que é o PawnIO e eu preciso dele?",
     answer: [
-      "É o driver que lê a temperatura, o consumo e o clock internos do processador. Ele é opcional: sem ele, só esses sensores ficam de fora. O instalador baixa o PawnIO pelo winget, da fonte oficial. Na versão portátil, ele é instalado pelo próprio app, em **Corrigir**, no pé do menu.",
+      "É o driver que lê a temperatura, o consumo e o clock internos do processador. Ele é opcional. Sem ele, só esses sensores ficam de fora. O instalador baixa o PawnIO pelo winget, da fonte oficial. Na versão portátil, ele é instalado pelo próprio app, em **Corrigir**, no pé do menu.",
     ],
   },
   {

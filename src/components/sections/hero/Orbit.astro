@@ -261,9 +261,7 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   .float :global(.vivid) {
     border-color: transparent;
     background: var(--c);
-    box-shadow:
-      0 1px 0 color-mix(in srgb, #fff 30%, transparent) inset,
-      0 18px 38px -14px color-mix(in srgb, var(--c) 70%, transparent);
+    box-shadow: var(--shadow-sm);
     color: var(--on-ink);
   }
 
@@ -285,16 +283,16 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   }
 
   .readout b {
-    font: 600 calc(21 * var(--u)) / 1 var(--font-readout);
+    font: 600 calc(20 * var(--u)) / 1 var(--font-readout);
     color: var(--ink);
   }
 
   .float :global(.md) .readout b {
-    font-size: calc(16 * var(--u));
+    font-size: calc(17 * var(--u));
   }
 
   .readout small {
-    font: 500 calc(10.5 * var(--u)) / 1 var(--font-display);
+    font: 500 calc(11 * var(--u)) / 1 var(--font-display);
     color: var(--faint);
   }
 

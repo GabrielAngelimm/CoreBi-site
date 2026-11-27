@@ -40,7 +40,7 @@ src/
 ├── data/             textos e números das seções, tipados
 ├── config/site.ts    nome, links e menu: tudo que aparece em mais de um lugar
 ├── lib/              funções puras usadas no build (release, geometria, formatos)
-├── scripts/          utilidades do navegador (entrada ao rolar, copiar, animação)
+├── scripts/          utilidades do navegador (copiar, laços de animação)
 ├── styles/           tokens de design, base global e keyframes
 └── assets/           imagens otimizadas pelo Astro (ícones dos apps)
 ```
@@ -49,10 +49,13 @@ Regras que o projeto segue:
 
 - **Conteúdo fora da marcação.** Textos, listas e números ficam em `src/data/` e `src/config/`. Para mudar uma pergunta do FAQ, mexa só em `data/faq.ts`.
 - **Cores e medidas só por token.** `styles/tokens.css` define cores (uma por peça, como no app), fontes, raios, sombras e curvas de movimento. Componentes não usam valores soltos; a única exceção são o preto e o branco das máscaras, que valem como transparência e não como cor.
+- **Tipo numa escala curta.** Tamanhos só pelos tokens `--text-*` (11 a 28 px), `--num-*` (números grandes) e `--display-*` (títulos de tela). Peso 400 no texto, 500 em títulos, rótulos e botões, 600 só nos números. Sem itálico e sem caixa alta.
+- **Sem enfeite.** Nada de selos acima dos títulos, brilhos, efeito de entrada ao rolar ou mola nos botões. Cor e movimento aparecem onde mostram um dado do app.
+- **Espaço em múltiplos de 4.** Margens e espaçamentos usam 4, 8, 12, 16, 24, 32, 48, 64 e 96 px.
 - **Geometria no build.** Arcos, marcas do mostrador e posições em órbita são calculados em `lib/geometry.ts` durante o build. O navegador recebe o SVG pronto.
 - **Animação só quando aparece.** `scripts/motion.ts` pausa os laços fora da tela ou com a aba escondida, e tudo respeita `prefers-reduced-motion`.
 - **Cada seção na sua pasta.** O componente (`Apps.astro`) e o script que roda no navegador (`apps.client.ts`) ficam juntos. O sufixo `.client.ts` separa o que vai para o navegador dos dados em `src/data/`, que só existem no build.
-- **Uma seção, uma tela.** `Section.astro` dá a cada seção a altura da janela e o encaixe da rolagem (`scroll-snap`, só no computador). O conteúdo fica num `.frame` que encolhe por `--fit` em telas baixas, então nada é cortado num notebook de 768 px. No celular as seções têm a altura do conteúdo.
+- **Uma seção, uma tela.** `Section.astro` dá a cada seção a altura da janela e o encaixe da rolagem (`scroll-snap`, só no computador). O conteúdo fica num `.frame` que encolhe por `--fit` em telas baixas (a abertura e o rodapé também), então nada é cortado num notebook de 720 px. No celular as seções têm a altura do conteúdo.
 - **Seção escura é um tom, não uma cópia.** `<Section tone="dark">` troca as cores e marca `data-tone="dark"`, que o cabeçalho lê para escurecer junto.
 - **Estilo com escopo.** Cada componente tem o próprio `<style>`; `:global()` só para elementos de componentes filhos.
 
@@ -66,7 +69,7 @@ Para o site acompanhar cada release nova sem ninguém mexer aqui, crie um Deploy
 
 1. Entre em [vercel.com](https://vercel.com) com a conta do GitHub e importe este repositório. A Vercel reconhece o Astro sozinha; `vercel.json` já define build, saída, cabeçalhos de segurança e cache.
 2. Em **Settings → Environment Variables**, crie:
-   - `SITE_URL`: o endereço final, por exemplo `https://corebi.com.br`. Usado no link canônico e nas prévias de compartilhamento.
+   - `SITE_URL` (opcional): o endereço final. Sem ela vale `https://corebi.vercel.app`. Usado no link canônico e nas prévias de compartilhamento.
    - `GITHUB_TOKEN` (opcional): um token sem permissões extras, só para não esbarrar no limite da API do GitHub em builds seguidos.
 3. Cada branch e cada PR ganham um link de prévia próprio. O `main` vai para produção.
 4. **Domínio próprio:** em **Settings → Domains**, adicione o domínio e copie os registros DNS que a Vercel mostrar para o painel de onde o domínio foi comprado.
