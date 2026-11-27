@@ -57,6 +57,6 @@ export const phoneInstallSteps = [
   },
   {
     title: "Abra e use",
-    text: "Os extras grátis já vêm marcados. O CoreBi abre lendo os sensores, sem conta.",
+    text: "Os extras grátis já vêm marcados. O\u00a0CoreBi abre lendo os sensores, sem conta.",
   },
 ] as const;
