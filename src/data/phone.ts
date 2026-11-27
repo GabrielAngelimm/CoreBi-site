@@ -22,26 +22,14 @@ export const phoneSections: readonly PhoneSection[] = [
   {
     id: "m-teste",
     label: "Teste de carga",
-    hint: "O PC aguenta horas de jogo?",
+    hint: "Leve o PC até o limite",
     aliases: ["teste"],
   },
-  { id: "m-drivers", label: "Drivers", hint: "Driver de vídeo com backup", aliases: ["drivers"] },
-  { id: "m-apps", label: "Apps", hint: "Para depois de formatar", aliases: ["apps"] },
+  { id: "m-drivers", label: "Drivers", hint: "Backup de todos os drivers", aliases: ["drivers"] },
+  { id: "m-apps", label: "Apps", hint: "Tudo de uma vez, após formatar", aliases: ["apps"] },
   { id: "m-instalar", label: "Instalar", hint: "Do download ao app aberto", aliases: ["instalar"] },
   { id: "m-perguntas", label: "Perguntas", hint: "As dúvidas mais comuns", aliases: ["perguntas"] },
 ];
-
-/**
- * A fila de apps do celular: cinco dos apps da versão do computador (o ícone vem de
- * `data/apps.ts`, pelo nome) e quem publica cada um, como o winget mostra.
- */
-export const phoneApps = [
-  { name: "Steam", publisher: "Valve" },
-  { name: "Discord", publisher: "Discord Inc." },
-  { name: "Spotify", publisher: "Spotify AB" },
-  { name: "Chrome", publisher: "Google" },
-  { name: "VLC", publisher: "VideoLAN" },
-] as const;
 
 /** A tela final, com os botões de baixar. Fica fora do menu, que já traz os mesmos botões. */
 export const phoneFinal = { id: "m-baixar", aliases: ["baixar"] } as const;

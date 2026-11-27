@@ -1,22 +1,16 @@
 ---
 /**
- * Apps, no celular: a fila de instalação do CoreBi, como um gerenciador de downloads. Cinco
- * apps com o ícone oficial e quem publica; quando o cartão aparece, eles instalam um por um:
- * a linha de baixo do app da vez enche, o estado muda de "Na fila" para "Instalando" e
- * "Instalado", e a contagem do topo acompanha. Sem selos: o estado é escrito.
- * Sem JavaScript ou com movimento reduzido, a fila aparece já toda instalada.
+ * Apps, no celular: um pacote com dez apps marcados, com o ícone oficial de cada um. Quando o
+ * cartão aparece, o pacote todo instala de uma vez: os ícones acendem em onda, um atrás do
+ * outro, e uma barra só mostra o pacote inteiro, com a contagem no topo e o app da vez embaixo.
+ * Sem selos: o estado é a cor do ícone e a linha escrita. No app de verdade o winget instala um
+ * por vez; o que a pessoa faz é marcar e clicar uma vez só.
+ * Sem JavaScript ou com movimento reduzido, o pacote aparece já todo instalado.
  */
 import { Image } from "astro:assets";
-import { queue } from "@/data/apps";
-import { phoneApps } from "@/data/phone";
+import { queue as apps } from "@/data/apps";
 import PhoneSection from "./PhoneSection.astro";
 import { APP_STEP_MS } from "./tools-timing";
-
-// o ícone vem da mesma lista da versão do computador
-const apps = phoneApps.flatMap((app) => {
-  const icon = queue.find((q) => q.name === app.name)?.icon;
-  return icon ? [{ ...app, icon }] : [];
-});
 ---
 
 <PhoneSection id="m-apps" name="Apps" label="m-apps-title">
@@ -24,12 +18,18 @@ const apps = phoneApps.flatMap((app) => {
     Formatou? <span class="soft">Instale tudo de uma vez.</span>
   </h2>
   <p class="lead">
-    Marque os apps e o CoreBi instala um por um, direto da fonte oficial. Sem clicar em Avançar.
+    Marque os apps, clique em Instalar e vá pegar um café. O CoreBi cuida do resto, direto da fonte
+    oficial.
   </p>
 
-  <div class="card" data-m-apps style={`--step:${APP_STEP_MS}ms`}>
+  <div
+    class="card"
+    data-m-apps
+    data-phase="done"
+    style={`--step:${APP_STEP_MS}ms;--total:${APP_STEP_MS * apps.length}ms`}
+  >
     <div class="head">
-      <b>Fila de instalação</b>
+      <b>Pacote de apps</b>
       <span class="count">
         <span class="num" data-apps-done>
           {apps.length}
@@ -38,23 +38,25 @@ const apps = phoneApps.flatMap((app) => {
       </span>
     </div>
 
-    <ol class="list" aria-label="Exemplo de fila de instalação do CoreBi">
+    <ul class="pack" aria-label="Exemplo de pacote com dez apps">
       {apps.map((app) => (
-        <li data-app data-state="done">
-          <Image src={app.icon} alt="" width={64} height={64} loading="lazy" class="icon" />
-          <span class="name">
-            <b>{app.name}</b>
-            <small>{app.publisher}</small>
-          </span>
-          <span class="state">
-            <span class="wait">Na fila</span>
-            <span class="run">Instalando</span>
-            <span class="done">Instalado</span>
-          </span>
-          <i class="progress" aria-hidden="true" />
+        <li data-app data-name={app.name} data-state="done">
+          <Image src={app.icon} alt={app.name} width={64} height={64} loading="lazy" />
         </li>
       ))}
-    </ol>
+    </ul>
+
+    <span class="bar" aria-hidden="true">
+      <i></i>
+    </span>
+
+    <p class="status" aria-hidden="true">
+      <span class="wait">{apps.length} apps marcados</span>
+      <span class="run">
+        Instalando <b data-apps-now>{apps[0]?.name}</b>
+      </span>
+      <span class="done">Pronto, {apps.length} apps instalados</span>
+    </p>
   </div>
 </PhoneSection>
 
@@ -65,7 +67,7 @@ const apps = phoneApps.flatMap((app) => {
 <style>
   .card {
     margin-top: 24px;
-    padding: 4px 16px;
+    padding: 0 16px 16px;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--paper);
@@ -95,121 +97,118 @@ const apps = phoneApps.flatMap((app) => {
     color: var(--ink);
   }
 
-  .list {
+  /* dez ícones, cinco por linha */
+  .pack {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px 8px;
+    justify-items: center;
     margin: 0;
-    padding: 0;
+    padding: 20px 0;
     list-style: none;
   }
 
-  .list li {
-    position: relative;
-    display: grid;
-    grid-template-columns: 32px 1fr auto;
-    align-items: center;
-    gap: 12px;
-    min-height: 56px;
-  }
-
-  .list li + li {
-    border-top: 1px solid var(--line);
-  }
-
-  .list :global(.icon) {
-    width: 32px;
-    height: 32px;
+  .pack li {
+    width: 40px;
+    height: 40px;
     transition:
-      opacity 0.3s,
-      filter 0.3s;
+      opacity 0.2s,
+      filter 0.2s,
+      scale 0.2s var(--ease-out);
   }
 
-  .name {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
+  .pack :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
-  .name b {
-    font: 500 var(--text-base)/1.2 var(--font-display);
-    color: var(--ink);
+  /* marcado, esperando a vez: em segundo plano */
+  [data-state="wait"] {
+    filter: grayscale(1);
+    opacity: 0.4;
+    scale: 0.88;
   }
 
-  .name small {
-    font-size: var(--text-xs);
-    color: var(--faint);
+  /* o app da vez acende e cresce um pouco */
+  [data-state="run"] {
+    scale: 1.12;
   }
 
-  .state {
-    font: 500 var(--text-sm)/1 var(--font-display);
+  /* uma barra só para o pacote inteiro */
+  .bar {
+    display: block;
+    height: 4px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--line);
   }
 
-  .state > span {
+  .bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--signal);
+    transform-origin: left;
+  }
+
+  [data-phase="wait"] .bar i {
+    transform: scaleX(0);
+  }
+
+  [data-phase="run"] .bar i {
+    animation: m-apps-bar var(--total) linear both;
+  }
+
+  @keyframes m-apps-bar {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  .status {
+    margin: 12px 0 0;
+    font: 500 var(--text-sm)/1.2 var(--font-display);
+    color: var(--muted);
+  }
+
+  .status > span {
     display: none;
   }
 
-  /* um estado por vez: na fila, instalando ou instalado */
-  [data-state="wait"] .wait,
-  [data-state="run"] .run,
-  [data-state="done"] .done {
+  [data-phase="wait"] .wait,
+  [data-phase="run"] .run,
+  [data-phase="done"] .done {
     display: inline;
   }
 
-  .wait {
-    color: var(--faint);
-  }
-
-  .run {
+  .status b {
+    font-weight: 500;
     color: var(--signal-text);
   }
 
   .done {
-    color: var(--muted);
-  }
-
-  /* o app que ainda vai instalar fica em segundo plano */
-  [data-state="wait"] :global(.icon) {
-    filter: grayscale(1);
-    opacity: 0.45;
-  }
-
-  /* a linha de baixo do app da vez enche no tempo da instalação */
-  .progress {
-    position: absolute;
-    right: 0;
-    bottom: -1px;
-    left: 44px;
-    height: 2px;
-    border-radius: 1px;
-    background: var(--signal);
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-
-  [data-state="run"] .progress {
-    animation: m-apps-fill var(--step) linear both;
-  }
-
-  @keyframes m-apps-fill {
-    to {
-      transform: scaleX(1);
-    }
+    color: var(--ink);
   }
 
   @media (max-height: 620px) {
     .card {
       margin-top: 20px;
+      padding-bottom: 12px;
     }
 
     .head {
       padding: 8px 0;
     }
 
-    .list li {
-      min-height: 48px;
+    .pack {
+      row-gap: 12px;
+      padding: 16px 0;
     }
 
-    .list :global(.icon) {
-      width: 28px;
-      height: 28px;
+    .pack li {
+      width: 36px;
+      height: 36px;
     }
   }
 </style>

@@ -1,8 +1,9 @@
 ---
 /**
- * Jogos, no celular (seção escura): o OverlayBi por cima de uma cena de jogo e o benchmark de
- * antes e depois, em dois cartões para passar com o dedo. O overlay liga quando aparece e o FPS
- * oscila alguns segundos; no benchmark as duas barras crescem e o ganho sobe do zero.
+ * Jogos, no celular (seção escura): o OverlayBi num monitor e o benchmark de antes e depois, em
+ * dois cartões para passar com o dedo. O overlay é pequeno, num canto da tela, como no jogo de
+ * verdade: liga quando aparece e o FPS oscila alguns segundos. No benchmark as duas barras
+ * crescem e o ganho sobe do zero.
  */
 import FeatureTile from "@/components/ui/FeatureTile.astro";
 import { features } from "@/data/features";
@@ -10,12 +11,12 @@ import { integer } from "@/lib/format";
 import Pager from "./Pager.astro";
 import PhoneSection from "./PhoneSection.astro";
 
-// mesma ordem do OverlayBi no app: FPS, CPU, GPU, VRAM e RAM
+// mesma ordem do OverlayBi no app (FPS, CPU, GPU, VRAM e RAM), só com o uso de cada peça
 const rows = [
-  ["CPU", "Ryzen 7 5700X", "38 %", "61 °C"],
-  ["GPU", "RTX 4060 Ti", "97 %", "66 °C"],
-  ["VRAM", "6,1 GB", "76 %", ""],
-  ["RAM", "19,6 GB", "62 %", ""],
+  ["CPU", "38 %"],
+  ["GPU", "97 %"],
+  ["VRAM", "76 %"],
+  ["RAM", "62 %"],
 ] as const;
 
 // o mesmo resultado da versão do computador: o "depois" é 12,6 % mais rápido
@@ -28,58 +29,60 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
 
 <PhoneSection id="m-jogos" name="Jogos" label="m-gaming-title" tone="dark">
   <h2 id="m-gaming-title" class="h2">
-    Feito para quem joga. <span class="soft">Sem sair da partida.</span>
+    Jogue de olho no FPS. <span class="soft">Sem sair da partida.</span>
   </h2>
-  <p class="lead">Overlay de FPS por cima do jogo e benchmark para comparar peças.</p>
+  <p class="lead">Veja o FPS por cima do jogo e descubra quanto cada peça nova rendeu.</p>
 
   <div class="cards">
     <Pager labels={["OverlayBi", "Benchmark"]} label="Exemplos para jogos" tone="dark">
       <div class="slide" data-play>
         <FeatureTile {...features.overlay} dark class="card">
-          <div class="scene" role="img" aria-label="Exemplo do OverlayBi por cima de um jogo">
-            <svg
-              class="land"
-              viewBox="0 0 600 340"
-              preserveAspectRatio="xMidYMid slice"
-              aria-hidden="true"
-            >
-              <rect width="600" height="340" class="sky"></rect>
-              <circle cx="430" cy="120" r="34" class="moon"></circle>
-              <polygon
-                points="0,220 90,150 160,200 250,120 340,195 420,140 510,200 600,160 600,340 0,340"
-                class="far"
-              ></polygon>
-              <polygon
-                points="0,260 110,205 200,245 300,190 390,240 490,205 600,245 600,340 0,340"
-                class="near"
-              ></polygon>
-              <polygon
-                points="0,340 0,290 140,268 280,296 420,272 600,292 600,340"
-                class="ground"
-              ></polygon>
-              <polygon points="70,292 84,240 98,292" class="ground"></polygon>
-              <polygon points="96,292 112,226 128,292" class="ground"></polygon>
-              <polygon points="500,294 515,236 530,294" class="ground"></polygon>
-            </svg>
-            <div class="hud num" aria-hidden="true">
-              <div class="fps">
-                <b data-live="fps" data-min="139" data-max="147">
-                  144
-                </b>
-                <span>FPS</span>
-                <span data-frametime>6,9 ms</span>
+          <div
+            class="monitor"
+            role="img"
+            aria-label="Exemplo do OverlayBi num canto da tela, por cima de um jogo"
+          >
+            <div class="screen">
+              <svg
+                class="land"
+                viewBox="0 0 600 340"
+                preserveAspectRatio="xMidYMid slice"
+                aria-hidden="true"
+              >
+                <rect width="600" height="340" class="sky"></rect>
+                <circle cx="430" cy="120" r="34" class="moon"></circle>
+                <polygon
+                  points="0,220 90,150 160,200 250,120 340,195 420,140 510,200 600,160 600,340 0,340"
+                  class="far"
+                ></polygon>
+                <polygon
+                  points="0,260 110,205 200,245 300,190 390,240 490,205 600,245 600,340 0,340"
+                  class="near"
+                ></polygon>
+                <polygon
+                  points="0,340 0,290 140,268 280,296 420,272 600,292 600,340"
+                  class="ground"
+                ></polygon>
+              </svg>
+              <div class="hud num" aria-hidden="true">
+                <div class="fps">
+                  <b data-live="fps" data-min="139" data-max="147">
+                    144
+                  </b>
+                  <span>FPS</span>
+                </div>
+                <table>
+                  {rows.map((r, i) => (
+                    <tr style={`--i:${i}`}>
+                      <td>{r[0]}</td>
+                      <td class="v">{r[1]}</td>
+                    </tr>
+                  ))}
+                </table>
               </div>
-              <table>
-                {rows.map((r, i) => (
-                  <tr style={`--i:${i}`}>
-                    <td>{r[0]}</td>
-                    <td>{r[1]}</td>
-                    <td class="v">{r[2]}</td>
-                    <td class="v">{r[3]}</td>
-                  </tr>
-                ))}
-              </table>
             </div>
+            <i class="neck" aria-hidden="true"></i>
+            <i class="base" aria-hidden="true"></i>
           </div>
         </FeatureTile>
       </div>
@@ -156,15 +159,38 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
     line-height: 1.45;
   }
 
-  /* ---- OverlayBi ---- */
-  .scene {
-    position: relative;
+  /* ---- OverlayBi: um monitor com o overlay pequeno no canto, como no jogo ---- */
+  .monitor {
+    display: flex;
     flex: 1;
-    min-height: 164px;
-    margin: 16px var(--pad) var(--pad);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px var(--pad) var(--pad);
+  }
+
+  .screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
-    border-radius: var(--radius-md);
+    border: 4px solid var(--night);
+    border-radius: var(--radius-sm);
     background: var(--scene-sky);
+    box-shadow: 0 0 0 1px var(--night-line);
+  }
+
+  .neck {
+    width: 32px;
+    height: 12px;
+    background: var(--night-line);
+  }
+
+  .base {
+    width: 88px;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--night-line);
   }
 
   .land {
@@ -196,25 +222,25 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
 
   .hud {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    padding: 10px 12px 12px;
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--night) 92%, transparent);
-    font: 500 var(--text-2xs)/1.3 var(--font-readout);
+    top: 8px;
+    left: 8px;
+    padding: 4px 8px 4px 6px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--night) 88%, transparent);
+    font: 500 var(--text-2xs)/1.2 var(--font-readout);
     color: var(--night-fg);
   }
 
   .fps {
     display: flex;
     align-items: baseline;
-    gap: 6px;
-    margin-bottom: 4px;
+    gap: 4px;
+    margin-bottom: 2px;
   }
 
   .fps b {
     min-width: 3ch;
-    font: 600 var(--text-3xl)/1 var(--font-readout);
+    font: 600 var(--text-base)/1 var(--font-readout);
     color: var(--signal-hi);
   }
 
@@ -227,17 +253,16 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
   }
 
   td {
-    padding: 2px 0;
+    padding: 0;
     white-space: nowrap;
   }
 
   td:first-child {
-    padding-right: 10px;
+    padding-right: 8px;
     color: var(--night-faint);
   }
 
   td.v {
-    padding-left: 10px;
     text-align: right;
   }
 
@@ -378,8 +403,8 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
       margin-top: 20px;
     }
 
-    .scene {
-      min-height: 136px;
+    .monitor {
+      padding: 12px 40px 16px;
     }
 
     .bench {
@@ -396,8 +421,8 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
   }
 
   @media (max-width: 370px) and (max-height: 720px) {
-    .scene {
-      min-height: 148px;
+    .monitor {
+      padding-inline: 28px;
     }
   }
 </style>

@@ -6,6 +6,6 @@ export const STRESS_DRAW_MS = 3600;
 export const STRESS_HOLD_MS = 2600;
 /** As etapas do driver no celular duram isto vezes o tempo da versão do computador. */
 export const DRIVER_PACE = 1.6;
-/** A fila de apps: espera antes do primeiro e tempo de cada um. */
-export const APP_START_MS = 400;
-export const APP_STEP_MS = 900;
+/** O pacote de apps: quanto "10 apps marcados" fica na tela e o tempo de cada app na onda. */
+export const APP_START_MS = 600;
+export const APP_STEP_MS = 240;
