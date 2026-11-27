@@ -50,6 +50,10 @@ jobs:
         with:
           name: dist
           path: dist
+      # a imagem do runner traz o repositório apt da Microsoft, que às vezes responde 403 e
+      # derruba o apt-get update; o Chromium não precisa dele
+      - name: Tirar o repositório apt da Microsoft
+        run: (sudo grep -rl packages.microsoft.com /etc/apt/sources.list.d/ || true) | xargs -r sudo rm -f
       - run: npx playwright install --with-deps chromium
       - run: npm test
       - uses: actions/upload-artifact@v4
