@@ -1,5 +1,5 @@
 ---
-/** Botão pequeno que copia `text`. No tom escuro, para ficar sobre blocos de código. */
+/** Botão pequeno que copia `text`. O texto visível vem do slot (padrão "Copiar"). */
 interface Props {
   text: string;
   tone?: "light" | "dark";
@@ -10,7 +10,7 @@ const { text, tone = "light", label } = Astro.props;
 ---
 
 <button type="button" class:list={["copy", tone]} data-copy={text} aria-label={label}>
-  Copiar
+  <slot>Copiar</slot>
 </button>
 
 <script>

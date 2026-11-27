@@ -73,7 +73,11 @@ const hash = installer.sha256;
                   <span class="col">---------</span>
                   <span class="col">----</span>
                   <span>SHA256</span>
-                  <span class="hash">{hash.toUpperCase()}</span>
+                  <span class="hash">
+                    {[hash.slice(0, 32), hash.slice(32)].map((half) => (
+                      <span>{half.toUpperCase()}</span>
+                    ))}
+                  </span>
                 </div>
               )}
             </div>
@@ -87,8 +91,12 @@ const hash = installer.sha256;
                 <b>Tem que dar este código</b>
                 <code title={hash}>{shortHash(hash, 10, 10)}</code>
               </span>
-              <CopyButton text={`${command} -Algorithm SHA256`} label="Copiar o comando" />
-              <CopyButton text={hash} label="Copiar o SHA256 esperado" />
+              <CopyButton text={`${command} -Algorithm SHA256`} label="Copiar o comando">
+                Copiar comando
+              </CopyButton>
+              <CopyButton text={hash} label="Copiar o SHA256 esperado">
+                Copiar código
+              </CopyButton>
             </div>
           )}
         </div>
@@ -355,9 +363,14 @@ const hash = installer.sha256;
     color: var(--night-muted);
   }
 
+  /* o hash quebra ao meio, em duas linhas iguais, em vez de deixar dois caracteres sozinhos */
   .hash {
     color: var(--signal-hi);
     overflow-wrap: anywhere;
+  }
+
+  .hash span {
+    display: inline-block;
   }
 
   .playing .out {
