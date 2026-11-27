@@ -1,9 +1,9 @@
 ---
 /**
  * Uma seção da versão para celular: título em duas cores, texto curto e a demonstração.
- * Cada seção ocupa uma tela, como no computador: o conteúdo fica no meio do espaço entre o
- * cabeçalho fixo e a borda de baixo, e é desenhado para caber na menor tela comum de celular
- * em pé (100svh, com as barras do navegador aparecendo). Deitado, a altura é a do conteúdo.
+ * A seção tem a altura do conteúdo e o mesmo espaço em cima e embaixo, então a rolagem corre
+ * sem buracos. O conteúdo é desenhado para caber numa tela abaixo do cabeçalho fixo, mesmo na
+ * menor tela comum de celular em pé; pelo menu, a seção para logo abaixo do cabeçalho.
  * `name` é o que o cabeçalho mostra enquanto a seção está na tela.
  */
 interface Props {
@@ -30,12 +30,14 @@ const { id, name, label, tone = "light", class: className } = Astro.props;
 </section>
 
 <style>
+  /*
+   * Espaço igual entre as seções. Pelo menu, a seção para com o título logo abaixo do
+   * cabeçalho: a margem de rolagem desconta o espaço de cima, que já fica na tela.
+   */
   .m-sec {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 100svh;
-    padding: var(--m-top) 0 var(--m-bottom);
+    --gap: 40px;
+    padding-block: var(--gap);
+    scroll-margin-top: calc(var(--m-top) - var(--gap));
   }
 
   .m-sec :global(.h2) {
@@ -48,7 +50,10 @@ const { id, name, label, tone = "light", class: className } = Astro.props;
     line-height: 1.5;
   }
 
+  /* a faixa escura começa no topo da tela, então o espaço de cima é o do cabeçalho */
   .dark {
+    padding-block: var(--m-top) 56px;
+    scroll-margin-top: 0;
     background: var(--night);
     color: var(--night-fg);
   }
@@ -76,12 +81,8 @@ const { id, name, label, tone = "light", class: className } = Astro.props;
     }
   }
 
-  /* celular deitado: a seção tem a altura do conteúdo, numa coluna da largura de um celular em pé */
+  /* celular deitado: uma coluna da largura de um celular em pé */
   @media (orientation: landscape) {
-    .m-sec {
-      min-height: 0;
-    }
-
     .wrap {
       max-width: 600px;
     }

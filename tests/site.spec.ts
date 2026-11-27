@@ -20,6 +20,7 @@ const phoneSections = [
   "m-jogos",
   "m-teste",
   "m-drivers",
+  "m-apps",
   "m-instalar",
   "m-perguntas",
   "m-baixar",
@@ -205,15 +206,22 @@ test.describe("versão do celular", () => {
       await page.goto("/");
       // a medida vale com as fontes do site, não com a de reserva
       await page.evaluate(() => document.fonts.ready);
-      const tall = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>(".phone-site section")]
-          .map((s) => ({
-            id: s.id,
-            over: Math.ceil(s.getBoundingClientRect().height - innerHeight),
-          }))
+      const tall = await page.evaluate(() => {
+        const header = document.querySelector(".m-header")?.getBoundingClientRect().bottom ?? 0;
+        return [...document.querySelectorAll<HTMLElement>(".phone-site section")]
+          .map((s) => {
+            // a abertura e o fim têm a altura da tela; nas outras, o que conta é o conteúdo
+            // caber entre o cabeçalho fixo e o pé da tela
+            const box = s.classList.contains("m-sec")
+              ? (s.querySelector(":scope > .wrap")?.getBoundingClientRect().height ?? 0) +
+                header +
+                16
+              : s.getBoundingClientRect().height;
+            return { id: s.id, over: Math.ceil(box - innerHeight) };
+          })
           .filter((s) => s.over > 1)
-          .map((s) => `${s.id} +${s.over}px`),
-      );
+          .map((s) => `${s.id} +${s.over}px`);
+      });
       expect(tall, `${width}x${height}`).toEqual([]);
       expect(await horizontalOverflow(page), `${width}x${height}`).toBeLessThanOrEqual(0);
     }

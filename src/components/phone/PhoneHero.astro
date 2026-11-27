@@ -108,8 +108,8 @@ const rings = meters.map((m, i) => {
 <style>
   .m-hero {
     /* o mostrador fica com a altura que sobra depois do texto, entre um mínimo e um máximo */
-    --text-block: 436px;
-    --size: clamp(160px, 100svh - var(--text-block), min(86vw, 340px));
+    --text-block: 468px;
+    --size: clamp(136px, 100svh - var(--text-block), min(60vw, 240px));
     position: relative;
     isolation: isolate;
     display: flex;
@@ -126,7 +126,7 @@ const rings = meters.map((m, i) => {
     flex: none;
     width: var(--size);
     aspect-ratio: 1;
-    margin: 0 auto 24px;
+    margin: 0 auto 20px;
   }
 
   /* os pontinhos de radar da versão do computador, só em volta do mostrador */
@@ -223,27 +223,39 @@ const rings = meters.map((m, i) => {
     }
   }
 
-  /* ---- texto ---- */
+  /* ---- texto: centrado e grande, como na abertura do computador ---- */
+  .text {
+    text-align: center;
+  }
+
   .title {
     margin: 0;
-    font: 500 var(--display-lg) / 1 var(--font-display);
-    letter-spacing: -0.035em;
+    font: 500 var(--display-phone) / 0.97 var(--font-display);
+    letter-spacing: -0.04em;
     color: var(--ink);
   }
 
+  /* cada parte é uma linha: sem quebra, a troca da fonte não muda a altura do título */
   .title span {
     display: block;
+    white-space: nowrap;
   }
 
   .lead {
-    margin: 12px 0 0;
+    max-width: 336px;
+    margin: 12px auto 0;
     font-size: var(--text-lg);
     line-height: 1.5;
     color: var(--muted);
+    text-wrap: balance;
   }
 
   .actions {
     margin-top: 20px;
+  }
+
+  .actions :global(.actions) {
+    justify-content: center;
   }
 
   .note {
@@ -256,11 +268,11 @@ const rings = meters.map((m, i) => {
   /* telas baixas: título um passo menor, e o mostrador fica com o resto */
   @media (max-height: 620px) {
     .m-hero {
-      --text-block: 392px;
+      --text-block: 412px;
     }
 
     .title {
-      font-size: var(--display-md);
+      font-size: var(--display-lg);
     }
 
     .lead {
@@ -271,8 +283,12 @@ const rings = meters.map((m, i) => {
   /* telas estreitas e baixas (iPhone SE de 1ª geração): o texto quebra mais, o mostrador cede */
   @media (max-width: 340px) and (max-height: 620px) {
     .m-hero {
-      --text-block: 440px;
-      --size: clamp(128px, 100svh - var(--text-block), 200px);
+      --text-block: 436px;
+      --size: clamp(120px, 100svh - var(--text-block), 200px);
+    }
+
+    .title {
+      font-size: var(--display-md);
     }
   }
 
@@ -293,6 +309,7 @@ const rings = meters.map((m, i) => {
 
     .text {
       padding: 0;
+      text-align: left;
     }
 
     .title {
@@ -300,13 +317,17 @@ const rings = meters.map((m, i) => {
     }
 
     .lead {
-      margin-top: 8px;
+      margin: 8px 0 0;
       font-size: var(--text-md);
     }
 
     .actions {
       max-width: 420px;
       margin-top: 16px;
+    }
+
+    .actions :global(.actions) {
+      justify-content: flex-start;
     }
 
     .note {

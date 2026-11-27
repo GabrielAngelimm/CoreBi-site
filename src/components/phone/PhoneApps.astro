@@ -1,0 +1,215 @@
+---
+/**
+ * Apps, no celular: a fila de instalação do CoreBi, como um gerenciador de downloads. Cinco
+ * apps com o ícone oficial e quem publica; quando o cartão aparece, eles instalam um por um:
+ * a linha de baixo do app da vez enche, o estado muda de "Na fila" para "Instalando" e
+ * "Instalado", e a contagem do topo acompanha. Sem selos: o estado é escrito.
+ * Sem JavaScript ou com movimento reduzido, a fila aparece já toda instalada.
+ */
+import { Image } from "astro:assets";
+import { queue } from "@/data/apps";
+import { phoneApps } from "@/data/phone";
+import PhoneSection from "./PhoneSection.astro";
+import { APP_STEP_MS } from "./tools-timing";
+
+// o ícone vem da mesma lista da versão do computador
+const apps = phoneApps.flatMap((app) => {
+  const icon = queue.find((q) => q.name === app.name)?.icon;
+  return icon ? [{ ...app, icon }] : [];
+});
+---
+
+<PhoneSection id="m-apps" name="Apps" label="m-apps-title">
+  <h2 id="m-apps-title" class="h2">
+    Formatou? <span class="soft">Instale tudo de uma vez.</span>
+  </h2>
+  <p class="lead">
+    Marque os apps e o CoreBi instala um por um, direto da fonte oficial. Sem clicar em Avançar.
+  </p>
+
+  <div class="card" data-m-apps style={`--step:${APP_STEP_MS}ms`}>
+    <div class="head">
+      <b>Fila de instalação</b>
+      <span class="count">
+        <span class="num" data-apps-done>
+          {apps.length}
+        </span>{" "}
+        de {apps.length}
+      </span>
+    </div>
+
+    <ol class="list" aria-label="Exemplo de fila de instalação do CoreBi">
+      {apps.map((app) => (
+        <li data-app data-state="done">
+          <Image src={app.icon} alt="" width={64} height={64} loading="lazy" class="icon" />
+          <span class="name">
+            <b>{app.name}</b>
+            <small>{app.publisher}</small>
+          </span>
+          <span class="state">
+            <span class="wait">Na fila</span>
+            <span class="run">Instalando</span>
+            <span class="done">Instalado</span>
+          </span>
+          <i class="progress" aria-hidden="true" />
+        </li>
+      ))}
+    </ol>
+  </div>
+</PhoneSection>
+
+<script>
+  import "./apps.client";
+</script>
+
+<style>
+  .card {
+    margin-top: 24px;
+    padding: 4px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .head b {
+    font: 500 var(--text-base)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .count {
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--muted);
+  }
+
+  .count .num {
+    font: 600 var(--text-lg)/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  .list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .list li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+  }
+
+  .list li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .list :global(.icon) {
+    width: 32px;
+    height: 32px;
+    transition:
+      opacity 0.3s,
+      filter 0.3s;
+  }
+
+  .name {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .name b {
+    font: 500 var(--text-base)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .name small {
+    font-size: var(--text-xs);
+    color: var(--faint);
+  }
+
+  .state {
+    font: 500 var(--text-sm)/1 var(--font-display);
+  }
+
+  .state > span {
+    display: none;
+  }
+
+  /* um estado por vez: na fila, instalando ou instalado */
+  [data-state="wait"] .wait,
+  [data-state="run"] .run,
+  [data-state="done"] .done {
+    display: inline;
+  }
+
+  .wait {
+    color: var(--faint);
+  }
+
+  .run {
+    color: var(--signal-text);
+  }
+
+  .done {
+    color: var(--muted);
+  }
+
+  /* o app que ainda vai instalar fica em segundo plano */
+  [data-state="wait"] :global(.icon) {
+    filter: grayscale(1);
+    opacity: 0.45;
+  }
+
+  /* a linha de baixo do app da vez enche no tempo da instalação */
+  .progress {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 44px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--signal);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  [data-state="run"] .progress {
+    animation: m-apps-fill var(--step) linear both;
+  }
+
+  @keyframes m-apps-fill {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @media (max-height: 620px) {
+    .card {
+      margin-top: 20px;
+    }
+
+    .head {
+      padding: 8px 0;
+    }
+
+    .list li {
+      min-height: 48px;
+    }
+
+    .list :global(.icon) {
+      width: 28px;
+      height: 28px;
+    }
+  }
+</style>
