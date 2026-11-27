@@ -1,0 +1,342 @@
+---
+/**
+ * Drivers, no celular: só o driver da placa de vídeo, sem botões. Quando aparece, o cartão faz
+ * as quatro etapas da versão do computador em ordem (backup, download, assinatura e
+ * instalação): cada etapa acende o ponto dela, a linha desce até a próxima e, no fim, a versão
+ * nova assume. Sem selos: o estado é dito pelo ponto e pela cor do texto.
+ */
+import Bubble from "@/components/ui/Bubble.astro";
+import { driverExample as d } from "@/data/drivers";
+import PhoneSection from "./PhoneSection.astro";
+import { DRIVER_PACE } from "./tools-timing";
+
+// cada etapa começa quando a anterior termina; no celular, um pouco mais devagar para dar tempo de ler
+let elapsed = 0;
+const steps = d.steps.map((s) => {
+  const ms = Math.round(s.ms * DRIVER_PACE);
+  const at = elapsed;
+  elapsed += ms;
+  return { ...s, at, ms };
+});
+const total = elapsed;
+---
+
+<PhoneSection id="m-drivers" name="Drivers" label="m-drivers-title">
+  <h2 id="m-drivers-title" class="h2">
+    Driver novo, <span class="soft">sem medo de quebrar.</span>
+  </h2>
+  <p class="lead">
+    Faça backup de todos os drivers e restaure tudo depois de formatar. E o de vídeo vem novinho,
+    direto da {d.vendor}.
+  </p>
+
+  <div
+    class="card"
+    data-play
+    style={`--total:${total}ms`}
+    role="img"
+    aria-label={`Exemplo: driver da ${d.device} atualizado de ${d.installed} para ${d.latest}. ${steps.map((s) => `${s.title}, ${s.detail}`).join(". ")}.`}
+  >
+    <div class="device" aria-hidden="true">
+      <Bubble part="gpu" class="device-icon" />
+      <div class="who">
+        <b>{d.device}</b>
+        <span>Placa de vídeo · {d.vendor}</span>
+      </div>
+    </div>
+
+    <dl class="versions" aria-hidden="true">
+      <div class="before">
+        <dt>Antes</dt>
+        <dd class="num">{d.installed}</dd>
+      </div>
+      <svg class="arrow" viewBox="0 0 48 24">
+        <path d="M2 12h42M36 5l8 7-8 7"></path>
+      </svg>
+      <div class="after">
+        <dt>Depois</dt>
+        <dd class="num">{d.latest}</dd>
+      </div>
+    </dl>
+
+    <ol class="steps" aria-hidden="true">
+      {steps.map((s) => (
+        <li style={`--at:${s.at}ms;--ms:${s.ms}ms`}>
+          <i class="dot" />
+          <b>{s.title}</b>
+          {"count" in s ? (
+            <span class="detail">
+              <span
+                class="num"
+                data-count={s.count}
+                data-ms={s.ms}
+                data-delay={s.at}
+                data-ease="linear"
+              >
+                {s.count}
+              </span>{" "}
+              MB
+            </span>
+          ) : (
+            <span class="detail">{s.detail}</span>
+          )}
+        </li>
+      ))}
+    </ol>
+  </div>
+</PhoneSection>
+
+<style>
+  .card {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .device {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .device :global(.device-icon) {
+    --s: 44px;
+  }
+
+  .who {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .who b {
+    font: 500 var(--text-lg)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .who span {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  /* ---- antes e depois ---- */
+  .versions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding: 12px 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .versions dt {
+    margin-bottom: 8px;
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  .versions dd {
+    margin: 0;
+    font: 600 var(--text-2xl)/1 var(--font-readout);
+  }
+
+  .before dd {
+    color: var(--faint);
+  }
+
+  .after {
+    text-align: right;
+  }
+
+  .after dd {
+    color: var(--signal-text);
+  }
+
+  .arrow {
+    width: 28px;
+    height: 14px;
+    margin-bottom: 4px;
+    fill: none;
+    stroke: var(--tick);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---- etapas: um ponto por etapa e uma linha que desce até a próxima ---- */
+  .steps {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 36px;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--signal);
+    border-radius: 50%;
+    background: var(--signal);
+  }
+
+  /* o trecho de linha entre este ponto e o próximo */
+  .steps li:not(:last-child)::after {
+    position: absolute;
+    top: calc(50% + 8px);
+    bottom: calc(-50% + 8px);
+    left: 5px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--signal);
+    content: "";
+    transform-origin: top;
+  }
+
+  .steps li:not(:last-child)::before {
+    position: absolute;
+    top: calc(50% + 8px);
+    bottom: calc(-50% + 8px);
+    left: 5px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--line);
+    content: "";
+  }
+
+  .steps b {
+    font: 500 var(--text-base)/1.25 var(--font-display);
+    color: var(--ink);
+  }
+
+  .detail {
+    font-size: var(--text-sm);
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /*
+   * Antes de tocar: pontos vazios, linhas recolhidas e texto em cinza (cinza legível, não
+   * transparente: o contraste é medido no meio da animação). A versão nova espera o fim.
+   */
+  .armed .dot {
+    border-color: var(--line-2);
+    background: var(--paper);
+  }
+
+  .armed .steps b,
+  .armed .detail,
+  .armed .after dd {
+    color: var(--faint);
+  }
+
+  .armed .before dd {
+    color: var(--ink);
+  }
+
+  .armed .steps li::after {
+    transform: scaleY(0);
+  }
+
+  .playing .dot {
+    animation: m-drv-dot 0.3s var(--ease-out) var(--at) both;
+  }
+
+  .playing .steps b {
+    animation: m-drv-text 0.3s ease-out var(--at) both;
+  }
+
+  .playing .detail {
+    animation: m-drv-detail 0.3s ease-out var(--at) both;
+  }
+
+  .playing .steps li::after {
+    animation: m-drv-line var(--ms) linear var(--at) both;
+  }
+
+  .playing .before dd {
+    animation: m-drv-before 0.4s ease-out var(--total) both;
+  }
+
+  .playing .after dd {
+    animation: m-drv-after 0.4s ease-out var(--total) both;
+  }
+
+  @keyframes m-drv-dot {
+    from {
+      border-color: var(--line-2);
+      background: var(--paper);
+    }
+  }
+
+  @keyframes m-drv-text {
+    from {
+      color: var(--faint);
+    }
+  }
+
+  @keyframes m-drv-detail {
+    from {
+      color: var(--faint);
+    }
+  }
+
+  @keyframes m-drv-line {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes m-drv-before {
+    from {
+      color: var(--ink);
+    }
+  }
+
+  @keyframes m-drv-after {
+    from {
+      color: var(--faint);
+    }
+  }
+
+  /* telas baixas: as mesmas partes, com menos ar */
+  @media (max-height: 620px) {
+    .card {
+      margin-top: 20px;
+      padding: 12px;
+    }
+
+    .versions {
+      margin-top: 12px;
+      padding: 8px 0;
+    }
+
+    .versions dd {
+      font-size: var(--text-xl);
+    }
+
+    .steps {
+      margin-top: 8px;
+    }
+
+    .steps li {
+      min-height: 32px;
+    }
+
+    .steps b {
+      font-size: var(--text-md);
+    }
+  }
+</style>

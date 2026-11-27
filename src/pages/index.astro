@@ -11,23 +11,27 @@ import Hero from "@/components/sections/hero/Hero.astro";
 import Monitoring from "@/components/sections/monitoring/Monitoring.astro";
 import InstallSteps from "@/components/sections/install-steps/InstallSteps.astro";
 import StressTest from "@/components/sections/stress-test/StressTest.astro";
+import PhoneSite from "@/components/phone/PhoneSite.astro";
 import { getLatestRelease } from "@/lib/release";
 
 const release = await getLatestRelease();
 ---
 
 <BaseLayout>
-  <SiteHeader />
-  <main id="inicio">
-    <Hero release={release} />
-    <About />
-    <Monitoring />
-    <Gaming />
-    <StressTest />
-    <Drivers />
-    <Apps />
-    <InstallSteps release={release} />
-    <Faq />
-    <Final release={release} />
-  </main>
+  <div class="desk-site">
+    <SiteHeader />
+    <main id="inicio">
+      <Hero release={release} />
+      <About />
+      <Monitoring />
+      <Gaming />
+      <StressTest />
+      <Drivers />
+      <Apps />
+      <InstallSteps release={release} />
+      <Faq />
+      <Final release={release} />
+    </main>
+  </div>
+  <PhoneSite release={release} />
 </BaseLayout>

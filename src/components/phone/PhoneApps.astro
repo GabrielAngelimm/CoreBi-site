@@ -1,0 +1,214 @@
+---
+/**
+ * Apps, no celular: um pacote com dez apps marcados, com o ícone oficial de cada um. Quando o
+ * cartão aparece, o pacote todo instala de uma vez: os ícones acendem em onda, um atrás do
+ * outro, e uma barra só mostra o pacote inteiro, com a contagem no topo e o app da vez embaixo.
+ * Sem selos: o estado é a cor do ícone e a linha escrita. No app de verdade o winget instala um
+ * por vez; o que a pessoa faz é marcar e clicar uma vez só.
+ * Sem JavaScript ou com movimento reduzido, o pacote aparece já todo instalado.
+ */
+import { Image } from "astro:assets";
+import { queue as apps } from "@/data/apps";
+import PhoneSection from "./PhoneSection.astro";
+import { APP_STEP_MS } from "./tools-timing";
+---
+
+<PhoneSection id="m-apps" name="Apps" label="m-apps-title">
+  <h2 id="m-apps-title" class="h2">
+    Formatou? <span class="soft">Instale tudo de uma vez.</span>
+  </h2>
+  <p class="lead">
+    Marque os apps, clique em Instalar e vá pegar um café. O CoreBi cuida do resto, direto da fonte
+    oficial.
+  </p>
+
+  <div
+    class="card"
+    data-m-apps
+    data-phase="done"
+    style={`--step:${APP_STEP_MS}ms;--total:${APP_STEP_MS * apps.length}ms`}
+  >
+    <div class="head">
+      <b>Pacote de apps</b>
+      <span class="count">
+        <span class="num" data-apps-done>
+          {apps.length}
+        </span>{" "}
+        de {apps.length}
+      </span>
+    </div>
+
+    <ul class="pack" aria-label="Exemplo de pacote com dez apps">
+      {apps.map((app) => (
+        <li data-app data-name={app.name} data-state="done">
+          <Image src={app.icon} alt={app.name} width={64} height={64} loading="lazy" />
+        </li>
+      ))}
+    </ul>
+
+    <span class="bar" aria-hidden="true">
+      <i></i>
+    </span>
+
+    <p class="status" aria-hidden="true">
+      <span class="wait">{apps.length} apps marcados</span>
+      <span class="run">
+        Instalando <b data-apps-now>{apps[0]?.name}</b>
+      </span>
+      <span class="done">Pronto, {apps.length} apps instalados</span>
+    </p>
+  </div>
+</PhoneSection>
+
+<script>
+  import "./apps.client";
+</script>
+
+<style>
+  .card {
+    margin-top: 24px;
+    padding: 0 16px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .head b {
+    font: 500 var(--text-base)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .count {
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--muted);
+  }
+
+  .count .num {
+    font: 600 var(--text-lg)/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  /* dez ícones, cinco por linha */
+  .pack {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px 8px;
+    justify-items: center;
+    margin: 0;
+    padding: 20px 0;
+    list-style: none;
+  }
+
+  .pack li {
+    width: 40px;
+    height: 40px;
+    transition:
+      opacity 0.2s,
+      filter 0.2s,
+      scale 0.2s var(--ease-out);
+  }
+
+  .pack :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* marcado, esperando a vez: em segundo plano */
+  [data-state="wait"] {
+    filter: grayscale(1);
+    opacity: 0.4;
+    scale: 0.88;
+  }
+
+  /* o app da vez acende e cresce um pouco */
+  [data-state="run"] {
+    scale: 1.12;
+  }
+
+  /* uma barra só para o pacote inteiro */
+  .bar {
+    display: block;
+    height: 4px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--line);
+  }
+
+  .bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--signal);
+    transform-origin: left;
+  }
+
+  [data-phase="wait"] .bar i {
+    transform: scaleX(0);
+  }
+
+  [data-phase="run"] .bar i {
+    animation: m-apps-bar var(--total) linear both;
+  }
+
+  @keyframes m-apps-bar {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  .status {
+    margin: 12px 0 0;
+    font: 500 var(--text-sm)/1.2 var(--font-display);
+    color: var(--muted);
+  }
+
+  .status > span {
+    display: none;
+  }
+
+  [data-phase="wait"] .wait,
+  [data-phase="run"] .run,
+  [data-phase="done"] .done {
+    display: inline;
+  }
+
+  .status b {
+    font-weight: 500;
+    color: var(--signal-text);
+  }
+
+  .done {
+    color: var(--ink);
+  }
+
+  @media (max-height: 620px) {
+    .card {
+      margin-top: 20px;
+      padding-bottom: 12px;
+    }
+
+    .head {
+      padding: 8px 0;
+    }
+
+    .pack {
+      row-gap: 12px;
+      padding: 16px 0;
+    }
+
+    .pack li {
+      width: 36px;
+      height: 36px;
+    }
+  }
+</style>

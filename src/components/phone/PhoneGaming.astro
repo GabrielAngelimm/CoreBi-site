@@ -1,0 +1,428 @@
+---
+/**
+ * Jogos, no celular (seção escura): o OverlayBi num monitor e o benchmark de antes e depois, em
+ * dois cartões para passar com o dedo. O overlay é pequeno, num canto da tela, como no jogo de
+ * verdade: liga quando aparece e o FPS oscila alguns segundos. No benchmark as duas barras
+ * crescem e o ganho sobe do zero.
+ */
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+import { features } from "@/data/features";
+import { integer } from "@/lib/format";
+import Pager from "./Pager.astro";
+import PhoneSection from "./PhoneSection.astro";
+
+// mesma ordem do OverlayBi no app (FPS, CPU, GPU, VRAM e RAM), só com o uso de cada peça
+const rows = [
+  ["CPU", "38 %"],
+  ["GPU", "97 %"],
+  ["VRAM", "76 %"],
+  ["RAM", "62 %"],
+] as const;
+
+// o mesmo resultado da versão do computador: o "depois" é 12,6 % mais rápido
+const before = 3420;
+const after = 3850;
+const top = 4500;
+const gain = ((after / before - 1) * 100).toFixed(1);
+const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
+---
+
+<PhoneSection id="m-jogos" name="Jogos" label="m-gaming-title" tone="dark">
+  <h2 id="m-gaming-title" class="h2">
+    Jogue de olho no FPS. <span class="soft">Sem sair da partida.</span>
+  </h2>
+  <p class="lead">Veja o FPS por cima do jogo e descubra quanto cada peça nova rendeu.</p>
+
+  <div class="cards">
+    <Pager labels={["OverlayBi", "Benchmark"]} label="Exemplos para jogos" tone="dark">
+      <div class="slide" data-play>
+        <FeatureTile {...features.overlay} dark class="card">
+          <div
+            class="monitor"
+            role="img"
+            aria-label="Exemplo do OverlayBi num canto da tela, por cima de um jogo"
+          >
+            <div class="screen">
+              <svg
+                class="land"
+                viewBox="0 0 600 340"
+                preserveAspectRatio="xMidYMid slice"
+                aria-hidden="true"
+              >
+                <rect width="600" height="340" class="sky"></rect>
+                <circle cx="430" cy="120" r="34" class="moon"></circle>
+                <polygon
+                  points="0,220 90,150 160,200 250,120 340,195 420,140 510,200 600,160 600,340 0,340"
+                  class="far"
+                ></polygon>
+                <polygon
+                  points="0,260 110,205 200,245 300,190 390,240 490,205 600,245 600,340 0,340"
+                  class="near"
+                ></polygon>
+                <polygon
+                  points="0,340 0,290 140,268 280,296 420,272 600,292 600,340"
+                  class="ground"
+                ></polygon>
+              </svg>
+              <div class="hud num" aria-hidden="true">
+                <div class="fps">
+                  <b data-live="fps" data-min="139" data-max="147">
+                    144
+                  </b>
+                  <span>FPS</span>
+                </div>
+                <table>
+                  {rows.map((r, i) => (
+                    <tr style={`--i:${i}`}>
+                      <td>{r[0]}</td>
+                      <td class="v">{r[1]}</td>
+                    </tr>
+                  ))}
+                </table>
+              </div>
+            </div>
+            <i class="neck" aria-hidden="true"></i>
+            <i class="base" aria-hidden="true"></i>
+          </div>
+        </FeatureTile>
+      </div>
+
+      <div class="slide" data-play>
+        <FeatureTile {...features.benchmark} dark class="card">
+          <div class="bench">
+            <p class="gain">
+              <b class="num">
+                +
+                <span data-count={gain} data-digits="1" data-ms="1500">
+                  {gain.replace(".", ",")}
+                </span>
+              </b>
+              <small>%</small>
+              <span>mais rápido depois da troca</span>
+            </p>
+            <dl class="scores">
+              <div class="row before" style={`--w:${width(before)}`}>
+                <dt>Antes</dt>
+                <dd>
+                  <span class="bar">
+                    <i></i>
+                  </span>
+                  <b class="num" data-count={before} data-ms="1200">
+                    {integer(before)}
+                  </b>
+                </dd>
+              </div>
+              <div class="row after" style={`--w:${width(after)}`}>
+                <dt>Depois</dt>
+                <dd>
+                  <span class="bar">
+                    <i></i>
+                  </span>
+                  <b class="num" data-count={after} data-ms="1200" data-delay="250">
+                    {integer(after)}
+                  </b>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </FeatureTile>
+      </div>
+    </Pager>
+  </div>
+</PhoneSection>
+
+<style>
+  .cards {
+    margin-top: 24px;
+  }
+
+  .slide > :global(.card) {
+    height: 100%;
+  }
+
+  /* no celular o cartão é mais baixo: título menor e texto curto */
+  .slide :global(.tile) {
+    --pad: 20px;
+  }
+
+  .slide :global(.tile .head) {
+    padding-top: 18px;
+  }
+
+  .slide :global(.tile h3) {
+    margin-bottom: 6px;
+    font-size: var(--text-xl);
+  }
+
+  .slide :global(.tile .head p) {
+    font-size: var(--text-md);
+    line-height: 1.45;
+  }
+
+  /* ---- OverlayBi: um monitor com o overlay pequeno no canto, como no jogo ---- */
+  .monitor {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px var(--pad) var(--pad);
+  }
+
+  .screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 4px solid var(--night);
+    border-radius: var(--radius-sm);
+    background: var(--scene-sky);
+    box-shadow: 0 0 0 1px var(--night-line);
+  }
+
+  .neck {
+    width: 32px;
+    height: 12px;
+    background: var(--night-line);
+  }
+
+  .base {
+    width: 88px;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--night-line);
+  }
+
+  .land {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sky {
+    fill: var(--scene-sky);
+  }
+
+  .moon {
+    fill: var(--scene-moon);
+  }
+
+  .far {
+    fill: var(--scene-far);
+  }
+
+  .near {
+    fill: var(--scene-near);
+  }
+
+  .ground {
+    fill: var(--scene-ground);
+  }
+
+  .hud {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 8px 4px 6px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--night) 88%, transparent);
+    font: 500 var(--text-2xs)/1.2 var(--font-readout);
+    color: var(--night-fg);
+  }
+
+  .fps {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+
+  .fps b {
+    min-width: 3ch;
+    font: 600 var(--text-base)/1 var(--font-readout);
+    color: var(--signal-hi);
+  }
+
+  .fps span {
+    color: var(--night-muted);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  td:first-child {
+    padding-right: 8px;
+    color: var(--night-faint);
+  }
+
+  td.v {
+    text-align: right;
+  }
+
+  /* o overlay liga: a caixa aparece e as linhas entram uma a uma */
+  .armed .hud,
+  .armed tr {
+    opacity: 0;
+  }
+
+  .playing .hud {
+    animation: m-game-on 0.45s var(--ease-out) 0.2s both;
+  }
+
+  .playing tr {
+    animation: m-game-on 0.4s var(--ease-out) both;
+    animation-delay: calc(0.45s + var(--i) * 0.08s);
+  }
+
+  /* ---- benchmark ---- */
+  .bench {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px var(--pad) var(--pad);
+  }
+
+  .gain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 6px;
+    margin: 0 0 16px;
+  }
+
+  .gain b {
+    font: 600 var(--num-lg)/1 var(--font-readout);
+    color: var(--night-fg);
+  }
+
+  .gain small {
+    font: 500 var(--text-xl)/1 var(--font-display);
+    color: var(--night-muted);
+  }
+
+  .gain > span {
+    flex-basis: 100%;
+    margin-top: 8px;
+    font-size: var(--text-md);
+    color: var(--night-muted);
+  }
+
+  .scores {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+  }
+
+  /* rótulo, barra e pontos numa linha só */
+  .row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    align-items: center;
+  }
+
+  .row dt {
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--night-faint);
+  }
+
+  .row dd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .bar {
+    flex: 1;
+    height: 10px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--night-line);
+  }
+
+  .bar i {
+    display: block;
+    width: var(--w);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--night-muted);
+    transform-origin: left;
+  }
+
+  .after .bar i {
+    background: var(--gpu);
+  }
+
+  .row b {
+    min-width: 4.5ch;
+    font: 600 var(--text-2xl)/1 var(--font-readout);
+    text-align: right;
+    color: var(--night-fg);
+  }
+
+  .armed .bar i {
+    transform: scaleX(0);
+  }
+
+  .playing .bar i {
+    animation: m-game-fill 1.2s var(--ease-out) both;
+  }
+
+  .playing .after .bar i {
+    animation-delay: 0.25s;
+  }
+
+  @keyframes m-game-on {
+    from {
+      opacity: 0;
+      translate: 0 4px;
+    }
+  }
+
+  @keyframes m-game-fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  /* telas baixas: os cartões já dizem o que a linha de apoio diz */
+  @media (max-height: 620px) {
+    .lead {
+      display: none;
+    }
+
+    .cards {
+      margin-top: 20px;
+    }
+
+    .monitor {
+      padding: 12px 40px 16px;
+    }
+
+    .bench {
+      padding-top: 12px;
+    }
+
+    .gain {
+      margin-bottom: 12px;
+    }
+
+    .gain b {
+      font-size: var(--num-md);
+    }
+  }
+
+  @media (max-width: 370px) and (max-height: 720px) {
+    .monitor {
+      padding-inline: 28px;
+    }
+  }
+</style>

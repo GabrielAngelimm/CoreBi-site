@@ -1,0 +1,199 @@
+---
+/**
+ * Sobre, no celular: os seis programas que viram um (seis ícones com o nome, uma seta e o
+ * ícone do CoreBi) e os quatro números, que sobem do zero quando aparecem.
+ */
+import AppTile from "@/components/ui/AppTile.astro";
+import Icon from "@/components/ui/Icon.astro";
+import { facts, replacedTools } from "@/data/about";
+import { parts } from "@/data/parts";
+import PhoneSection from "./PhoneSection.astro";
+---
+
+<PhoneSection id="m-sobre" name="Sobre" label="m-sobre-title">
+  <h2 id="m-sobre-title" class="h2">
+    Um app no lugar de seis. <span class="soft">Chega de pilha de programas.</span>
+  </h2>
+
+  <div class="merge" data-play>
+    <ul class="tools" aria-label="Os seis programas que o CoreBi junta">
+      {replacedTools.map((t, i) => (
+        <li style={`--c:${parts[t.part].color};--i:${i}`}>
+          <span class="tool-icon" aria-hidden="true">
+            <Icon name={t.icon ?? parts[t.part].icon} />
+          </span>
+          {t.label}
+        </li>
+      ))}
+    </ul>
+    <svg class="arrow" viewBox="0 0 48 24" aria-hidden="true">
+      <path d="M2 12h42M36 5l8 7-8 7"></path>
+    </svg>
+    <AppTile size="sm" class="one" />
+  </div>
+
+  <dl class="facts" data-play data-threshold="0.15">
+    {facts.map((f, i) => (
+      <div>
+        <dt class="num" data-count={f.value} data-ms="1200" data-delay={i * 120}>
+          {f.value}
+        </dt>
+        <dd>{f.text}</dd>
+      </div>
+    ))}
+  </dl>
+</PhoneSection>
+
+<style>
+  .merge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding: 16px 16px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tools {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tools li {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    font: 500 var(--text-2xs)/1.2 var(--font-display);
+    color: var(--muted);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .tool-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper-soft);
+    color: var(--c);
+  }
+
+  .tool-icon :global(.icon) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .arrow {
+    flex: none;
+    width: 28px;
+    height: 16px;
+    fill: none;
+    stroke: var(--tick);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .merge :global(.one) {
+    --s: 68px;
+    flex: none;
+  }
+
+  /* os seis acendem, a seta se desenha e o CoreBi aparece no fim */
+  .armed .tool-icon,
+  .armed :global(.one) {
+    opacity: 0;
+  }
+
+  .armed .arrow path {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+  }
+
+  .playing .tool-icon {
+    animation: m-about-in 0.5s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 0.07s);
+  }
+
+  .playing .arrow path {
+    stroke-dasharray: 60;
+    animation: m-about-draw 0.6s var(--ease-out) 0.5s both;
+  }
+
+  .playing :global(.one) {
+    animation: m-about-in 0.6s var(--ease-out) 0.95s both;
+  }
+
+  @keyframes m-about-in {
+    from {
+      opacity: 0;
+      scale: 0.7;
+    }
+  }
+
+  @keyframes m-about-draw {
+    from {
+      stroke-dashoffset: 60;
+    }
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
+    margin: 24px 0 0;
+  }
+
+  .facts div {
+    padding: 14px 0 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  dt {
+    font: 600 var(--num-md)/1 var(--font-readout);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  dd {
+    margin: 6px 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    color: var(--muted);
+  }
+
+  /* telas baixas: cartão, ícones e números um passo menores */
+  @media (max-height: 620px) {
+    .merge {
+      margin-top: 20px;
+      padding: 12px 12px 8px;
+    }
+
+    .tool-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .facts {
+      margin-top: 20px;
+    }
+
+    .facts div {
+      padding: 10px 0 8px;
+    }
+
+    dt {
+      font-size: var(--num-sm);
+    }
+  }
+</style>

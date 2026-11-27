@@ -1,0 +1,235 @@
+---
+/**
+ * O fim da página, no celular: uma segunda abertura, escura. O símbolo do CoreBi grande em
+ * traço, o título e os dois botões (baixar e GitHub). Depois da tela, o rodapé com os links.
+ */
+import Logo from "@/components/ui/Logo.astro";
+import { footerLinks } from "@/config/site";
+import type { Release } from "@/lib/release";
+import PhoneActions from "./PhoneActions.astro";
+
+interface Props {
+  release: Release;
+}
+
+const { release } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<section
+  id="m-baixar"
+  class="m-final"
+  data-tone="dark"
+  data-m-section=""
+  aria-labelledby="m-final-title"
+>
+  <div class="wrap content">
+    <svg class="mark" viewBox="0 0 256 256" aria-hidden="true">
+      <polygon
+        class="frame"
+        pathLength="1"
+        points="141,35 81,35 34,82 34,174 81,221 141,221 141,195 93,195 60,162 60,94 93,61 141,61"
+      ></polygon>
+      <polygon
+        class="frame"
+        pathLength="1"
+        points="155,35 184,35 218,69 218,108 202,124 222,144 222,185 186,221 155,221 155,195 175,195 196,174 196,156 178,138 155,138 155,112 177,112 192,97 192,81 173,61 155,61"
+      ></polygon>
+      <polygon class="core" points="95,84 117,84 117,106 95,106"></polygon>
+      <polygon class="core" points="95,121 117,121 117,172 95,172"></polygon>
+    </svg>
+
+    <h2 id="m-final-title" class="title">
+      Abra uma vez <span class="soft">e veja o seu PC por inteiro.</span>
+    </h2>
+
+    <div class="actions">
+      <PhoneActions release={release} tone="dark" />
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <a class="brand" href="#m-abertura">
+      <Logo />
+      CoreBi
+    </a>
+    <nav aria-label="Links">
+      {footerLinks.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener">
+          {link.label}
+        </a>
+      ))}
+    </nav>
+    <span class="credit">Feito por Gabriel · {year}</span>
+  </div>
+</footer>
+
+<style>
+  .m-final {
+    /* o símbolo fica com a altura que sobra depois do título e dos botões */
+    --mark: clamp(120px, 100svh - 376px, min(64vw, 260px));
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding-top: var(--m-top);
+    overflow: hidden;
+    background: var(--night);
+    color: var(--night-fg);
+  }
+
+  /* a grade fina da versão do computador, sumindo nas bordas */
+  .m-final::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--night-fg) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--night-fg) 5%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse 80% 50% at 50% 30%, #000 20%, transparent 75%);
+    content: "";
+    pointer-events: none;
+  }
+
+  .content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 8px 40px;
+  }
+
+  /* ---- o símbolo em traço, como o gigante da versão do computador ---- */
+  .mark {
+    width: var(--mark);
+    height: var(--mark);
+    margin: 0 auto 24px;
+    overflow: visible;
+  }
+
+  .mark polygon {
+    stroke-linejoin: round;
+  }
+
+  .frame {
+    fill: none;
+    stroke: color-mix(in srgb, var(--night-fg) 42%, transparent);
+    stroke-width: 1.4;
+  }
+
+  .core {
+    fill: color-mix(in srgb, var(--signal-hi) 14%, transparent);
+    stroke: var(--signal-hi);
+    stroke-width: 1.6;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .frame {
+      stroke-dasharray: 1;
+      animation: m-final-draw 1.6s var(--ease-in-out) both;
+    }
+
+    .core {
+      animation: m-final-core 0.6s var(--ease-out) 1.1s both;
+    }
+  }
+
+  @keyframes m-final-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes m-final-core {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .title {
+    margin: 0;
+    font: 500 var(--display-lg) / 1 var(--font-display);
+    letter-spacing: -0.035em;
+    color: var(--night-fg);
+    text-wrap: balance;
+  }
+
+  .title .soft {
+    color: var(--night-soft);
+  }
+
+  .actions {
+    margin-top: 28px;
+  }
+
+  @media (max-height: 620px) {
+    .m-final {
+      --mark: clamp(96px, 100svh - 348px, 200px);
+    }
+
+    .title {
+      font-size: var(--display-md);
+    }
+  }
+
+  @media (orientation: landscape) {
+    .m-final {
+      --mark: 120px;
+      min-height: 0;
+    }
+  }
+
+  /* ---- rodapé ---- */
+  .foot {
+    padding: 28px 0 calc(env(safe-area-inset-bottom, 0px) + 28px);
+    border-top: 1px solid var(--night-line);
+    background: var(--night);
+    color: var(--night-fg);
+  }
+
+  .brand {
+    --logo-frame: var(--night-fg);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font: 500 var(--text-xl)/1 var(--font-display);
+    color: var(--night-fg);
+    text-decoration: none;
+  }
+
+  .brand :global(.logo) {
+    width: 28px;
+    height: 28px;
+  }
+
+  nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 16px;
+    margin: 16px 0 20px;
+  }
+
+  nav a {
+    padding: 10px 0;
+    font-size: var(--text-md);
+    color: var(--night-muted);
+    text-decoration: none;
+  }
+
+  .credit {
+    font-size: var(--text-sm);
+    color: var(--night-faint);
+  }
+</style>

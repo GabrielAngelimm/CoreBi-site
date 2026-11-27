@@ -1,0 +1,106 @@
+---
+/**
+ * Cartões lado a lado que a pessoa passa com o dedo, com o próximo aparecendo na borda.
+ * `labels` dá nome a cada cartão, nos pontinhos embaixo. Os filhos do slot são os cartões, um
+ * por rótulo, cada um com a classe "slide".
+ */
+interface Props {
+  labels: readonly string[];
+  label: string;
+  tone?: "light" | "dark";
+}
+
+const { labels, label, tone = "light" } = Astro.props;
+---
+
+<div class:list={["pager", tone]} data-pager role="group" aria-label={label}>
+  <div class="track" data-track>
+    <slot />
+  </div>
+  <div class="dots">
+    {labels.map((name, i) => (
+      <button
+        type="button"
+        data-go={i}
+        aria-current={i === 0 ? "true" : "false"}
+        aria-label={`Mostrar ${name}`}
+      >
+        <i />
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  import "./pager.client";
+</script>
+
+<style>
+  /* o trilho vai de borda a borda da tela; o primeiro e o último cartão param no recuo */
+  .pager {
+    margin-inline: calc(-1 * var(--gutter));
+  }
+
+  .track {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 4px var(--gutter) 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track > :global(.slide) {
+    flex: 0 0 calc(100% - 36px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 12px;
+  }
+
+  .dots button {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .dots i {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--line-2);
+    transition:
+      width 0.3s var(--ease-out),
+      background-color 0.3s;
+  }
+
+  .dots [aria-current="true"] i {
+    width: 22px;
+    background: var(--ink);
+  }
+
+  .dark .dots i {
+    background: var(--night-line);
+  }
+
+  .dark .dots [aria-current="true"] i {
+    background: var(--night-fg);
+  }
+</style>

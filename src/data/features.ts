@@ -2,22 +2,22 @@
 export const features = {
   sensors: {
     title: "Saiba quando o PC esquenta",
-    text: "Temperatura, clock e consumo de cada peça, ao vivo.",
+    text: "Temperatura, clock e consumo de cada peça, segundo a segundo.",
   },
   overlay: {
-    title: "Veja o desempenho sem sair do jogo",
-    text: "FPS, CPU, GPU, VRAM e RAM por cima da partida. Lido pelo Windows, sem injetar nada no jogo.",
+    title: "Tudo o que importa, por cima do jogo",
+    text: "FPS, CPU, GPU, VRAM e RAM num canto da tela durante a partida. Lido pelo Windows, sem injetar nada no jogo.",
   },
   benchmark: {
     title: "Descubra se a troca valeu a pena",
-    text: "Teste antes e depois de trocar uma peça e veja quanto melhorou.",
+    text: "Rode o teste antes e depois do upgrade e veja quantos por cento o PC ganhou.",
   },
   storage: {
     title: "Saiba antes que o SSD falhe",
-    text: "Veja quanto de vida o disco ainda tem, antes de perder arquivos.",
+    text: "Veja quanta vida o SSD ainda tem e troque antes de perder arquivos.",
   },
   network: {
-    title: "Descubra onde a conexão trava",
-    text: "Veja se o problema é a sua rede ou o provedor.",
+    title: "Ache o culpado do lag",
+    text: "Teste a conexão e veja se a culpa é da rede ou do provedor.",
   },
 } as const;

@@ -98,6 +98,8 @@
   --num-2xl: 72px;
   --display-md: clamp(36px, 4.6vw, 72px);
   --display-lg: clamp(46px, 6vw, 96px);
+  /* o título da abertura no celular: grande como o do computador, cabendo "Monitore, teste" numa linha */
+  --display-phone: clamp(46px, 14.8vw, 64px);
 
   /* raios */
   --radius-sm: 12px;

@@ -1,0 +1,90 @@
+---
+/**
+ * Uma seção da versão para celular: título em duas cores, texto curto e a demonstração.
+ * A seção tem a altura do conteúdo e o mesmo espaço em cima e embaixo, então a rolagem corre
+ * sem buracos. O conteúdo é desenhado para caber numa tela abaixo do cabeçalho fixo, mesmo na
+ * menor tela comum de celular em pé; pelo menu, a seção para logo abaixo do cabeçalho.
+ * `name` é o que o cabeçalho mostra enquanto a seção está na tela.
+ */
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  tone?: "light" | "dark";
+  class?: string;
+}
+
+const { id, name, label, tone = "light", class: className } = Astro.props;
+---
+
+<section
+  id={id}
+  class:list={["m-sec", tone, className]}
+  data-tone={tone}
+  data-m-section={name}
+  aria-labelledby={label}
+>
+  <div class="wrap">
+    <slot />
+  </div>
+</section>
+
+<style>
+  /*
+   * Espaço igual entre as seções. Pelo menu, a seção para com o título logo abaixo do
+   * cabeçalho: a margem de rolagem desconta o espaço de cima, que já fica na tela.
+   */
+  .m-sec {
+    --gap: 40px;
+    padding-block: var(--gap);
+    scroll-margin-top: calc(var(--m-top) - var(--gap));
+  }
+
+  .m-sec :global(.h2) {
+    line-height: 1.04;
+  }
+
+  .m-sec :global(.lead) {
+    margin-top: 12px;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+  }
+
+  /* a faixa escura começa no topo da tela, então o espaço de cima é o do cabeçalho */
+  .dark {
+    padding-block: var(--m-top) 56px;
+    scroll-margin-top: 0;
+    background: var(--night);
+    color: var(--night-fg);
+  }
+
+  .dark :global(.h2) {
+    color: var(--night-fg);
+  }
+
+  .dark :global(.soft) {
+    color: var(--night-soft);
+  }
+
+  .dark :global(.lead) {
+    color: var(--night-muted);
+  }
+
+  /* telas baixas (iPhone SE) e estreitas e baixas (Android pequeno): títulos e texto um passo menores */
+  @media (max-height: 620px), (max-width: 370px) and (max-height: 720px) {
+    .m-sec :global(.h2) {
+      font-size: var(--text-3xl);
+    }
+
+    .m-sec :global(.lead) {
+      font-size: var(--text-base);
+    }
+  }
+
+  /* celular deitado: uma coluna da largura de um celular em pé */
+  @media (orientation: landscape) {
+    .wrap {
+      max-width: 600px;
+    }
+  }
+</style>

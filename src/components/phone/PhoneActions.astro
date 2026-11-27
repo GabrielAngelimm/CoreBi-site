@@ -1,0 +1,68 @@
+---
+/**
+ * Os dois botões do celular, iguais na abertura, no menu e no fim: "Baixar para Windows",
+ * o mesmo link do instalador da versão do computador, e o GitHub. No celular, tocar em
+ * baixar abre o aviso de que o CoreBi é para o PC (WindowsNotice); sem JavaScript, baixa.
+ */
+import Button from "@/components/ui/Button.astro";
+import { site } from "@/config/site";
+import { formatSize } from "@/lib/format";
+import type { Release } from "@/lib/release";
+
+interface Props {
+  release: Release;
+  tone?: "light" | "dark";
+}
+
+const { release, tone = "light" } = Astro.props;
+const { installer } = release;
+const dark = tone === "dark";
+---
+
+<div class="actions">
+  <Button
+    href={installer.url}
+    variant={dark ? "light" : "ink"}
+    icon="download"
+    class="download"
+    data-m-download
+    aria-label={`Baixar para Windows, ${formatSize(installer.sizeBytes)}`}
+  >
+    Baixar para Windows
+  </Button>
+  <Button
+    href={site.links.code}
+    variant={dark ? "ghost" : "line"}
+    icon="githubSolid"
+    class="github"
+    external
+  >
+    GitHub
+  </Button>
+</div>
+
+<style>
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .actions :global(.btn) {
+    padding-inline: 18px;
+  }
+
+  .actions :global(.download) {
+    flex: 1 1 auto;
+  }
+
+  .actions :global(.github) {
+    flex: none;
+  }
+
+  /* telas bem estreitas: um botão embaixo do outro */
+  @media (max-width: 359px) {
+    .actions {
+      flex-direction: column;
+    }
+  }
+</style>
