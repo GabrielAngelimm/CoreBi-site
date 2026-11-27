@@ -1,0 +1,348 @@
+---
+/**
+ * Instalar, no celular: os quatro passos numa linha do tempo, cada um com o que aparece no PC
+ * (o comando que confere o arquivo, o aviso do Windows, os extras). Quando a lista entra na
+ * tela, a linha se preenche de cima para baixo e cada passo acende ao ser alcançado.
+ */
+import CopyButton from "@/components/ui/CopyButton.astro";
+import Icon from "@/components/ui/Icon.astro";
+import { installerExtras, installSteps } from "@/data/install";
+import type { Release } from "@/lib/release";
+import PhoneSection from "./PhoneSection.astro";
+
+interface Props {
+  release: Release;
+}
+
+const { installer } = Astro.props.release;
+const command = `Get-FileHash .\\${installer.name}`;
+const hash = installer.sha256;
+const [conferir, aviso, extras, pronto] = installSteps;
+---
+
+<PhoneSection id="m-instalar" name="Instalar" label="m-install-title">
+  <h2 id="m-install-title" class="h2">
+    Pronto em um minuto. <span class="soft">Em três passos.</span>
+  </h2>
+  <p class="lead">Do download ao app aberto, sem nada escondido no caminho.</p>
+
+  <ol class="steps" data-play data-threshold="0.2">
+    <li style="--i:0">
+      <span class="marker num" aria-hidden="true">
+        1
+      </span>
+      <h3>{conferir.title}</h3>
+      <p>No PC, {conferir.text.charAt(0).toLowerCase() + conferir.text.slice(1)}</p>
+      {hash && (
+        <div class="shell">
+          <code class="cmd">
+            <span class="ps">PS&gt;</span> {command}
+          </code>
+          <span class="label">Tem que dar este código</span>
+          <code class="hash" title={hash}>
+            {[hash.slice(0, 32), hash.slice(32)].map((half) => (
+              <span>{half.toUpperCase()}</span>
+            ))}
+          </code>
+          <div class="copy">
+            <CopyButton
+              text={`${command} -Algorithm SHA256`}
+              label="Copiar comando do PowerShell"
+              tone="dark"
+            >
+              Copiar comando
+            </CopyButton>
+            <CopyButton text={hash} label="Copiar código SHA256 esperado" tone="dark">
+              Copiar código
+            </CopyButton>
+          </div>
+        </div>
+      )}
+    </li>
+
+    <li style="--i:1">
+      <span class="marker num" aria-hidden="true">
+        2
+      </span>
+      <h3>{aviso.title}</h3>
+      <p>{aviso.text}</p>
+      <div
+        class="warning"
+        aria-label="No aviso do Windows: Mais informações, depois Executar assim mesmo"
+      >
+        <b>O Windows protegeu o computador</b>
+        <span class="path" aria-hidden="true">
+          <span class="link">Mais informações</span>
+          <Icon name="chevronDown" class="then" />
+          <span class="run">Executar assim mesmo</span>
+        </span>
+      </div>
+    </li>
+
+    <li style="--i:2">
+      <span class="marker num" aria-hidden="true">
+        3
+      </span>
+      <h3>{extras.title}</h3>
+      <p>{extras.text}</p>
+      <ul class="extras">
+        {installerExtras.map((x) => (
+          <li>
+            <span class="box" aria-hidden="true">
+              <Icon name="check" />
+            </span>
+            <span>
+              <b>{x.name}</b> {x.detail}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </li>
+
+    <li style="--i:3">
+      <span class="marker last" aria-hidden="true">
+        <Icon name="check" />
+      </span>
+      <h3>{pronto.title}</h3>
+      <p>{pronto.text}</p>
+    </li>
+  </ol>
+</PhoneSection>
+
+<style>
+  .steps {
+    position: relative;
+    display: grid;
+    gap: 32px;
+    margin: 36px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* a linha do tempo, por trás dos números */
+  .steps::before,
+  .steps::after {
+    position: absolute;
+    top: 16px;
+    bottom: 16px;
+    left: 15px;
+    width: 2px;
+    border-radius: 1px;
+    content: "";
+  }
+
+  .steps::before {
+    background: var(--line);
+  }
+
+  .steps::after {
+    background: var(--signal-hi);
+    transform-origin: top;
+  }
+
+  .steps > li {
+    position: relative;
+    padding-left: 52px;
+  }
+
+  .marker {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--signal-hi);
+    border-radius: 50%;
+    background: var(--signal);
+    color: var(--on-ink);
+    font: 600 var(--text-md)/1 var(--font-readout);
+  }
+
+  .marker :global(.icon) {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2.25;
+  }
+
+  h3 {
+    margin: 4px 0 6px;
+    font: 500 var(--text-xl)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .steps > li > p {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  /* ---- passo 1: o PowerShell ---- */
+  .shell {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: var(--night);
+    color: var(--night-fg);
+    font: 400 var(--text-xs)/1.5 var(--font-mono);
+  }
+
+  .shell code {
+    font: inherit;
+  }
+
+  .cmd {
+    overflow-wrap: anywhere;
+  }
+
+  .ps {
+    color: var(--night-faint);
+  }
+
+  .label {
+    margin-top: 4px;
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--night-muted);
+  }
+
+  .hash {
+    display: grid;
+    color: var(--signal-hi);
+    letter-spacing: 0.02em;
+  }
+
+  .copy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .copy :global(.copy) {
+    height: 36px;
+    padding-inline: 14px;
+  }
+
+  /* ---- passo 2: o aviso do Windows ---- */
+  .warning {
+    margin-top: 16px;
+    padding: 14px 16px 16px;
+    border-radius: var(--radius-md);
+    background: var(--win-blue);
+    color: var(--on-ink);
+  }
+
+  .warning b {
+    display: block;
+    font: 500 var(--text-md)/1.3 var(--font-display);
+  }
+
+  .path {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin-top: 12px;
+    font: 500 var(--text-xs)/1 var(--font-display);
+  }
+
+  .link {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .path :global(.then) {
+    width: 14px;
+    height: 14px;
+    rotate: -90deg;
+    opacity: 0.7;
+  }
+
+  .run {
+    padding: 8px 12px;
+    border: 1px solid rgb(255 255 255 / 70%);
+    border-radius: 4px;
+  }
+
+  /* ---- passo 3: os extras ---- */
+  .extras {
+    display: grid;
+    gap: 8px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .extras li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    font-size: var(--text-md);
+    color: var(--muted);
+  }
+
+  .extras b {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .box {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--signal);
+    color: var(--on-ink);
+  }
+
+  .box :global(.icon) {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5;
+  }
+
+  /* ---- a linha se preenche e cada passo acende quando ela chega ---- */
+  .armed::after {
+    scale: 1 0;
+  }
+
+  .armed .marker {
+    border-color: var(--line-2);
+    background: var(--paper);
+    color: var(--faint);
+  }
+
+  .playing::after {
+    animation: m-install-fill 1.8s var(--ease-in-out) 0.2s both;
+  }
+
+  .playing .marker {
+    animation: m-install-reach 0.35s ease-out both;
+    animation-delay: calc(0.2s + var(--i) * 0.55s);
+  }
+
+  @keyframes m-install-fill {
+    from {
+      scale: 1 0;
+    }
+  }
+
+  @keyframes m-install-reach {
+    from {
+      border-color: var(--line-2);
+      background: var(--paper);
+      color: var(--faint);
+    }
+  }
+</style>

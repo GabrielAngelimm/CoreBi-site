@@ -1,0 +1,325 @@
+---
+/**
+ * A abertura no celular: um anel só, acima do título, com as seis peças do PC presas nele e o
+ * ícone do app no centro. O anel entra girando um pouco e para no lugar, as peças acendem uma
+ * a uma, e depois tudo fica parado, sem nada passando por trás do texto.
+ * Como o CoreBi é para Windows, o botão principal manda o link para o PC.
+ */
+import AppTile from "@/components/ui/AppTile.astro";
+import Bubble from "@/components/ui/Bubble.astro";
+import Button from "@/components/ui/Button.astro";
+import { parts, type Part } from "@/data/parts";
+import { formatSize } from "@/lib/format";
+import type { Release } from "@/lib/release";
+import ShareButton from "./ShareButton.astro";
+
+interface Props {
+  release: Release;
+}
+
+const { installer } = Astro.props.release;
+
+/** Do topo, no sentido horário: as cores vão do verde ao azul, como um espectro. */
+const order: readonly Part[] = ["cpu", "net", "board", "gpu", "memory", "storage"];
+const STEP = 360 / order.length;
+/** Raio do anel e do traço de fora, em % do lado do mostrador. */
+const RING = 34.5;
+const OUTER = 47;
+
+const rad = (deg: number) => (deg * Math.PI) / 180;
+const bubbles = order.map((part, i) => {
+  const a = rad(i * STEP);
+  return {
+    part,
+    x: (50 + RING * Math.sin(a)).toFixed(2),
+    y: (50 - RING * Math.cos(a)).toFixed(2),
+  };
+});
+
+// a linha do anel pega a cor da peça que está em cada ponto, misturando entre uma e outra
+const track = [
+  ...order.map((p, i) => `${parts[p].color} ${i * STEP - 10}deg ${i * STEP + 10}deg`),
+  `${parts[order[0] ?? "cpu"].color} 350deg`,
+].join(", ");
+
+// marcas finas cruzando a linha a cada 15°, menos onde fica uma peça
+const marks = Array.from({ length: 24 }, (_, i) => i * 15)
+  .filter((deg) => deg % STEP !== 0)
+  .map((deg) => {
+    const a = rad(deg);
+    const r1 = RING * 2 - 3.2;
+    const r2 = RING * 2 + 3.2;
+    const p = (r: number) => `${(r * Math.sin(a)).toFixed(2)} ${(-r * Math.cos(a)).toFixed(2)}`;
+    return `M${p(r1)}L${p(r2)}`;
+  })
+  .join("");
+---
+
+<section id="m-abertura" class="m-hero" aria-labelledby="m-hero-title" data-m-hero>
+  <div class="dial" aria-hidden="true">
+    <svg class="lines" viewBox="-100 -100 200 200">
+      <circle class="outer" r={OUTER * 2}></circle>
+      <path class="marks" d={marks}></path>
+    </svg>
+    <div class="layer">
+      <span class="track" style={`--track: conic-gradient(in oklab, ${track})`}></span>
+      {bubbles.map((b, i) => (
+        <span class="sat" style={`--x:${b.x}%;--y:${b.y}%;--i:${i}`}>
+          <Bubble part={b.part} class="orb" />
+        </span>
+      ))}
+    </div>
+    <AppTile size="md" class="core" />
+  </div>
+
+  <div class="wrap text">
+    <h1 id="m-hero-title" class="title">
+      <span>Monitore, teste</span>
+      <span>e cuide do PC.</span>
+      <span class="soft">Num app só.</span>
+    </h1>
+    <p class="lead">
+      Sensores, discos, FPS, teste de carga, apps e drivers. Grátis e de código aberto.
+    </p>
+    <div class="actions">
+      <ShareButton />
+      <Button
+        href={installer.url}
+        variant="line"
+        icon="download"
+        aria-label={`Baixar para Windows, ${formatSize(installer.sizeBytes)}`}
+      >
+        Baixar
+      </Button>
+    </div>
+    <p class="note">Para Windows 10 e 11 · instalador de {formatSize(installer.sizeBytes)}</p>
+  </div>
+</section>
+
+<style>
+  .m-hero {
+    --size: min(70vw, 32svh, 300px);
+    --top: calc(env(safe-area-inset-top, 0px) + 76px);
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100svh;
+    padding: var(--top) 0 32px;
+    overflow: hidden;
+  }
+
+  /* os pontinhos de radar da versão do computador, só em volta do mostrador */
+  .m-hero::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(circle, var(--dial-tick) 1px, transparent 1.3px);
+    background-position: center calc(var(--top) + var(--size) / 2);
+    background-size: 20px 20px;
+    mask-image: radial-gradient(
+      circle at 50% calc(var(--top) + var(--size) / 2),
+      #000 0,
+      rgb(0 0 0 / 45%) calc(var(--size) * 0.55),
+      transparent calc(var(--size) * 0.95)
+    );
+    content: "";
+  }
+
+  /* ---- mostrador ---- */
+  .dial {
+    position: relative;
+    flex: none;
+    width: var(--size);
+    aspect-ratio: 1;
+    margin: 0 auto 28px;
+  }
+
+  .lines {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+
+  .outer {
+    fill: none;
+    stroke: var(--dial-tick);
+    stroke-width: 0.9;
+    stroke-dasharray: 0.01 3.6;
+    stroke-linecap: round;
+  }
+
+  .marks {
+    stroke: var(--dial-major);
+    stroke-width: 0.5;
+    opacity: 0.5;
+  }
+
+  .layer {
+    position: absolute;
+    inset: 0;
+    animation: m-hero-settle 1.6s var(--ease-out) both;
+  }
+
+  .track {
+    position: absolute;
+    inset: calc(50% - 34.5%);
+    border-radius: 50%;
+    background: var(--track);
+    mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+    opacity: 0.85;
+  }
+
+  .sat {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    translate: -50% -50%;
+    animation: m-hero-upright 1.6s var(--ease-out) both;
+  }
+
+  .sat :global(.orb) {
+    --s: calc(var(--size) * 0.155);
+    border-color: color-mix(in srgb, var(--c) 22%, var(--line));
+    animation: m-hero-pop 0.6s var(--ease-out) both;
+    animation-delay: calc(0.35s + var(--i) * 0.09s);
+  }
+
+  .dial :global(.core) {
+    --s: calc(var(--size) * 0.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    animation: m-hero-pop 0.7s var(--ease-out) both;
+  }
+
+  /* ---- texto ---- */
+  .text {
+    animation: m-hero-rise 0.8s var(--ease-out) 0.15s both;
+  }
+
+  .title {
+    margin: 0;
+    font: 500 var(--display-lg) / 1 var(--font-display);
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .title span {
+    display: block;
+  }
+
+  .lead {
+    margin: 14px 0 0;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .actions > :global(*) {
+    width: 100%;
+    padding-inline: 16px;
+  }
+
+  /* telas bem estreitas: um botão embaixo do outro */
+  @media (max-width: 359px) {
+    .actions {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note {
+    margin: 14px 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--faint);
+  }
+
+  @keyframes m-hero-settle {
+    from {
+      opacity: 0;
+      rotate: -36deg;
+    }
+  }
+
+  @keyframes m-hero-upright {
+    from {
+      rotate: 36deg;
+    }
+  }
+
+  @keyframes m-hero-pop {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+  }
+
+  @keyframes m-hero-rise {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+  }
+
+  /* celular deitado: mostrador ao lado do texto */
+  /* celular deitado: mostrador à esquerda e texto à direita, tudo na primeira tela */
+  @media (orientation: landscape) {
+    .m-hero {
+      --size: min(52svh, 220px);
+      --left: max(24px, env(safe-area-inset-left, 0px));
+      flex-direction: row;
+      align-items: center;
+      gap: 40px;
+      padding: var(--top) max(24px, env(safe-area-inset-right, 0px)) 20px var(--left);
+    }
+
+    .m-hero::before {
+      --center: calc(var(--left) + var(--size) / 2)
+        calc(var(--top) + (100% - var(--top) - 20px) / 2);
+      background-position: var(--center);
+      mask-image: radial-gradient(
+        circle at var(--center),
+        #000 0,
+        rgb(0 0 0 / 45%) calc(var(--size) * 0.55),
+        transparent calc(var(--size) * 0.95)
+      );
+    }
+
+    .dial {
+      margin: 0;
+    }
+
+    .text {
+      padding: 0;
+    }
+
+    .title {
+      font-size: var(--display-md);
+    }
+
+    .lead {
+      margin-top: 8px;
+      font-size: var(--text-md);
+    }
+
+    .actions {
+      max-width: 400px;
+      margin-top: 16px;
+    }
+
+    .note {
+      margin-top: 8px;
+    }
+  }
+</style>

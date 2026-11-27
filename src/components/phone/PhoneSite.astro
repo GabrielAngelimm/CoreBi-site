@@ -1,0 +1,41 @@
+---
+/**
+ * A versão do site feita para celular. Fica na mesma página da versão do computador, e o CSS
+ * mostra uma ou outra pela largura da tela (veja .phone-site em global.css). Usa os mesmos
+ * dados, textos e componentes de base, com seções pensadas para uma coluna e para o dedo.
+ */
+import type { Release } from "@/lib/release";
+import PhoneAbout from "./PhoneAbout.astro";
+import PhoneFaq from "./PhoneFaq.astro";
+import PhoneFinal from "./PhoneFinal.astro";
+import PhoneGaming from "./PhoneGaming.astro";
+import PhoneHeader from "./PhoneHeader.astro";
+import PhoneHero from "./PhoneHero.astro";
+import PhoneInstall from "./PhoneInstall.astro";
+import PhoneMonitoring from "./PhoneMonitoring.astro";
+import PhoneTools from "./PhoneTools.astro";
+
+interface Props {
+  release: Release;
+}
+
+const { release } = Astro.props;
+---
+
+<div class="phone-site" data-phone>
+  <PhoneHeader release={release} />
+  <main>
+    <PhoneHero release={release} />
+    <PhoneAbout />
+    <PhoneMonitoring />
+    <PhoneGaming />
+    <PhoneTools />
+    <PhoneInstall release={release} />
+    <PhoneFaq />
+    <PhoneFinal release={release} />
+  </main>
+</div>
+
+<script>
+  import "./play.client";
+</script>

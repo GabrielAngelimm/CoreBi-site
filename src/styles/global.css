@@ -13,6 +13,26 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/*
+ * A página traz duas versões do site: a do computador (.desk-site) e a feita para celular
+ * (.phone-site). Só uma aparece. A outra fica com display: none, então não ocupa a tela,
+ * não entra na leitura de tela e as animações dela não rodam.
+ * Celular: tela estreita, ou um celular deitado (baixo e com toque).
+ */
+.phone-site {
+  display: none;
+}
+
+@media (max-width: 640px), (max-height: 500px) and (pointer: coarse) {
+  .desk-site {
+    display: none;
+  }
+
+  .phone-site {
+    display: block;
+  }
+}
+
 /* no desktop, a rolagem para em cada seção, e cada seção é uma tela inteira */
 @media (min-width: 901px) and (min-height: 640px) {
   html {

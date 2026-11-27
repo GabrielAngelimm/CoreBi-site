@@ -1,0 +1,70 @@
+---
+/**
+ * "Enviar para o PC": no celular não dá para instalar o CoreBi, então o botão principal
+ * abre o compartilhar do sistema (WhatsApp, e-mail, Telegram) com o link do site, para a
+ * pessoa abrir no computador. Sem o compartilhar, copia o link.
+ */
+import Icon from "@/components/ui/Icon.astro";
+import { shareText } from "@/data/phone";
+
+interface Props {
+  /** ink sobre fundo claro, light sobre fundo escuro. */
+  variant?: "ink" | "light";
+}
+
+const { variant = "ink" } = Astro.props;
+const url = Astro.site?.href ?? "/";
+---
+
+<button
+  type="button"
+  class:list={["share", variant]}
+  data-share
+  data-url={url}
+  data-text={shareText}
+>
+  <Icon name="send" />
+  <span data-share-label>Enviar para o PC</span>
+</button>
+
+<script>
+  import "./share.client";
+</script>
+
+<style>
+  .share {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    font: 500 var(--text-base)/1 var(--font-display);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.15s ease-out;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .share:active {
+    transform: scale(0.98);
+  }
+
+  .share :global(.icon) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ink {
+    background: var(--ink);
+    color: var(--on-ink);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .light {
+    background: var(--night-fg);
+    color: var(--night);
+  }
+</style>

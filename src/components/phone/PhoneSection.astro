@@ -1,0 +1,63 @@
+---
+/**
+ * Uma seção da versão para celular: título em duas cores, texto curto e a demonstração.
+ * Sem tela cheia e sem rolagem por seção; a altura é a do conteúdo, e tudo cabe numa coluna.
+ * `name` é o que o cabeçalho mostra enquanto a seção está na tela.
+ */
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  tone?: "light" | "dark";
+  class?: string;
+}
+
+const { id, name, label, tone = "light", class: className } = Astro.props;
+---
+
+<section
+  id={id}
+  class:list={["m-sec", tone, className]}
+  data-tone={tone}
+  data-m-section={name}
+  aria-labelledby={label}
+>
+  <div class="wrap">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .m-sec {
+    padding-block: 56px;
+    /* o cabeçalho fixo cobre o topo; o título para logo abaixo dele */
+    scroll-margin-top: 16px;
+  }
+
+  .m-sec :global(.h2) {
+    line-height: 1.04;
+  }
+
+  .m-sec :global(.lead) {
+    margin-top: 16px;
+    font-size: var(--text-lg);
+    line-height: 1.55;
+  }
+
+  .dark {
+    background: var(--night);
+    color: var(--night-fg);
+  }
+
+  .dark :global(.h2) {
+    color: var(--night-fg);
+  }
+
+  .dark :global(.soft) {
+    color: var(--night-soft);
+  }
+
+  .dark :global(.lead) {
+    color: var(--night-muted);
+  }
+</style>

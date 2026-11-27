@@ -1,0 +1,352 @@
+---
+/**
+ * Jogos, no celular (seção escura): o OverlayBi por cima de uma cena de jogo e o benchmark de
+ * antes e depois, em dois cartões para passar com o dedo. O overlay liga quando aparece e o FPS
+ * oscila alguns segundos; no benchmark as duas barras crescem e o ganho sobe do zero.
+ */
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+import { features } from "@/data/features";
+import { integer } from "@/lib/format";
+import Pager from "./Pager.astro";
+import PhoneSection from "./PhoneSection.astro";
+
+// mesma ordem do OverlayBi no app: FPS, CPU, GPU, VRAM e RAM
+const rows = [
+  ["CPU", "Ryzen 7 5700X", "38 %", "61 °C"],
+  ["GPU", "RTX 4060 Ti", "97 %", "66 °C"],
+  ["VRAM", "6,1 GB", "76 %", ""],
+  ["RAM", "19,6 GB", "62 %", ""],
+] as const;
+
+// o mesmo resultado da versão do computador: o "depois" é 12,6 % mais rápido
+const before = 3420;
+const after = 3850;
+const top = 4500;
+const gain = ((after / before - 1) * 100).toFixed(1);
+const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
+---
+
+<PhoneSection id="m-jogos" name="Jogos" label="m-gaming-title" tone="dark">
+  <h2 id="m-gaming-title" class="h2">
+    Feito para quem joga. <span class="soft">Sem sair da partida.</span>
+  </h2>
+  <p class="lead">Overlay de FPS por cima do jogo e benchmark para comparar peças.</p>
+
+  <div class="cards">
+    <Pager labels={["OverlayBi", "Benchmark"]} label="Exemplos para jogos" tone="dark">
+      <div class="slide" data-play>
+        <FeatureTile {...features.overlay} dark class="card">
+          <div class="scene" role="img" aria-label="Exemplo do OverlayBi por cima de um jogo">
+            <svg
+              class="land"
+              viewBox="0 0 600 340"
+              preserveAspectRatio="xMidYMid slice"
+              aria-hidden="true"
+            >
+              <rect width="600" height="340" class="sky"></rect>
+              <circle cx="430" cy="120" r="34" class="moon"></circle>
+              <polygon
+                points="0,220 90,150 160,200 250,120 340,195 420,140 510,200 600,160 600,340 0,340"
+                class="far"
+              ></polygon>
+              <polygon
+                points="0,260 110,205 200,245 300,190 390,240 490,205 600,245 600,340 0,340"
+                class="near"
+              ></polygon>
+              <polygon
+                points="0,340 0,290 140,268 280,296 420,272 600,292 600,340"
+                class="ground"
+              ></polygon>
+              <polygon points="70,292 84,240 98,292" class="ground"></polygon>
+              <polygon points="96,292 112,226 128,292" class="ground"></polygon>
+              <polygon points="500,294 515,236 530,294" class="ground"></polygon>
+            </svg>
+            <div class="hud num" aria-hidden="true">
+              <div class="fps">
+                <b data-live="fps" data-min="139" data-max="147">
+                  144
+                </b>
+                <span>FPS</span>
+                <span data-frametime>6,9 ms</span>
+              </div>
+              <table>
+                {rows.map((r, i) => (
+                  <tr style={`--i:${i}`}>
+                    <td>{r[0]}</td>
+                    <td>{r[1]}</td>
+                    <td class="v">{r[2]}</td>
+                    <td class="v">{r[3]}</td>
+                  </tr>
+                ))}
+              </table>
+            </div>
+          </div>
+        </FeatureTile>
+      </div>
+
+      <div class="slide" data-play>
+        <FeatureTile {...features.benchmark} dark class="card">
+          <div class="bench">
+            <p class="gain">
+              <b class="num">
+                +
+                <span data-count={gain} data-digits="1" data-ms="1500">
+                  {gain.replace(".", ",")}
+                </span>
+              </b>
+              <small>%</small>
+              <span>mais rápido depois da troca</span>
+            </p>
+            <dl class="scores">
+              <div class="row before" style={`--w:${width(before)}`}>
+                <dt>Antes</dt>
+                <dd>
+                  <span class="bar">
+                    <i></i>
+                  </span>
+                  <b class="num" data-count={before} data-ms="1200">
+                    {integer(before)}
+                  </b>
+                </dd>
+              </div>
+              <div class="row after" style={`--w:${width(after)}`}>
+                <dt>Depois</dt>
+                <dd>
+                  <span class="bar">
+                    <i></i>
+                  </span>
+                  <b class="num" data-count={after} data-ms="1200" data-delay="250">
+                    {integer(after)}
+                  </b>
+                </dd>
+              </div>
+            </dl>
+            <p class="scale">Pontos no benchmark de jogo, no mesmo PC.</p>
+          </div>
+        </FeatureTile>
+      </div>
+    </Pager>
+  </div>
+</PhoneSection>
+
+<style>
+  .cards {
+    margin-top: 32px;
+  }
+
+  .slide > :global(.card) {
+    height: 100%;
+  }
+
+  /* ---- OverlayBi ---- */
+  .scene {
+    position: relative;
+    flex: 1;
+    min-height: 200px;
+    margin: 20px var(--pad) var(--pad);
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--scene-sky);
+  }
+
+  .land {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sky {
+    fill: var(--scene-sky);
+  }
+
+  .moon {
+    fill: var(--scene-moon);
+  }
+
+  .far {
+    fill: var(--scene-far);
+  }
+
+  .near {
+    fill: var(--scene-near);
+  }
+
+  .ground {
+    fill: var(--scene-ground);
+  }
+
+  .hud {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 10px 12px 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--night) 92%, transparent);
+    font: 500 var(--text-2xs)/1.3 var(--font-readout);
+    color: var(--night-fg);
+  }
+
+  .fps {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .fps b {
+    min-width: 3ch;
+    font: 600 var(--text-3xl)/1 var(--font-readout);
+    color: var(--signal-hi);
+  }
+
+  .fps span {
+    color: var(--night-muted);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 2px 0;
+    white-space: nowrap;
+  }
+
+  td:first-child {
+    padding-right: 10px;
+    color: var(--night-faint);
+  }
+
+  td.v {
+    padding-left: 10px;
+    text-align: right;
+  }
+
+  /* o overlay liga: a caixa aparece e as linhas entram uma a uma */
+  .armed .hud,
+  .armed tr {
+    opacity: 0;
+  }
+
+  .playing .hud {
+    animation: m-game-on 0.45s var(--ease-out) 0.2s both;
+  }
+
+  .playing tr {
+    animation: m-game-on 0.4s var(--ease-out) both;
+    animation-delay: calc(0.45s + var(--i) * 0.08s);
+  }
+
+  /* ---- benchmark ---- */
+  .bench {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px var(--pad) var(--pad);
+  }
+
+  .gain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 6px;
+    margin: 0 0 24px;
+  }
+
+  .gain b {
+    font: 600 var(--num-xl)/1 var(--font-readout);
+    color: var(--night-fg);
+  }
+
+  .gain small {
+    font: 500 var(--text-xl)/1 var(--font-display);
+    color: var(--night-muted);
+  }
+
+  .gain > span {
+    flex-basis: 100%;
+    margin-top: 8px;
+    font-size: var(--text-md);
+    color: var(--night-muted);
+  }
+
+  .scores {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+  }
+
+  .row dt {
+    margin-bottom: 8px;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--night-faint);
+  }
+
+  .row dd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .bar {
+    flex: 1;
+    height: 10px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--night-line);
+  }
+
+  .bar i {
+    display: block;
+    width: var(--w);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--night-muted);
+    transform-origin: left;
+  }
+
+  .after .bar i {
+    background: var(--gpu);
+  }
+
+  .row b {
+    min-width: 4.5ch;
+    font: 600 var(--text-2xl)/1 var(--font-readout);
+    text-align: right;
+    color: var(--night-fg);
+  }
+
+  .scale {
+    margin: 20px 0 0;
+    font-size: var(--text-sm);
+    color: var(--night-faint);
+  }
+
+  .armed .bar i {
+    transform: scaleX(0);
+  }
+
+  .playing .bar i {
+    animation: m-game-fill 1.2s var(--ease-out) both;
+  }
+
+  .playing .after .bar i {
+    animation-delay: 0.25s;
+  }
+
+  @keyframes m-game-on {
+    from {
+      opacity: 0;
+      translate: 0 4px;
+    }
+  }
+
+  @keyframes m-game-fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+</style>

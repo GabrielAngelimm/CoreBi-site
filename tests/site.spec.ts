@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const sections = [
+/** Seções da versão do computador, na ordem da página. */
+const deskSections = [
   "sobre",
   "monitoramento",
   "jogos",
@@ -10,6 +11,17 @@ const sections = [
   "instalar",
   "perguntas",
   "baixar",
+];
+
+/** Seções da versão do celular, na ordem da página. */
+const phoneSections = [
+  "m-sobre",
+  "m-monitoramento",
+  "m-jogos",
+  "m-ferramentas",
+  "m-instalar",
+  "m-perguntas",
+  "m-baixar",
 ];
 
 /** Junta os erros do console e da página para checar no fim de cada teste. */
@@ -22,6 +34,9 @@ function collectErrors(page: Page): string[] {
   return errors;
 }
 
+const horizontalOverflow = (page: Page) =>
+  page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+
 test.describe("página inicial", () => {
   test("carrega sem erros e com o título certo", async ({ page }) => {
     const errors = collectErrors(page);
@@ -32,26 +47,6 @@ test.describe("página inicial", () => {
     expect(errors).toEqual([]);
   });
 
-  test("não rola para o lado", async ({ page }) => {
-    await page.goto("/");
-    for (const id of sections) {
-      await page.locator(`#${id}`).scrollIntoViewIfNeeded();
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - window.innerWidth,
-      );
-      expect(overflow, `seção #${id}`).toBeLessThanOrEqual(0);
-    }
-  });
-
-  test("todas as seções aparecem", async ({ page }) => {
-    await page.goto("/");
-    for (const id of sections) {
-      const section = page.locator(`#${id}`);
-      await section.scrollIntoViewIfNeeded();
-      await expect(section).toBeVisible();
-    }
-  });
-
   test("os botões de download apontam para o instalador da release", async ({ page }) => {
     await page.goto("/");
     const links = page.getByRole("link", { name: /^Baixar para Windows/ });
@@ -60,6 +55,45 @@ test.describe("página inicial", () => {
       expect(href).toMatch(
         /^https:\/\/github\.com\/GabrielAngelimm\/CoreBi\/releases\/download\/v[\d.]+\/CoreBi-[\d.]+-win-x64-setup\.exe$/,
       );
+    }
+  });
+
+  test("o botão Copiar copia o hash", async ({ page, context, browserName }) => {
+    test.skip(browserName !== "chromium", "permissão de área de transferência só no Chromium");
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.goto("/");
+    const button = page.getByRole("button", { name: /SHA256 esperado$/ });
+    await button.scrollIntoViewIfNeeded();
+    await button.click();
+    await expect(button).toHaveText("Copiado");
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
+
+test.describe("versão do computador", () => {
+  test.skip(({ isMobile }) => isMobile, "no celular a página é outra");
+
+  test("mostra só a versão do computador", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".desk-site")).toBeVisible();
+    await expect(page.locator("[data-phone]")).toBeHidden();
+  });
+
+  test("não rola para o lado", async ({ page }) => {
+    await page.goto("/");
+    for (const id of deskSections) {
+      await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+      expect(await horizontalOverflow(page), `seção #${id}`).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("todas as seções aparecem", async ({ page }) => {
+    await page.goto("/");
+    for (const id of deskSections) {
+      const section = page.locator(`#${id}`);
+      await section.scrollIntoViewIfNeeded();
+      await expect(section).toBeVisible();
     }
   });
 
@@ -74,29 +108,14 @@ test.describe("página inicial", () => {
     await expect(page.locator("#perguntas details[open]")).toHaveCount(1);
   });
 
-  test("o botão Copiar copia o hash", async ({ page, context, browserName }) => {
-    test.skip(browserName !== "chromium", "permissão de área de transferência só no Chromium");
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    await page.goto("/");
-    const button = page.getByRole("button", { name: "Copiar o SHA256 esperado" });
-    await button.scrollIntoViewIfNeeded();
-    await button.click();
-    await expect(button).toHaveText("Copiado");
-    const copied = await page.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toMatch(/^[0-9a-f]{64}$/);
-  });
-
   test("com movimento reduzido, o conteúdo aparece sem esperar animação", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     // sem rolar: com movimento reduzido nada fica escondido esperando a entrada
     await expect(page.locator("#monitoramento .grid > *").first()).toHaveCSS("opacity", "1");
   });
-});
 
-test.describe("navegação", () => {
-  test("a seta da abertura leva ao Sobre alinhado no topo da tela", async ({ page, isMobile }) => {
-    test.skip(isMobile, "no celular não há rolagem por seção");
+  test("a seta da abertura leva ao Sobre alinhado no topo da tela", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Ir para as seções" }).click();
     await expect
@@ -104,11 +123,7 @@ test.describe("navegação", () => {
       .toBeLessThan(1);
   });
 
-  test("o cabeçalho ganha vidro depois da abertura e acende a seção atual", async ({
-    page,
-    isMobile,
-  }) => {
-    test.skip(isMobile, "o menu fica escondido no celular");
+  test("o cabeçalho ganha vidro depois da abertura e acende a seção atual", async ({ page }) => {
     await page.goto("/");
     const header = page.locator("[data-header]");
     await expect(header).not.toHaveClass(/is-stuck/);
@@ -128,17 +143,120 @@ test.describe("navegação", () => {
   });
 });
 
+test.describe("versão do celular", () => {
+  test.skip(({ isMobile }) => !isMobile, "só no celular");
+
+  test("mostra só a versão do celular", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-phone]")).toBeVisible();
+    await expect(page.locator(".desk-site")).toBeHidden();
+  });
+
+  test("todas as seções aparecem e nenhuma rola para o lado", async ({ page }) => {
+    await page.goto("/");
+    for (const id of phoneSections) {
+      const section = page.locator(`#${id}`);
+      await section.scrollIntoViewIfNeeded();
+      await expect(section).toBeVisible();
+      expect(await horizontalOverflow(page), `seção #${id}`).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("o cabeçalho abre as seções e leva até a escolhida", async ({ page }) => {
+    await page.goto("/");
+    const sheet = page.getByRole("dialog", { name: "Seções" });
+    await expect(sheet).toBeHidden();
+    await page.getByRole("button", { name: "Abrir as seções" }).click();
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole("link", { name: /^Baixar para Windows/ })).toHaveAttribute(
+      "href",
+      /-win-x64-setup\.exe$/,
+    );
+    await sheet.getByRole("link", { name: /^Instalar/ }).click();
+    await expect(sheet).toBeHidden();
+    await expect
+      .poll(() => page.locator("#m-instalar").evaluate((el) => el.getBoundingClientRect().top))
+      .toBeLessThan(40);
+    await expect(page.locator("[data-m-where]")).toHaveText("Instalar");
+  });
+
+  test("um link da versão do computador cai na seção certa", async ({ page }) => {
+    await page.goto("/#drivers");
+    await expect
+      .poll(() =>
+        page.locator("#m-ferramentas").evaluate((el) => Math.abs(el.getBoundingClientRect().top)),
+      )
+      .toBeLessThan(40);
+  });
+
+  test("as abas das ferramentas trocam o cartão", async ({ page }) => {
+    await page.goto("/");
+    const tools = page.getByRole("group", { name: "Ferramentas do CoreBi" });
+    await tools.scrollIntoViewIfNeeded();
+    const drivers = tools.getByRole("button", { name: "Drivers" });
+    await drivers.click();
+    await expect(drivers).toHaveAttribute("aria-current", "true");
+    await expect(tools.getByRole("button", { name: "Teste de carga" })).toHaveAttribute(
+      "aria-current",
+      "false",
+    );
+    await expect
+      .poll(() => tools.locator("[data-track]").evaluate((el) => el.scrollLeft))
+      .toBeGreaterThan(0);
+  });
+
+  test("as perguntas abrem uma de cada vez", async ({ page }) => {
+    await page.goto("/");
+    const items = page.locator("#m-perguntas details");
+    await items.first().scrollIntoViewIfNeeded();
+    await expect(page.locator("#m-perguntas details[open]")).toHaveCount(0);
+    await items.first().locator("summary").click();
+    await expect(items.first()).toHaveAttribute("open", "");
+    await items.nth(2).locator("summary").click();
+    await expect(items.nth(2)).toHaveAttribute("open", "");
+    await expect(page.locator("#m-perguntas details[open]")).toHaveCount(1);
+  });
+
+  test("Enviar para o PC copia o link quando não há compartilhar", async ({
+    page,
+    context,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium", "permissão de área de transferência só no Chromium");
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    // o compartilhar do sistema abriria uma janela fora da página; aqui testamos a cópia
+    await page.addInitScript(() => Object.defineProperty(navigator, "share", { value: undefined }));
+    await page.goto("/");
+    // o nome do botão muda depois do toque, então o localizador não pode depender dele
+    const button = page.locator("#m-abertura [data-share]");
+    await expect(button).toHaveText("Enviar para o PC");
+    await button.click();
+    await expect(button).toHaveText("Link copiado");
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toMatch(/^https:\/\//);
+  });
+
+  test("com movimento reduzido, nada espera animação", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await page.locator("#m-baixar").scrollIntoViewIfNeeded();
+    await expect(page.locator("[data-phone] .armed")).toHaveCount(0);
+    // os números já vêm escritos com o valor final
+    await expect(page.locator("#m-sobre [data-count]").first()).not.toHaveText("0");
+  });
+});
+
 test("página 404", async ({ page }) => {
   const response = await page.goto("/nao-existe");
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Essa página não existe.");
 });
 
-test("capturas de tela para revisão", async ({ page }, info) => {
+test("capturas de tela para revisão", async ({ page, isMobile }, info) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
   await info.attach("abertura", { body: await page.screenshot(), contentType: "image/png" });
-  for (const id of sections) {
+  for (const id of isMobile ? phoneSections : deskSections) {
     await page.locator(`#${id}`).evaluate((el) => el.scrollIntoView({ block: "start" }));
     await page.waitForTimeout(800);
     await info.attach(id, { body: await page.screenshot(), contentType: "image/png" });

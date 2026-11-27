@@ -77,8 +77,15 @@ export function burst(): (tick: () => void, ms: number, times: number) => void {
   };
 }
 
-/** Anima um número de 0 até o valor, com desaceleração. */
-export function tween(duration: number, frame: (progress: number) => void): Promise<void> {
+/** Desacelera no fim; é a curva padrão dos números que sobem. */
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+/** Anima um número de 0 até o valor, com desaceleração (ou com a curva `ease`). */
+export function tween(
+  duration: number,
+  frame: (progress: number) => void,
+  ease: (t: number) => number = easeOut,
+): Promise<void> {
   return new Promise((resolve) => {
     if (prefersReducedMotion()) {
       frame(1);
@@ -88,7 +95,7 @@ export function tween(duration: number, frame: (progress: number) => void): Prom
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
-      frame(1 - Math.pow(1 - t, 3));
+      frame(ease(t));
       if (t < 1) requestAnimationFrame(step);
       else resolve();
     };

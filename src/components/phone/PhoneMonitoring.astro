@@ -1,0 +1,362 @@
+---
+/**
+ * Monitoramento, no celular: os três cartões lado a lado, para passar com o dedo. Cada um toca
+ * quando entra na tela (a curva se desenha, o anel enche, as barras sobem), fica vivo alguns
+ * segundos e para.
+ */
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+import TileStats from "@/components/ui/TileStats.astro";
+import { features } from "@/data/features";
+import Pager from "./Pager.astro";
+import PhoneSection from "./PhoneSection.astro";
+
+// ---- sensores: um minuto da temperatura do processador, um ponto por segundo ----
+const W = 300;
+const H = 110;
+const LOW = 50;
+const HIGH = 70;
+const temps = Array.from(
+  { length: 60 },
+  (_, t) => 61 + 2.4 * Math.sin(t / 6) + 1.2 * Math.sin(t / 2.3 + 1.3) + 0.5 * Math.sin(t * 1.9),
+);
+const px = (i: number) => (i / (temps.length - 1)) * W;
+const py = (v: number) => H - ((v - LOW) / (HIGH - LOW)) * H;
+const line = temps
+  .map((v, i) => `${i ? "L" : "M"}${px(i).toFixed(1)} ${py(v).toFixed(1)}`)
+  .join("");
+const area = `${line}L${W} ${H}L0 ${H}Z`;
+const tipY = py(temps.at(-1) ?? 61);
+const grid = [0.1, 0.5, 0.9].map((k) => `M0 ${(H * k).toFixed(1)}H${W}`).join("");
+
+// ---- SSD: arco de 270° em gomos, cheio até a vida que resta ----
+const life = 97;
+const arc = "M30 140 A80 80 0 1 1 170 140";
+
+// ---- rede: 24 barras de download e 8 de upload, alturas fixas ----
+const bars = Array.from({ length: 32 }, (_, i) => ({
+  up: i >= 24,
+  height: i >= 24 ? 30 + ((i * 37) % 35) : 40 + ((i * 53) % 60),
+}));
+---
+
+<PhoneSection id="m-monitoramento" name="Monitoramento" label="m-monitoring-title">
+  <h2 id="m-monitoring-title" class="h2">
+    Cada peça do PC, ao vivo. <span class="soft">Antes de virar problema.</span>
+  </h2>
+  <p class="lead">Temperatura, saúde do disco e conexão, lidas direto do hardware.</p>
+
+  <div class="cards">
+    <Pager labels={["Sensores", "SSD", "Rede"]} label="Exemplos do monitoramento">
+      <div class="slide" data-play>
+        <FeatureTile {...features.sensors} class="card">
+          <div
+            class="visual sensors"
+            role="img"
+            aria-label="Exemplo da temperatura do processador no último minuto"
+          >
+            <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+              <path class="grid" d={grid}></path>
+              <path class="area" d={area}></path>
+              <path class="line" d={line} pathLength="1"></path>
+              <circle class="tip" cx={W} cy={tipY.toFixed(1)} r="4"></circle>
+            </svg>
+            <div class="axis" aria-hidden="true">
+              <span>−60 s</span>
+              <span>−30 s</span>
+              <span>agora</span>
+            </div>
+          </div>
+          <TileStats
+            slot="foot"
+            items={[
+              {
+                label: "Processador",
+                value: "61,4",
+                unit: "°C",
+                color: "var(--cpu)",
+                play: { count: 61.4, digits: 1, live: [60.6, 62.4] },
+              },
+              {
+                label: "Clock",
+                value: "4.650",
+                unit: "MHz",
+                play: { count: 4650, live: [4580, 4720] },
+              },
+            ]}
+          />
+        </FeatureTile>
+      </div>
+
+      <div class="slide" data-play>
+        <FeatureTile {...features.storage} class="card">
+          <div class="visual storage">
+            <svg viewBox="0 0 200 160" role="img" aria-label={`Vida útil de ${life} %`}>
+              <defs>
+                <mask id="m-storage-life" maskUnits="userSpaceOnUse">
+                  <path class="reach" d={arc} pathLength="100" style={`--life:${life}`}></path>
+                </mask>
+              </defs>
+              <path class="rail" d={arc} pathLength="100"></path>
+              <path class="value" d={arc} pathLength="100" mask="url(#m-storage-life)"></path>
+              <text x="100" y="104" class="big">
+                <tspan class="num" data-count={life} data-ms="1600">
+                  {life}
+                </tspan>
+                <tspan dx="3" class="unit">
+                  %
+                </tspan>
+              </text>
+              <text x="100" y="128" class="caption">
+                vida útil restante
+              </text>
+            </svg>
+          </div>
+          <TileStats
+            slot="foot"
+            items={[
+              { label: "Já escrito", value: "18,4", unit: "TB", play: { count: 18.4, digits: 1 } },
+              {
+                label: "Temperatura",
+                value: "41",
+                unit: "°C",
+                play: { count: 41, live: [40, 42] },
+              },
+            ]}
+          />
+        </FeatureTile>
+      </div>
+
+      <div class="slide" data-play>
+        <FeatureTile {...features.network} class="card">
+          <div class="visual network" aria-hidden="true">
+            <div class="bars">
+              {bars.map((b, i) => (
+                <i class:list={{ up: b.up }} style={`height:${b.height}%;--i:${i}`} />
+              ))}
+            </div>
+          </div>
+          <TileStats
+            slot="foot"
+            items={[
+              {
+                label: "Download",
+                value: "486",
+                unit: "Mbps",
+                color: "var(--net)",
+                play: { count: 486, live: [471, 494] },
+              },
+              {
+                label: "Upload",
+                value: "212",
+                unit: "Mbps",
+                color: "var(--signal-hi)",
+                play: { count: 212, live: [198, 221] },
+              },
+            ]}
+          />
+        </FeatureTile>
+      </div>
+    </Pager>
+  </div>
+</PhoneSection>
+
+<style>
+  .cards {
+    margin-top: 32px;
+  }
+
+  .slide > :global(.card) {
+    height: 100%;
+  }
+
+  /* a demonstração ocupa o espaço entre o texto e os números, igual nos três cartões */
+  .visual {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 168px;
+    padding: 20px var(--pad);
+  }
+
+  /* ---- sensores ---- */
+  .sensors svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .grid {
+    stroke: var(--line);
+    stroke-dasharray: 3 4;
+  }
+
+  .area {
+    fill: var(--cpu-soft);
+    opacity: 0.8;
+  }
+
+  .line {
+    fill: none;
+    stroke: var(--cpu);
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .tip {
+    fill: var(--paper);
+    stroke: var(--cpu);
+    stroke-width: 2.25;
+  }
+
+  .axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font: 500 var(--text-2xs)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  .armed .line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  .armed .area,
+  .armed .tip {
+    opacity: 0;
+  }
+
+  .playing .line {
+    stroke-dasharray: 1;
+    animation: m-mon-trace 1.6s var(--ease-out) both;
+  }
+
+  .playing .area {
+    animation: m-mon-fade 0.6s ease-out 1.1s both;
+  }
+
+  .playing .tip {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: m-mon-pop 0.4s var(--ease-out) 1.45s both;
+  }
+
+  /* ---- SSD ---- */
+  .storage svg {
+    width: min(100%, 220px);
+    margin: 0 auto;
+  }
+
+  .rail,
+  .value {
+    fill: none;
+    stroke-width: 12;
+    stroke-dasharray: 1.4 1.2;
+  }
+
+  .rail {
+    stroke: var(--dial-ring);
+  }
+
+  .value {
+    stroke: var(--storage);
+  }
+
+  .reach {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 16;
+    stroke-dasharray: var(--life) 100;
+  }
+
+  .armed .reach {
+    stroke-dasharray: 0 100;
+  }
+
+  .playing .reach {
+    animation: m-mon-reach 1.6s var(--ease-out) both;
+  }
+
+  .big {
+    font: 600 var(--num-lg) var(--font-readout);
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+
+  .unit {
+    font: 500 var(--text-lg) var(--font-display);
+    fill: var(--faint);
+  }
+
+  .caption {
+    font: 500 var(--text-sm) var(--font-display);
+    fill: var(--faint);
+    text-anchor: middle;
+  }
+
+  /* ---- rede ---- */
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 120px;
+  }
+
+  .bars i {
+    flex: 1;
+    border-radius: 2px 2px 0 0;
+    background: var(--net);
+    opacity: 0.85;
+    transform-origin: bottom;
+  }
+
+  .bars i.up {
+    background: var(--signal-hi);
+  }
+
+  .armed .bars i {
+    transform: scaleY(0);
+  }
+
+  .playing .bars i {
+    animation: m-mon-grow 0.7s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 22ms);
+  }
+
+  @keyframes m-mon-trace {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes m-mon-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes m-mon-pop {
+    from {
+      opacity: 0;
+      scale: 0.4;
+    }
+  }
+
+  @keyframes m-mon-reach {
+    from {
+      stroke-dasharray: 0 100;
+    }
+  }
+
+  @keyframes m-mon-grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+</style>

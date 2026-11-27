@@ -79,3 +79,5 @@ jobs:
           name: dist
           path: dist
       - run: npm run lighthouse
+      # o celular tem outra página (src/components/phone); o Lighthouse sem preset já emula um celular
+      - run: npm run lighthouse:celular
