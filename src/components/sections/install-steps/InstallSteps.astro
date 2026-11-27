@@ -1,0 +1,1131 @@
+---
+import Section from "@/components/layout/Section.astro";
+import CopyButton from "@/components/ui/CopyButton.astro";
+import Icon from "@/components/ui/Icon.astro";
+import WindowFrame from "@/components/ui/WindowFrame.astro";
+import Logo from "@/components/ui/Logo.astro";
+import { firstOpen, installerExtras, installSteps, STEP_MS } from "@/data/install";
+import { parts } from "@/data/parts";
+import { shortHash } from "@/lib/format";
+import type { Release } from "@/lib/release";
+
+interface Props {
+  release: Release;
+}
+
+const { installer } = Astro.props.release;
+const command = `Get-FileHash .\\${installer.name}`;
+const folder = "C:\\Users\\voce\\Downloads";
+const hash = installer.sha256;
+
+// passo 4: o menu do app, os segmentos de cada medidor e a curva do processador desde que abriu
+const appMenu = [
+  { icon: "gauge", label: "Visão geral" },
+  { icon: "cpu", label: "Sensores" },
+  { icon: "gpu", label: "Placa de vídeo" },
+  { icon: "storage", label: "Armazenamento" },
+  { icon: "net", label: "Rede" },
+] as const;
+const METER = 10;
+const TRACE_W = 300;
+const TRACE_H = 56;
+const trace = Array.from({ length: 61 }, (_, i) => {
+  const t = 41 + 11 * (1 - Math.exp(-i / 14)) + Math.sin(i * 1.7) * 0.6 + Math.sin(i * 0.43) * 0.5;
+  const y = TRACE_H - ((t - 36) / (56 - 36)) * TRACE_H;
+  return `${i ? "L" : "M"}${((i / 60) * TRACE_W).toFixed(1)} ${y.toFixed(1)}`;
+}).join("");
+---
+
+<Section id="instalar" label="install-title">
+  <div class="wrap">
+    <div class="center">
+      <h2 id="install-title" class="h2">
+        Pronto em um minuto. <span class="soft">Em três passos.</span>
+      </h2>
+      <p class="lead">Do download ao app aberto, sem nada escondido no caminho.</p>
+    </div>
+
+    <div class="layout" data-install style={`--step-ms:${STEP_MS}ms`}>
+      <div class="tabs" role="tablist" aria-label="Passos da instalação">
+        {installSteps.map((step, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tab-${step.id}`}
+            aria-controls={`panel-${step.id}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
+            class="tab"
+            data-tab={i}
+          >
+            <span class="marker num" aria-hidden="true">
+              {i === installSteps.length - 1 ? <Icon name="check" /> : i + 1}
+            </span>
+            <span class="tab-text">
+              <b>{step.title}</b>
+              <span class="desc">{step.text}</span>
+            </span>
+            {i < installSteps.length - 1 && <span class="seg" aria-hidden="true"></span>}
+          </button>
+        ))}
+      </div>
+
+      <div class="stage">
+        <!-- 1. conferir o arquivo -->
+        <div
+          class="panel current playing"
+          role="tabpanel"
+          id="panel-conferir"
+          aria-labelledby="tab-conferir"
+          data-panel
+        >
+          <WindowFrame title="Windows PowerShell" tone="dark" class="win">
+            <div class="shell num">
+              <p class="cmd">
+                <span class="path">PS {folder}&gt;</span>
+                <span class="typed" style={`--chars:${command.length}`}>
+                  {command}
+                </span>
+              </p>
+              {hash && (
+                <div class="out">
+                  <span class="col">Algorithm</span>
+                  <span class="col">Hash</span>
+                  <span class="col">---------</span>
+                  <span class="col">----</span>
+                  <span>SHA256</span>
+                  <span class="hash">
+                    {[hash.slice(0, 32), hash.slice(32)].map((half) => (
+                      <span>{half.toUpperCase()}</span>
+                    ))}
+                  </span>
+                </div>
+              )}
+            </div>
+          </WindowFrame>
+          {hash && (
+            <div class="check">
+              <span class="match">
+                <Icon name="check" />
+              </span>
+              <span class="check-text">
+                <b>Tem que dar este código</b>
+                <code title={hash}>{shortHash(hash, 10, 10)}</code>
+              </span>
+              <CopyButton text={`${command} -Algorithm SHA256`} label="Copiar o comando">
+                Copiar comando
+              </CopyButton>
+              <CopyButton text={hash} label="Copiar o SHA256 esperado">
+                Copiar código
+              </CopyButton>
+            </div>
+          )}
+        </div>
+
+        <!-- 2. aviso do SmartScreen -->
+        <div
+          class="panel"
+          role="tabpanel"
+          id="panel-aviso"
+          aria-labelledby="tab-aviso"
+          data-panel
+          inert
+        >
+          <div class="smartscreen" aria-hidden="true">
+            <b class="ss-title">O Windows protegeu o computador</b>
+            <p>
+              O Microsoft Defender SmartScreen impediu a inicialização de um aplicativo não
+              reconhecido. A execução desse aplicativo pode representar um risco para o computador.
+            </p>
+            <span class="ss-more">Mais informações</span>
+            <dl class="ss-details">
+              <dt>Aplicativo:</dt>
+              <dd>{installer.name}</dd>
+              <dt>Editor:</dt>
+              <dd>Editor desconhecido</dd>
+            </dl>
+            <div class="ss-actions">
+              <span class="ss-run">Executar assim mesmo</span>
+              <span class="ss-no">Não executar</span>
+            </div>
+          </div>
+          <p class="note">
+            Clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.
+          </p>
+        </div>
+
+        <!-- 3. extras do instalador -->
+        <div
+          class="panel"
+          role="tabpanel"
+          id="panel-extras"
+          aria-labelledby="tab-extras"
+          data-panel
+          inert
+        >
+          <WindowFrame title="Instalação do CoreBi" class="win">
+            <div class="setup">
+              <b class="setup-title">Selecionar componentes</b>
+              <p>Quais componentes devem ser instalados?</p>
+              <ul>
+                <li class="fixed">
+                  <span class="box">
+                    <Icon name="check" />
+                  </span>
+                  <b>CoreBi</b>
+                  <em>obrigatório</em>
+                </li>
+                {installerExtras.map((x) => (
+                  <li>
+                    <span class="box">
+                      <Icon name="check" />
+                    </span>
+                    <b>{x.name}</b>
+                    <em>{x.detail}</em>
+                  </li>
+                ))}
+              </ul>
+              <div class="setup-actions" aria-hidden="true">
+                <span>Voltar</span>
+                <span class="primary">Instalar</span>
+              </div>
+            </div>
+          </WindowFrame>
+        </div>
+
+        <!-- 4. o app aberto pela primeira vez -->
+        <div
+          class="panel"
+          role="tabpanel"
+          id="panel-pronto"
+          aria-labelledby="tab-pronto"
+          data-panel
+          inert
+        >
+          <WindowFrame title="CoreBi" class="win">
+            <div class="app" aria-hidden="true">
+              <nav class="side">
+                <span class="brand">
+                  <Logo class="side-logo" />
+                  CoreBi
+                </span>
+                {appMenu.map((item, i) => (
+                  <span class:list={["item", { on: i === 0 }]}>
+                    <Icon name={item.icon} />
+                    {item.label}
+                  </span>
+                ))}
+              </nav>
+              <div class="main">
+                <div class="head">
+                  <span>
+                    <b class="app-title">Visão geral</b>
+                    <span class="app-sub">Ryzen 7 5700X · RTX 4060 Ti · 32 GB</span>
+                  </span>
+                  <span class="stamp">Lido às 21:04</span>
+                </div>
+                <div class="band">
+                  {firstOpen.map((r, i) => (
+                    <div class="read" style={`--c:${parts[r.part].color};--i:${i}`}>
+                      <span class="read-label">
+                        <Icon name={parts[r.part].icon} />
+                        {r.label}
+                      </span>
+                      <b class="num">
+                        {r.value}
+                        <small>{r.unit}</small>
+                      </b>
+                      <span class="meter">
+                        {Array.from({ length: METER }, (_, k) => (
+                          <i
+                            class:list={{ lit: k < Math.round(r.meter * METER) }}
+                            style={`--k:${k}`}
+                          />
+                        ))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div class="trace">
+                  <span class="read-label">
+                    Processador nos últimos 60 s<span class="num">41 a 52 °C</span>
+                  </span>
+                  <svg viewBox={`0 0 ${TRACE_W} ${TRACE_H}`} preserveAspectRatio="none">
+                    <path class="trace-area" d={`${trace}L${TRACE_W} ${TRACE_H}L0 ${TRACE_H}Z`} />
+                    <path class="trace-line" d={trace} />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </WindowFrame>
+        </div>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<script>
+  import "./install-steps.client";
+</script>
+
+<style>
+  .h2 {
+    max-width: 20ch;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    gap: 48px;
+    align-items: center;
+    margin-top: 64px;
+  }
+
+  /*
+   * passos à esquerda, como um trajeto: cada passo é um ponto numa linha vertical.
+   * O trecho até o próximo ponto enche enquanto o passo está na tela, então a própria linha
+   * mostra quanto falta, e os pontos já percorridos ficam cheios.
+   */
+  .tabs {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 20px;
+    padding: 0 0 32px;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .tab:last-child {
+    padding-bottom: 0;
+  }
+
+  /* trilho cinza e o trecho que enche, do ponto deste passo até o próximo */
+  .tab:not(:last-child)::before,
+  .seg {
+    content: "";
+    position: absolute;
+    left: 19px;
+    top: 44px;
+    bottom: 4px;
+    width: 2px;
+    border-radius: 2px;
+  }
+
+  .tab:not(:last-child)::before {
+    background: var(--line-2);
+  }
+
+  .seg {
+    background: var(--signal-hi);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.4s var(--ease-out);
+  }
+
+  .tab.done .seg {
+    transform: none;
+  }
+
+  .layout:global(.auto) .tab[aria-selected="true"] .seg {
+    transition: none;
+    animation: fill var(--step-ms) linear forwards;
+  }
+
+  @keyframes fill {
+    to {
+      transform: none;
+    }
+  }
+
+  .marker {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--line-2);
+    border-radius: 50%;
+    background: var(--bg);
+    font: 600 var(--text-lg)/1 var(--font-readout);
+    color: var(--faint);
+    transition:
+      border-color 0.3s,
+      background-color 0.3s,
+      color 0.3s;
+  }
+
+  .marker :global(.icon) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.4;
+  }
+
+  .tab:hover .marker {
+    border-color: var(--soft);
+  }
+
+  .tab[aria-selected="true"] .marker {
+    border-color: var(--signal-hi);
+    color: var(--signal);
+  }
+
+  .tab.done .marker {
+    border-color: var(--signal);
+    background: var(--signal);
+    color: var(--on-ink);
+  }
+
+  .tab-text {
+    padding-top: 8px;
+  }
+
+  .tab-text b {
+    display: block;
+    font: 500 var(--text-xl)/1.2 var(--font-display);
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  .tab[aria-selected="true"] .tab-text b,
+  .tab.done .tab-text b {
+    color: var(--ink);
+  }
+
+  /*
+   * o texto de todos os passos fica sempre à vista, então a lista nunca muda de altura;
+   * só a cor diz qual é o passo da vez
+   */
+  .desc {
+    display: block;
+    padding-top: 8px;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--faint);
+    text-wrap: pretty;
+    transition: color 0.3s;
+  }
+
+  .tab[aria-selected="true"] .desc {
+    color: var(--muted);
+  }
+
+  /*
+   * palco à direita: as quatro telas ficam empilhadas na mesma célula, então o palco tem
+   * sempre a altura da maior e nada em volta se mexe; a troca é só um cruzamento de opacidade
+   */
+  .stage {
+    display: grid;
+    align-items: center;
+  }
+
+  .panel {
+    grid-area: 1 / 1;
+    transition:
+      opacity 0.4s var(--ease-out),
+      visibility 0.4s;
+  }
+
+  .panel:not(.current) {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .panel :global(.win) {
+    width: 100%;
+  }
+
+  /* passo 1 */
+  .shell {
+    padding: 24px 24px 32px;
+    color: var(--night-fg);
+    font: 400 var(--text-base)/1.75 var(--font-mono);
+  }
+
+  .shell p {
+    margin: 0;
+  }
+
+  .cmd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1ch;
+  }
+
+  .path {
+    color: var(--night-muted);
+  }
+
+  .typed {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .playing .typed {
+    animation: type 0.9s steps(var(--chars)) both;
+  }
+
+  @keyframes type {
+    from {
+      width: 0;
+    }
+    to {
+      width: calc(var(--chars) * 1ch);
+    }
+  }
+
+  .out {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 3ch;
+    margin-top: 16px;
+  }
+
+  .col {
+    color: var(--night-muted);
+  }
+
+  /* o hash quebra ao meio, em duas linhas iguais, em vez de deixar dois caracteres sozinhos */
+  .hash {
+    color: var(--signal-hi);
+    overflow-wrap: anywhere;
+  }
+
+  .hash span {
+    display: inline-block;
+  }
+
+  .playing .out {
+    animation: show 0.3s 1s both;
+  }
+
+  @keyframes show {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .playing .check {
+    animation: show 0.35s 1.4s both;
+  }
+
+  .match {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--signal);
+    color: var(--on-ink);
+  }
+
+  .match :global(.icon) {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.4;
+  }
+
+  .check-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .check-text b {
+    display: block;
+    font: 500 var(--text-base)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .check-text code {
+    font: 500 var(--text-sm)/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+
+  /* passo 2: o aviso azul do Windows, com os dois cliques destacados */
+  .smartscreen {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 32px 32px 24px;
+    border-radius: 14px;
+    background: var(--win-blue);
+    box-shadow: var(--shadow-md);
+    color: var(--on-ink);
+  }
+
+  .ss-title {
+    font: 400 var(--text-3xl)/1.2 var(--font-text);
+  }
+
+  .smartscreen p {
+    max-width: 52ch;
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.55;
+    opacity: 0.92;
+  }
+
+  .ss-more {
+    align-self: flex-start;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border-radius: 6px;
+    font-size: var(--text-base);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .ss-details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 14px;
+    margin: 0;
+    font-size: var(--text-md);
+  }
+
+  .ss-details dd {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ss-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .ss-actions span {
+    padding: 8px 24px;
+    border: 1px solid color-mix(in srgb, #fff 55%, transparent);
+    font-size: var(--text-md);
+  }
+
+  .ss-no {
+    background: color-mix(in srgb, #fff 14%, transparent);
+  }
+
+  .playing .ss-more {
+    animation: tap 0.9s 0.4s both;
+  }
+
+  .playing .ss-details {
+    animation: show 0.35s 1.1s both;
+  }
+
+  .playing .ss-run {
+    animation: tap 0.9s 1.8s both;
+  }
+
+  @keyframes tap {
+    0% {
+      box-shadow: 0 0 0 0 rgb(255 255 255 / 0%);
+    }
+    40% {
+      box-shadow: 0 0 0 4px rgb(255 255 255 / 55%);
+      background: rgb(255 255 255 / 16%);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(255 255 255 / 0%);
+    }
+  }
+
+  .note {
+    margin: 16px 0 0;
+    font-size: var(--text-base);
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .note b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* passo 3: a tela de componentes do instalador */
+  .setup {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 24px 24px;
+  }
+
+  .setup-title {
+    font: 500 var(--text-xl)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .setup p {
+    margin: 6px 0 16px;
+    font-size: var(--text-base);
+    color: var(--muted);
+  }
+
+  .setup ul {
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    list-style: none;
+  }
+
+  .setup li {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .setup li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .box {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--signal);
+    color: var(--on-ink);
+  }
+
+  .box :global(.icon) {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.6;
+  }
+
+  .fixed .box {
+    background: var(--soft);
+  }
+
+  .setup li b {
+    font: 500 var(--text-base)/1 var(--font-display);
+    color: var(--ink);
+  }
+
+  .setup li em {
+    justify-self: end;
+    font: 500 var(--text-md)/1 var(--font-display);
+    font-style: normal;
+    color: var(--faint);
+  }
+
+  .playing .setup li:not(.fixed) .box {
+    animation: tick 0.4s var(--ease-out) both;
+  }
+
+  .playing .setup li:nth-child(2) .box {
+    animation-delay: 0.4s;
+  }
+
+  .playing .setup li:nth-child(3) .box {
+    animation-delay: 0.8s;
+  }
+
+  @keyframes tick {
+    from {
+      transform: scale(0.4);
+      background: var(--line-2);
+    }
+  }
+
+  .setup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .setup-actions span {
+    padding: 10px 20px;
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    font: 500 var(--text-md)/1 var(--font-display);
+    color: var(--muted);
+  }
+
+  .setup-actions .primary {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+
+  .playing .setup-actions .primary {
+    animation: press 0.6s 1.4s both;
+  }
+
+  @keyframes press {
+    50% {
+      transform: scale(0.96);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 18%, transparent);
+    }
+  }
+
+  /* passo 4: o app aberto pela primeira vez, igual ao de verdade: menu à esquerda e a visão geral */
+  .app {
+    display: grid;
+    grid-template-columns: 176px minmax(0, 1fr);
+  }
+
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 12px;
+    border-right: 1px solid var(--line);
+    background: var(--paper-soft);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 8px;
+    font: 500 var(--text-md)/1 var(--font-display);
+    color: var(--ink);
+  }
+
+  .side :global(.side-logo) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .item :global(.icon) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--faint);
+  }
+
+  .item.on {
+    background: var(--night-signal);
+    color: var(--on-ink);
+  }
+
+  .item.on :global(.icon) {
+    color: currentColor;
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+    background: var(--bg);
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .app-title {
+    display: block;
+    font: 500 var(--text-2xl)/1.1 var(--font-display);
+    color: var(--ink);
+  }
+
+  .app-sub {
+    display: block;
+    margin-top: 4px;
+    font-size: var(--text-sm);
+    color: var(--faint);
+  }
+
+  .stamp {
+    flex: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--tint);
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--muted);
+  }
+
+  /* as quatro leituras numa faixa só, cada uma com um medidor em segmentos, como no app */
+  .band {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+  }
+
+  .read {
+    padding: 16px;
+  }
+
+  .read + .read {
+    border-left: 1px solid var(--line);
+  }
+
+  .read-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .read-label :global(.icon) {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--c);
+  }
+
+  .read b {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 12px;
+    font: 600 var(--num-sm)/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  .read small {
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  .meter {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
+    margin-top: 12px;
+  }
+
+  .meter i {
+    height: 6px;
+    border-radius: 1px;
+    background: var(--line);
+  }
+
+  .meter i.lit {
+    background: var(--c);
+  }
+
+  .trace {
+    padding: 16px 16px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+  }
+
+  .trace .read-label {
+    justify-content: space-between;
+  }
+
+  .trace .num {
+    color: var(--muted);
+  }
+
+  .trace svg {
+    display: block;
+    width: 100%;
+    height: 56px;
+    margin-top: 12px;
+    overflow: visible;
+  }
+
+  .trace path {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .trace-line {
+    fill: none;
+    stroke: var(--cpu);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  .trace-area {
+    fill: var(--cpu-soft);
+  }
+
+  /*
+   * a janela já vem desenhada e as leituras chegam: os números aparecem um a um, os
+   * medidores acendem segmento por segmento e a curva se desenha da esquerda para a direita
+   */
+  .playing .read b {
+    animation: show 0.4s calc(0.3s + var(--i) * 0.14s) both;
+  }
+
+  .playing .meter i.lit {
+    animation: lit 0.2s calc(0.45s + var(--i) * 0.14s + var(--k) * 0.035s) both;
+  }
+
+  @keyframes lit {
+    from {
+      background: var(--line);
+    }
+  }
+
+  .playing .trace svg {
+    animation: wipe 1.6s 0.6s var(--ease-out) both;
+  }
+
+  @keyframes wipe {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .layout {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .tabs {
+      flex-direction: row;
+    }
+
+    .tab {
+      flex: 1;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 0;
+    }
+
+    .tab::before,
+    .seg,
+    .desc {
+      display: none;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .app {
+      grid-template-columns: 56px minmax(0, 1fr);
+    }
+
+    .brand,
+    .item {
+      justify-content: center;
+      font-size: 0;
+    }
+
+    .brand {
+      margin: 0 0 12px;
+    }
+
+    .item {
+      padding: 0;
+    }
+
+    .band {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .read:nth-child(3) {
+      border-left: 0;
+    }
+
+    .read:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+
+    .stamp {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .tab {
+      padding: 12px;
+    }
+
+    .tab-text b {
+      font-size: var(--text-base);
+    }
+
+    .marker {
+      width: 32px;
+      height: 32px;
+      font-size: var(--text-md);
+    }
+
+    .shell {
+      padding: 16px;
+      font-size: var(--text-xs);
+    }
+
+    .out {
+      grid-template-columns: 1fr;
+    }
+
+    .out .col {
+      display: none;
+    }
+
+    .check {
+      flex-wrap: wrap;
+    }
+
+    .check-text {
+      flex-basis: calc(100% - 48px);
+    }
+
+    .smartscreen {
+      padding: 24px 24px 20px;
+    }
+
+    .ss-title {
+      font-size: var(--text-xl);
+    }
+
+    .setup {
+      padding: 20px 16px 16px;
+    }
+
+    .setup li {
+      grid-template-columns: auto 1fr;
+    }
+
+    .setup li em {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+</style>

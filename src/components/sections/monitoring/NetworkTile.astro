@@ -1,0 +1,57 @@
+---
+import { features } from "@/data/features";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+import TileStats from "@/components/ui/TileStats.astro";
+
+interface Props {
+  class?: string;
+}
+
+// 24 barras de download e 8 de upload, com alturas iniciais fixas (o script faz elas variarem).
+const bars = Array.from({ length: 32 }, (_, i) => ({
+  upload: i >= 24,
+  height: i >= 24 ? 30 + ((i * 37) % 35) : 40 + ((i * 53) % 60),
+}));
+---
+
+<FeatureTile {...features.network} class={Astro.props.class}>
+  <div class="bars" data-network aria-hidden="true">
+    {bars.map((b) => (
+      <i class:list={{ up: b.upload }} style={`height:${b.height}%`} />
+    ))}
+  </div>
+  <TileStats
+    slot="foot"
+    items={[
+      { label: "Download", value: "486", unit: "Mbps", hook: "down", color: "var(--net)" },
+      { label: "Upload", value: "212", unit: "Mbps", hook: "up", color: "var(--signal-hi)" },
+    ]}
+  />
+</FeatureTile>
+
+<script>
+  import "./network.client";
+</script>
+
+<style>
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    align-items: end;
+    gap: 4px;
+    height: calc(var(--visual-h) + 24px);
+    margin: auto var(--pad) 24px;
+    padding-top: 24px;
+  }
+
+  .bars i {
+    border-radius: 2px 2px 0 0;
+    background: var(--net);
+    opacity: 0.85;
+    transition: height 0.5s var(--ease-out);
+  }
+
+  .bars i.up {
+    background: var(--signal-hi);
+  }
+</style>

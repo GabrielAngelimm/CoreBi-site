@@ -1,0 +1,246 @@
+---
+import AppTile from "@/components/ui/AppTile.astro";
+import Button from "@/components/ui/Button.astro";
+import Icon from "@/components/ui/Icon.astro";
+import { site } from "@/config/site";
+import type { Release } from "@/lib/release";
+import Orbit from "./Orbit.astro";
+
+interface Props {
+  release: Release;
+}
+
+const { release } = Astro.props;
+---
+
+<section id="abertura" class="hero" aria-labelledby="hero-title" data-hero>
+  <Orbit />
+  <div class="wrap content">
+    <AppTile size="lg" class="enter" />
+    <h1 id="hero-title" class="enter">
+      <span>Monitore, teste</span>
+      <span>e cuide do PC.</span>
+      <span class="soft">Num app só.</span>
+    </h1>
+    <p class="lead enter">
+      <span class="long">
+        Sensores ao vivo, saúde dos discos, ficha técnica, overlay de FPS, teste de carga e
+        instalação de apps e drivers. Para Windows, grátis, de código aberto e sem conta.
+      </span>
+      <span class="short">
+        Sensores, discos, FPS, teste de carga, apps e drivers. Grátis e de código aberto.
+      </span>
+    </p>
+    <div class="actions enter">
+      <Button href={release.installer.url} icon="download">
+        Baixar para Windows
+      </Button>
+      <Button href={site.links.code} variant="line" icon="githubSolid" external>
+        Ver no GitHub
+      </Button>
+    </div>
+  </div>
+  <a class="cue" href="#sobre" aria-label="Ir para as seções">
+    <Icon name="chevronDown" />
+  </a>
+</section>
+
+<script>
+  import "./hero.client";
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: var(--header-space) 0 96px;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  /*
+   * pontinhos bem leves, centrados no mostrador e sumindo para fora, como a tela de um radar;
+   * ficam fixos enquanto os anéis giram por cima
+   */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image: radial-gradient(circle, var(--dial-tick) 1px, transparent 1.3px);
+    background-position: center;
+    background-size: 24px 24px;
+    mask-image: radial-gradient(
+      circle at 50% 50%,
+      #000 0 28%,
+      rgb(0 0 0 / 50%) 62%,
+      transparent 96%
+    );
+  }
+
+  /* fade para a próxima seção */
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    height: 140px;
+    background: linear-gradient(transparent, var(--bg));
+    pointer-events: none;
+  }
+
+  /* em telas baixas a abertura encolhe junto com as outras seções; nunca cresce */
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    zoom: min(var(--fit), 1);
+  }
+
+  .content :global(.tile) {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    margin: 0;
+    font: 500 var(--display-lg) / 0.97 var(--font-display);
+    letter-spacing: -0.035em;
+    color: var(--ink);
+  }
+
+  h1 span {
+    display: block;
+    white-space: nowrap;
+  }
+
+  h1 .soft {
+    margin-top: 0.04em;
+  }
+
+  .lead {
+    max-width: 600px;
+    margin-top: 24px;
+    font-size: var(--text-xl);
+    line-height: 1.55;
+  }
+
+  .short {
+    display: none;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+  }
+
+  /* entrada em cascata ao abrir */
+  .enter {
+    animation: rise 0.9s var(--ease-out) both;
+  }
+
+  h1.enter {
+    animation-delay: 0.14s;
+  }
+
+  .lead.enter {
+    animation-delay: 0.2s;
+  }
+
+  .actions.enter {
+    animation-delay: 0.26s;
+  }
+
+  .cue {
+    position: absolute;
+    left: 50%;
+    bottom: 28px;
+    translate: -50% 0;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+    border-radius: 50%;
+    background: var(--glass-soft);
+    box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--ink) 35%, transparent);
+    color: var(--ink);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    transition: background-color 0.2s;
+    animation: rise 1s 0.6s var(--ease-out) both;
+  }
+
+  .cue:hover {
+    background: var(--glass);
+  }
+
+  .cue :global(.icon) {
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.8;
+    animation: nudge 2.4s ease-in-out infinite;
+  }
+
+  @keyframes nudge {
+    0%,
+    100% {
+      transform: translateY(-2px);
+    }
+    50% {
+      transform: translateY(3px);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero {
+      justify-content: flex-start;
+      padding: 186px 0 120px;
+    }
+
+    .content :global(.tile) {
+      margin-bottom: 32px;
+    }
+
+    .lead {
+      margin-top: 24px;
+      font-size: var(--text-lg);
+    }
+
+    .long {
+      display: none;
+    }
+
+    .short {
+      display: inline;
+    }
+
+    .actions {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      max-width: 320px;
+      margin-top: 32px;
+    }
+
+    .cue {
+      bottom: 22px;
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    h1 span {
+      white-space: normal;
+    }
+  }
+</style>

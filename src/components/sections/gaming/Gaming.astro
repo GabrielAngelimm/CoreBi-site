@@ -1,0 +1,43 @@
+---
+import Section from "@/components/layout/Section.astro";
+import BenchmarkTile from "./BenchmarkTile.astro";
+import OverlayTile from "./OverlayTile.astro";
+---
+
+<Section id="jogos" label="gaming-title" tone="dark">
+  <div class="wrap">
+    <div class="center">
+      <h2 id="gaming-title" class="h2">
+        Feito para quem joga. <span class="soft">Sem sair da partida.</span>
+      </h2>
+      <p class="lead one-line">Overlay de FPS por cima do jogo e benchmark para comparar peças.</p>
+    </div>
+    <div class="grid">
+      <OverlayTile class="overlay" />
+      <BenchmarkTile class="bench" />
+    </div>
+  </div>
+</Section>
+
+<style>
+  .h2 {
+    max-width: 22ch;
+  }
+
+  .one-line {
+    max-width: none;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,97 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Icon from "./Icon.astro";
+import type { IconName } from "./icons";
+
+type Props = HTMLAttributes<"a"> & {
+  /** ink e line para fundo claro; light e ghost para fundo escuro. */
+  variant?: "ink" | "line" | "light" | "ghost";
+  size?: "md" | "sm";
+  icon?: IconName;
+  external?: boolean;
+};
+
+const { variant = "ink", size = "md", icon, external, class: className, ...rest } = Astro.props;
+const target = external ? { target: "_blank", rel: "noopener" } : {};
+---
+
+<a class:list={["btn", variant, size, className]} {...target} {...rest}>
+  {icon && <Icon name={icon} />}
+  <slot />
+</a>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 24px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    font: 500 var(--text-base)/1 var(--font-display);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease-out,
+      border-color 0.15s ease-out,
+      transform 0.15s ease-out;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn :global(.icon) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ink {
+    background: var(--ink);
+    color: var(--on-ink);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ink:hover {
+    background: var(--ink-2);
+  }
+
+  .line {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--line-2);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .line:hover {
+    border-color: var(--faint);
+  }
+
+  .light {
+    background: var(--night-fg);
+    color: var(--night);
+  }
+
+  .light:hover {
+    background: #fff;
+  }
+
+  .ghost {
+    border-color: color-mix(in srgb, var(--night-fg) 18%, transparent);
+    background: color-mix(in srgb, var(--night-fg) 4%, transparent);
+    color: var(--night-fg);
+  }
+
+  .ghost:hover {
+    border-color: color-mix(in srgb, var(--night-fg) 36%, transparent);
+  }
+
+  .sm {
+    height: 40px;
+    padding: 0 16px;
+    font-size: var(--text-md);
+  }
+</style>

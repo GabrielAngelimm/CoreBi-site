@@ -1,0 +1,84 @@
+---
+/**
+ * Cartão de recurso: título, texto e a demonstração no espaço que sobra.
+ * Quem posiciona o cartão na grade é a seção, pela classe.
+ */
+
+interface Props {
+  title: string;
+  text: string;
+  dark?: boolean;
+  class?: string | undefined;
+}
+
+const { title, text, dark = false, class: className } = Astro.props;
+---
+
+<article class:list={["tile", { dark }, className]}>
+  <div class="head">
+    <h3>{title}</h3>
+    <p>{text}</p>
+    <slot name="head" />
+  </div>
+  <slot />
+  <slot name="foot" />
+</article>
+
+<style>
+  .tile {
+    --pad: 32px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .head {
+    padding: 24px var(--pad) 0;
+  }
+
+  h3 {
+    margin: 0 0 8px;
+    font: 500 var(--text-2xl)/1.15 var(--font-display);
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  p {
+    max-width: 44ch;
+    margin: 0;
+    font-size: var(--text-base);
+    color: var(--muted);
+  }
+
+  .dark {
+    border-color: var(--night-line);
+    background: var(--night-2);
+    box-shadow: none;
+    color: var(--night-fg);
+  }
+
+  .dark h3 {
+    color: var(--night-fg);
+  }
+
+  .dark p {
+    color: var(--night-muted);
+  }
+
+  @media (max-width: 700px) {
+    .tile {
+      --pad: 24px;
+    }
+
+    .head {
+      padding-top: 24px;
+    }
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+/** Botão pequeno que copia `text`. O texto visível vem do slot (padrão "Copiar"). */
+interface Props {
+  text: string;
+  tone?: "light" | "dark";
+  label: string;
+}
+
+const { text, tone = "light", label } = Astro.props;
+---
+
+<button type="button" class:list={["copy", tone]} data-copy={text} aria-label={label}>
+  <slot>Copiar</slot>
+</button>
+
+<script>
+  import "@/scripts/copy";
+</script>
+
+<style>
+  .copy {
+    flex: none;
+    height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-pill);
+    background: var(--paper);
+    color: var(--muted);
+    font: 500 var(--text-xs)/1 var(--font-display);
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .copy:hover {
+    color: var(--ink);
+  }
+
+  .dark {
+    border-color: var(--night-line);
+    background: transparent;
+    color: var(--night-muted);
+  }
+
+  .dark:hover {
+    color: var(--on-ink);
+  }
+
+  .copy.done {
+    border-color: var(--signal-hi);
+    color: var(--signal);
+  }
+
+  .dark.done {
+    color: var(--signal-hi);
+  }
+</style>

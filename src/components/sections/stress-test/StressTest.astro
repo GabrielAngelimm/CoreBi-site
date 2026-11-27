@@ -1,0 +1,428 @@
+---
+/**
+ * Teste de carga: um gráfico da temperatura ao longo dos 10 minutos, com a linha de corte.
+ * A demonstração alterna sozinha entre dois PCs: um com cooler bom, que passa, e um com
+ * cooler fraco, que bate no limite e para. Ninguém precisa clicar para ver as duas.
+ */
+import Section from "@/components/layout/Section.astro";
+import { decimal } from "@/lib/format";
+import { scenarios, stress } from "@/data/stress";
+
+const { min, max, cut, steps } = stress;
+const W = 600;
+const H = 220;
+const x = (step: number) => (step / steps) * W;
+const y = (t: number) => H - ((t - min) / (max - min)) * H;
+
+// Estado sem JavaScript (e com movimento reduzido): o PC com cooler bom, teste completo.
+const good = scenarios[0];
+const curve = (top: number, k: number) =>
+  Array.from({ length: steps + 1 }, (_, i) => top - (top - stress.start) * Math.exp(-k * i));
+const line = (values: number[]) =>
+  values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+const cpu = curve(good.cpu, good.k);
+const gpu = curve(good.gpu, good.k * 0.8);
+const cpuLine = line(cpu);
+const gpuLine = line(gpu);
+const peak = decimal(Math.max(...cpu));
+
+const grid = [40, 60, 80].map((t) => ({ t, y: y(t) }));
+const cutY = (y(cut) / H) * 100;
+---
+
+<Section id="teste" label="teste-title">
+  <div class="wrap layout">
+    <div>
+      <h2 id="teste-title" class="h2">
+        Seu PC aguenta horas de jogo?
+      </h2>
+      <p class="lead">
+        Deixa o PC no máximo por alguns minutos para achar problemas de calor antes da partida.
+      </p>
+      <p class="lead">Passou do limite? O teste para sozinho.</p>
+    </div>
+
+    <div
+      class="card"
+      data-stress
+      role="group"
+      aria-label="Exemplo do teste de carga: temperatura do processador e da placa de vídeo"
+    >
+      <header>
+        <div>
+          <b>Teste de carga</b>
+          <span>CPU, GPU e RAM em 100 % por 10 min</span>
+        </div>
+        <div class="pcs" role="group" aria-label="Escolha o PC do exemplo">
+          {scenarios.map((s, i) => (
+            <button type="button" aria-pressed={i === 0 ? "true" : "false"} data-scenario={i}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      <div class="chart">
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+          {grid.map((g) => (
+            <path class="grid" d={`M0 ${g.y}H${W}`} />
+          ))}
+          <path class="area" d={`${cpuLine}L${W} ${H}L0 ${H}Z`} data-area></path>
+          <path class="gpu" d={gpuLine} data-gpu-line></path>
+          <path class="cpu" d={cpuLine} data-cpu-line></path>
+          <path class="cut" d={`M0 ${y(cut)}H${W}`}></path>
+        </svg>
+        <div class="y-labels" aria-hidden="true">
+          {grid.map((g) => (
+            <span style={`top:${(g.y / H) * 100}%`}>{g.t}°</span>
+          ))}
+        </div>
+        <span class="cut-label" style={`top:${cutY}%`}>
+          limite {cut} °C, o teste para aqui
+        </span>
+        <i class="tip cpu-tip" data-cpu-tip style={`left:100%;top:${(y(good.cpu) / H) * 100}%`}></i>
+        <i class="tip gpu-tip" data-gpu-tip style={`left:100%;top:${(y(good.gpu) / H) * 100}%`}></i>
+        <div class="x-labels" aria-hidden="true">
+          <span>0</span>
+          <span>5 min</span>
+          <span>10 min</span>
+        </div>
+      </div>
+
+      <dl class="reads">
+        <div>
+          <dt style="--c:var(--cpu)">
+            <i></i>Processador
+          </dt>
+          <dd>
+            <span class="num" data-cpu>
+              {decimal(cpu.at(-1) ?? good.cpu)}
+            </span>
+            <small>°C</small>
+          </dd>
+        </div>
+        <div>
+          <dt style="--c:var(--gpu)">
+            <i></i>Placa de vídeo
+          </dt>
+          <dd>
+            <span class="num" data-gpu>
+              {decimal(gpu.at(-1) ?? good.gpu)}
+            </span>
+            <small>°C</small>
+          </dd>
+        </div>
+        <div>
+          <dt>Tempo</dt>
+          <dd>
+            <span class="num" data-clock>
+              10:00
+            </span>
+            <small>de 10:00</small>
+          </dd>
+        </div>
+      </dl>
+
+      <p class="message ok" data-message aria-live="polite">
+        <i></i>
+        <span>Aprovado: estável por 10 min, sem erros. Máxima de {peak} °C.</span>
+      </p>
+    </div>
+  </div>
+</Section>
+
+<script>
+  import "./stress-test.client";
+</script>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 96px;
+    align-items: center;
+  }
+
+  .card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-md);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header b {
+    display: block;
+    margin-bottom: 4px;
+    font: 500 var(--text-xl)/1.1 var(--font-display);
+    color: var(--ink);
+  }
+
+  header span {
+    font-size: var(--text-sm);
+    color: var(--faint);
+  }
+
+  /* qual PC está no exemplo; troca sozinho, mas também dá para escolher */
+  .pcs {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--tint);
+  }
+
+  .pcs button {
+    height: 32px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .pcs button[aria-pressed="true"] {
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    color: var(--ink);
+  }
+
+  .chart {
+    position: relative;
+    height: 240px;
+    margin: 32px 32px 0 64px;
+  }
+
+  .chart svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .chart path {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .grid {
+    stroke: var(--line);
+    stroke-dasharray: 3 4;
+  }
+
+  .area {
+    fill: var(--cpu-soft) !important;
+    transition: fill 0.4s;
+  }
+
+  .cpu {
+    stroke: var(--cpu);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    transition: stroke 0.4s;
+  }
+
+  .gpu {
+    stroke: var(--gpu);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  .cut {
+    stroke: var(--danger);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 5;
+  }
+
+  /* quando o teste para no limite, a linha do processador fica vermelha */
+  [data-state="stop"] .cpu {
+    stroke: var(--danger);
+  }
+
+  [data-state="stop"] .area {
+    fill: var(--danger-soft) !important;
+  }
+
+  [data-state="stop"] .cpu-tip {
+    background: var(--danger);
+  }
+
+  .y-labels span {
+    position: absolute;
+    left: -40px;
+    translate: 0 -50%;
+    font: 500 var(--text-xs)/1 var(--font-readout);
+    color: var(--faint);
+  }
+
+  .cut-label {
+    position: absolute;
+    right: 0;
+    translate: 0 calc(-100% - 6px);
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--danger-text);
+  }
+
+  .tip {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--paper);
+    border-radius: 50%;
+    translate: -50% -50%;
+  }
+
+  .cpu-tip {
+    background: var(--cpu);
+  }
+
+  .gpu-tip {
+    background: var(--gpu);
+  }
+
+  .x-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font: 500 var(--text-xs)/1 var(--font-readout);
+    color: var(--faint);
+  }
+
+  .reads {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 32px 32px 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .reads div + div {
+    padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  dt i {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--c);
+  }
+
+  dd {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+  }
+
+  dd .num {
+    font: 600 var(--num-md)/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  small {
+    font: 500 var(--text-md)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  /* altura fixa: trocar a mensagem nunca empurra o cartão */
+  .message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    margin: 24px 32px 32px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--tint);
+    font: 500 var(--text-md)/1.35 var(--font-display);
+    color: var(--text);
+  }
+
+  .message i {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--signal-hi);
+  }
+
+  .message.ok i {
+    background: var(--success);
+  }
+
+  .message.stop {
+    background: var(--danger-soft);
+    color: var(--danger-text);
+  }
+
+  .message.stop i {
+    background: var(--danger);
+  }
+
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    header {
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+
+    .pcs {
+      margin-left: 0;
+    }
+
+    .chart {
+      height: 180px;
+      margin: 24px 20px 0 52px;
+    }
+
+    .cut-label {
+      display: none;
+    }
+
+    .reads {
+      margin: 24px 20px 0;
+    }
+
+    .reads div + div {
+      padding-left: 12px;
+    }
+
+    dd .num {
+      font-size: var(--num-sm);
+    }
+
+    .message {
+      min-height: 66px;
+      margin: 20px;
+    }
+  }
+</style>

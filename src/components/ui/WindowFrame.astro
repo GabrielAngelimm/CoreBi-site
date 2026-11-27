@@ -1,0 +1,121 @@
+---
+/** Uma janela do Windows desenhada: barra de título com os três botões e o conteúdo no slot. */
+interface Props {
+  title: string;
+  tone?: "light" | "dark";
+  class?: string;
+}
+
+const { title, tone = "light", class: className } = Astro.props;
+---
+
+<div class:list={["window", tone, className]}>
+  <div class="titlebar">
+    <slot name="icon" />
+    <span class="title">{title}</span>
+    <span class="controls" aria-hidden="true">
+      <i class="min"></i>
+      <i class="max"></i>
+      <i class="close"></i>
+    </span>
+  </div>
+  <div class="body">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .window {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    background: var(--paper);
+    box-shadow:
+      0 2px 6px color-mix(in srgb, var(--ink) 6%, transparent),
+      0 30px 60px -24px color-mix(in srgb, var(--ink) 32%, transparent);
+  }
+
+  .titlebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding-left: 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-soft);
+  }
+
+  .title {
+    font: 500 var(--text-sm)/1 var(--font-text);
+    color: var(--muted);
+  }
+
+  .controls {
+    display: flex;
+    align-self: stretch;
+    margin-left: auto;
+  }
+
+  .controls i {
+    position: relative;
+    width: 46px;
+  }
+
+  .controls i::before,
+  .controls i::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+  }
+
+  .min::before {
+    width: 10px;
+    border-top: 1px solid currentColor;
+  }
+
+  .max::before {
+    width: 9px;
+    height: 9px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+  }
+
+  .close::before,
+  .close::after {
+    width: 12px;
+    border-top: 1px solid currentColor;
+    rotate: 45deg;
+  }
+
+  .close::after {
+    rotate: -45deg;
+  }
+
+  .controls {
+    color: var(--faint);
+  }
+
+  .body {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .dark {
+    border-color: var(--night-line);
+    background: var(--night);
+  }
+
+  .dark .titlebar {
+    border-color: var(--night-line);
+    background: var(--night-2);
+  }
+
+  .dark .title,
+  .dark .controls {
+    color: var(--night-muted);
+  }
+</style>

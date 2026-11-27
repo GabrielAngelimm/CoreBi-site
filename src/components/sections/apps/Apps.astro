@@ -1,0 +1,391 @@
+---
+import { Image } from "astro:assets";
+import Section from "@/components/layout/Section.astro";
+import Icon from "@/components/ui/Icon.astro";
+import { honeycomb, queue } from "@/data/apps";
+
+// Posição de cada app na colmeia: linhas centradas, em colunas de 1/4 da largura.
+const widest = Math.max(...honeycomb);
+const cells = honeycomb.flatMap((count, row) =>
+  Array.from({ length: count }, (_, col) => ({
+    x: ((col + 0.5 + (widest - count) / 2) / widest) * 100,
+    y: ((row + 0.5) / honeycomb.length) * 100,
+  })),
+);
+const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
+---
+
+<Section id="apps" label="apps-title">
+  <div class="wrap duo">
+    <div class="text">
+      <h2 id="apps-title" class="h2">
+        Formatou? <span class="soft">Instale tudo de uma vez.</span>
+      </h2>
+      <p class="lead">
+        Marque os apps e o CoreBi instala um por um, direto da fonte oficial. Sem abrir site e sem
+        clicar em Avançar.
+      </p>
+    </div>
+
+    <div class="demo" data-apps>
+      <ul class="hive" aria-label="Exemplo de instalação em fila">
+        {apps.map((app) => (
+          <li class="done" style={`--x:${app.x}%;--y:${app.y}%`}>
+            <svg class="progress" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="49" class="rail" />
+              <circle cx="50" cy="50" r="49" class="bar" pathLength="100" />
+            </svg>
+            <span class="icon-wrap">
+              <Image src={app.icon} alt="" width={64} height={64} loading="lazy" />
+            </span>
+            <span class="ok">
+              <Icon name="check" />
+            </span>
+            <em>{app.name}</em>
+          </li>
+        ))}
+      </ul>
+      <!-- a fila do instalador: um anel com o total, o que está instalando e um segmento por app -->
+      <div class="queue" data-queue>
+        <span class="seal" aria-hidden="true">
+          <Icon name="check" />
+        </span>
+        <span class="queue-text">
+          <b data-status>Tudo instalado</b>
+          <span>
+            <span class="num" data-count>
+              {apps.length}
+            </span>{" "}
+            de {apps.length} apps
+          </span>
+        </span>
+        <span class="segs" aria-hidden="true">
+          {apps.map(() => (
+            <i class="on" />
+          ))}
+        </span>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<script>
+  import "./apps.client";
+</script>
+
+<style>
+  .duo {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 96px;
+    align-items: center;
+  }
+
+  .text .lead {
+    max-width: 44ch;
+  }
+
+  .demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    width: 100%;
+  }
+
+  .hive {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 1 / 0.8;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    --s: 92px;
+    --p: 0;
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    translate: -50% -50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: var(--s);
+  }
+
+  /* o anel fica em cima da borda do ícone: mesmo tamanho e mesmo centro */
+  .progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    width: var(--s);
+    max-width: none;
+    height: var(--s);
+    transform: rotate(-90deg);
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .progress circle {
+    fill: none;
+    stroke-width: 2.4;
+  }
+
+  .rail {
+    stroke: transparent;
+    transition: stroke 0.3s;
+  }
+
+  .bar {
+    stroke: var(--signal-hi);
+    stroke-linecap: round;
+    stroke-dasharray: var(--p) 100;
+    opacity: 0;
+    transition: stroke 0.5s;
+  }
+
+  li.active .bar,
+  li.done .bar {
+    opacity: 1;
+  }
+
+  /* o anel enche sozinho: o script só troca a classe */
+  li.active,
+  li.done {
+    --p: 100;
+  }
+
+  li.active {
+    transition: --p var(--fill-ms, 480ms) var(--ease-out);
+  }
+
+  .icon-wrap {
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: var(--shadow-md);
+    transition: border-color 0.3s;
+  }
+
+  .icon-wrap :global(img) {
+    width: 50%;
+    height: 50%;
+    filter: grayscale(1) opacity(0.45);
+    transition: filter 0.3s;
+  }
+
+  /* o selo de pronto fica com o centro em cima do anel, na posição de 1h30 */
+  .ok {
+    position: absolute;
+    z-index: 2;
+    left: calc(var(--s) * 0.8536);
+    top: calc(var(--s) * 0.1464);
+    translate: -50% -50%;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 3px var(--bg);
+    color: var(--on-ink);
+    transform: scale(0);
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  .ok :global(.icon) {
+    width: 55%;
+    height: 55%;
+    stroke-width: 2.6;
+  }
+
+  em {
+    font: 500 var(--text-md)/1 var(--font-display);
+    font-style: normal;
+    color: var(--faint);
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+
+  /* instalando agora */
+  li.active .rail {
+    stroke: var(--dial-ring);
+  }
+
+  li.active .icon-wrap :global(img),
+  li.done .icon-wrap :global(img) {
+    filter: none;
+  }
+
+  li.active em,
+  li.done em {
+    color: var(--ink);
+  }
+
+  /* instalado: o anel cheio fica, só que mais calmo */
+  li.done .bar {
+    stroke: color-mix(in srgb, var(--signal) 45%, var(--paper));
+  }
+
+  li.done .ok {
+    transform: none;
+  }
+
+  /*
+   * fila do instalador: o anel da esquerda enche com o total e vira um selo com o check no fim,
+   * o texto diz o que está instalando e cada app acende o próprio segmento
+   */
+  .queue {
+    --p: 100;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    width: min(100%, 480px);
+    padding: 14px 20px 14px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    transition: --p 0.3s var(--ease-out);
+  }
+
+  .seal {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--on-ink);
+  }
+
+  /* o anel de progresso: um conic-gradient recortado num traço pela máscara */
+  .seal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--signal-hi) calc(var(--p) * 1%), var(--line) 0);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+    transition: opacity 0.3s;
+  }
+
+  /* no fim o anel some por baixo de um disco cheio, e o check entra */
+  .seal::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--signal);
+    transform: scale(0.4);
+    opacity: 0;
+    transition:
+      transform 0.4s cubic-bezier(0.34, 1.5, 0.64, 1),
+      opacity 0.2s;
+  }
+
+  .seal :global(.icon) {
+    position: relative;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.6;
+    transform: scale(0.4);
+    opacity: 0;
+    transition:
+      transform 0.4s 0.08s cubic-bezier(0.34, 1.5, 0.64, 1),
+      opacity 0.2s 0.08s;
+  }
+
+  .queue:not(.busy) .seal::after,
+  .queue:not(.busy) .seal :global(.icon) {
+    transform: none;
+    opacity: 1;
+  }
+
+  .queue-text b {
+    display: block;
+    font: 500 var(--text-lg)/1.2 var(--font-display);
+    color: var(--ink);
+  }
+
+  .queue-text > span {
+    display: block;
+    margin-top: 4px;
+    font-size: var(--text-sm);
+    color: var(--faint);
+  }
+
+  .queue-text .num {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .segs {
+    display: flex;
+    gap: 3px;
+  }
+
+  .segs i {
+    width: 6px;
+    height: 20px;
+    border-radius: 2px;
+    background: var(--line);
+    transition: background-color 0.25s;
+  }
+
+  .segs i.on {
+    background: var(--signal-hi);
+  }
+
+  @media (max-width: 980px) {
+    .duo {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .duo {
+      gap: 48px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .demo {
+      gap: 24px;
+    }
+
+    .hive {
+      aspect-ratio: 1;
+    }
+
+    li {
+      --s: 60px;
+      gap: 10px;
+    }
+
+    em {
+      font-size: var(--text-xs);
+    }
+
+    .ok {
+      width: 20px;
+      height: 20px;
+    }
+
+    .segs {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,100 @@
+---
+import Logo from "@/components/ui/Logo.astro";
+import { footerLinks } from "@/config/site";
+
+interface Props {
+  tone?: "light" | "dark";
+}
+
+const { tone = "light" } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class:list={["footer", tone]}>
+  <div class="wrap">
+    <a class="brand" href="#inicio">
+      <Logo />
+      CoreBi
+    </a>
+    <nav aria-label="Links">
+      {footerLinks.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener">
+          {link.label}
+        </a>
+      ))}
+    </nav>
+    <span class="credit">Feito por Gabriel · {year}</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: 48px 64px;
+  }
+
+  .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 32px;
+    font: 500 var(--text-md)/1.4 var(--font-display);
+    color: var(--faint);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 500 var(--text-lg)/1 var(--font-display);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .brand :global(.logo) {
+    width: 22px;
+    height: 22px;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 32px;
+  }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--ink);
+  }
+
+  .credit {
+    margin-left: auto;
+  }
+
+  .dark .wrap {
+    color: var(--night-faint);
+  }
+
+  .dark .brand {
+    --logo-frame: var(--night-fg);
+    color: var(--night-fg);
+  }
+
+  .dark nav a {
+    color: var(--night-muted);
+  }
+
+  .dark nav a:hover {
+    color: var(--night-fg);
+  }
+
+  @media (max-width: 700px) {
+    .credit {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+</style>

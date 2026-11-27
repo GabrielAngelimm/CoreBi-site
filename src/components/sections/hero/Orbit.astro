@@ -1,0 +1,406 @@
+---
+/**
+ * O mostrador atrás da abertura: três anéis em volta do ícone do app, cada um girando inteiro
+ * com as suas três bolhas presas nele, e o vizinho girando ao contrário (anti-horário, horário,
+ * anti-horário). As bolhas são brancas, só com o ícone e o aro na cor da peça, e ficam em pé.
+ *
+ * Cada anel tem um caráter, e tudo o que ele desenha fica em cima da própria linha, para
+ * passar por baixo das bolhas em vez de raspar nelas:
+ * 1. linha colorida: em volta de cada bolha a linha tem a cor da peça e vai se misturando até
+ *    a cor da próxima; doze marcas cruzando a linha, como as horas de um relógio, longe das bolhas
+ * 2. linha nas cores das peças dele, mais clara, com pontos cinza em cima
+ * 3. linha cinza com marcas finas cruzando, como uma régua
+ */
+import Bubble from "@/components/ui/Bubble.astro";
+import { orbit, rings, type OrbitItem, type RingId } from "@/data/hero";
+import { parts } from "@/data/parts";
+
+const ids: readonly RingId[] = [1, 2, 3];
+const layers = ids.map((id) => ({
+  id,
+  ...rings[id],
+  items: orbit.filter((item) => item.ring === id),
+}));
+
+// raio de cada anel no computador (-d) e no celular (-m); o CSS escolhe qual vale em --rN
+const radius = (id: RingId) => ({
+  [`--r${id}-d`]: `calc(${rings[id].radius} * var(--u))`,
+  [`--r${id}-m`]: `${rings[id].mobile}px`,
+});
+const vars = { ...radius(1), ...radius(2), ...radius(3) };
+
+const mod = (n: number) => ((n % 360) + 360) % 360;
+
+/**
+ * A cor da linha acompanha as bolhas: cada peça segura a própria cor por `hold` graus de cada
+ * lado e o trecho entre duas peças mistura as duas (em oklab, que passa por tons calmos).
+ * O conic-gradient conta a partir do meio-dia; os ângulos das peças, a partir das 3 horas.
+ */
+function trackColors(items: readonly OrbitItem[], key: "angle" | "mobileAngle", tone: number) {
+  const hold = 10;
+  const stops = items
+    .map((item) => ({
+      at: mod(item[key] + 90),
+      color: item.part
+        ? `color-mix(in srgb, ${parts[item.part].color} ${tone}%, var(--dial-line))`
+        : "var(--dial-line)",
+    }))
+    .sort((x, y) => x.at - y.at);
+  const first = stops[0];
+  if (!first) return "none";
+  const body = stops
+    .map((stop) => {
+      const at = stop.at - first.at;
+      return at === 0
+        ? `${stop.color} 0deg ${hold}deg`
+        : `${stop.color} ${at - hold}deg ${at + hold}deg`;
+    })
+    .join(", ");
+  return `conic-gradient(in oklab from ${first.at}deg, ${body}, ${first.color} ${360 - hold}deg)`;
+}
+
+/**
+ * Marcas do anel 1, de 15 em 15°, cruzando a linha. As que cairiam a menos de 8° de uma
+ * bolha não são desenhadas, então cada bolha ocupa o lugar de uma marca, com folga dos dois lados.
+ * Em unidades do viewBox (o raio do anel é 100); `half` é meio comprimento da marca.
+ */
+function hourMarks(items: readonly OrbitItem[], key: "angle" | "mobileAngle", half: number) {
+  const marks: string[] = [];
+  for (let a = 0; a < 360; a += 15) {
+    const near = items.some((item) => {
+      const d = mod(item[key] - a);
+      return Math.min(d, 360 - d) < 8;
+    });
+    if (near) continue;
+    const rad = (a * Math.PI) / 180;
+    const [c, s] = [Math.cos(rad), Math.sin(rad)];
+    const r0 = 99.8 - half;
+    const r1 = 99.8 + half;
+    marks.push(
+      `M${(c * r0).toFixed(2)} ${(s * r0).toFixed(2)}L${(c * r1).toFixed(2)} ${(s * r1).toFixed(2)}`,
+    );
+  }
+  return marks.join("");
+}
+
+const ring1 = layers[0]?.items ?? [];
+const ring2 = layers[1]?.items ?? [];
+const track = {
+  1: {
+    "--track-d": trackColors(ring1, "angle", 100),
+    "--track-m": trackColors(ring1, "mobileAngle", 100),
+  },
+  2: {
+    "--track-d": trackColors(ring2, "angle", 55),
+    "--track-m": trackColors(ring2, "mobileAngle", 55),
+  },
+  3: {},
+};
+const hours = { d: hourMarks(ring1, "angle", 1.2), m: hourMarks(ring1, "mobileAngle", 3) };
+---
+
+<div class="dial" aria-hidden="true" data-dial style={vars}>
+  {layers.map((layer) => (
+    <div
+      class:list={["layer", `l${layer.id}`, layer.turn]}
+      style={{
+        "--r": `var(--r${layer.id})`,
+        "--t": `${layer.seconds}s`,
+        "--b-d": `calc(${layer.bubble} * var(--u))`,
+        "--b-m": `${layer.bubbleMobile}px`,
+        ...track[layer.id],
+      }}
+    >
+      {layer.id === 1 && (
+        <>
+          <span class="ring track vivid" />
+          <svg class="ticks" viewBox="-100 -100 200 200">
+            <path class="hours hours-d" d={hours.d} />
+            <path class="hours hours-m" d={hours.m} />
+          </svg>
+        </>
+      )}
+      {layer.id === 2 && (
+        <>
+          <span class="ring track medium" />
+          <svg class="ticks" viewBox="-100 -100 200 200">
+            <circle r="99.9" pathLength="480" class="dots" />
+          </svg>
+        </>
+      )}
+      {layer.id === 3 && (
+        <>
+          <span class="ring mono" />
+          <svg class="ticks" viewBox="-100 -100 200 200">
+            <circle r="99.95" pathLength="900" class="rule" />
+          </svg>
+        </>
+      )}
+      {layer.items.map((item, i) => (
+        <div
+          class="sat"
+          style={{
+            "--angle": `${item.angle}deg`,
+            "--angle-m": `${item.mobileAngle}deg`,
+            "--pop": `${0.55 + layer.id * 0.12 + i * 0.08}s`,
+          }}
+        >
+          <Bubble part={item.part} icon={item.icon} class="orb" />
+        </div>
+      ))}
+    </div>
+  ))}
+</div>
+
+<style>
+  /*
+   * --u é o "pixel" do mostrador: 1px numa tela de 1920 × 900, menor em telas menores.
+   * Tudo no desktop é medido em --u, então o desenho inteiro escala junto, sem JavaScript.
+   */
+  .dial {
+    --u: min(1px, 100vw / 1920, 100vh / 900);
+    --cy: 50%;
+    --r1: var(--r1-d);
+    --r2: var(--r2-d);
+    --r3: var(--r3-d);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /*
+   * Cada anel é uma peça só: a linha, as marcas e as bolhas giram juntas, sem nada
+   * escorregando por cima. A entrada abre de dentro para fora; depois a volta é constante.
+   */
+  .layer {
+    --b: var(--b-d);
+    position: absolute;
+    left: 50%;
+    top: var(--cy);
+    width: calc(var(--r) * 2);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    animation:
+      turn var(--t) linear infinite,
+      open 1.6s var(--ease-out) both;
+  }
+
+  .layer.left {
+    animation-direction: reverse, normal;
+  }
+
+  .l1 {
+    animation-delay: 0s, 0.05s;
+  }
+
+  .l2 {
+    animation-delay: 0s, 0.17s;
+  }
+
+  .l3 {
+    animation-delay: 0s, 0.29s;
+  }
+
+  .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  /* anéis 1 e 2: a linha é um conic-gradient recortado num traço fino pela máscara */
+  .layer {
+    --track: var(--track-d);
+  }
+
+  .track {
+    background: var(--track);
+    mask: radial-gradient(
+      farthest-side,
+      transparent calc(100% - var(--w) - 0.5px),
+      #000 calc(100% - var(--w)),
+      #000 calc(100% - 0.5px),
+      transparent
+    );
+  }
+
+  .vivid {
+    --w: 2px;
+    opacity: 0.8;
+  }
+
+  .medium {
+    --w: 1.5px;
+  }
+
+  .mono {
+    border: 1px solid var(--dial-line);
+  }
+
+  .ticks {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    overflow: visible;
+  }
+
+  .ticks circle {
+    fill: none;
+  }
+
+  /* anel 1: marcas de uns 12 px cruzando a linha, de 15 em 15°, com folga em volta das bolhas */
+  .hours {
+    stroke: var(--dial-major);
+    stroke-width: 0.4;
+    stroke-linecap: round;
+  }
+
+  .hours-m {
+    display: none;
+  }
+
+  /* anel 2: pontos redondos de uns 4 px em cima da linha */
+  .dots {
+    stroke: color-mix(in srgb, var(--dial-major) 75%, transparent);
+    stroke-width: 0.55;
+    stroke-linecap: round;
+    stroke-dasharray: 0.01 3.99;
+  }
+
+  /* anel 3: marcas finas de uns 10 px cruzando a linha, como uma régua */
+  .rule {
+    stroke: var(--dial-tick);
+    stroke-width: 1.1;
+    stroke-dasharray: 0.16 2.84;
+  }
+
+  /* peças: do centro do anel, girar até o ângulo, andar o raio e desgirar */
+  .sat {
+    --a: var(--angle);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
+  }
+
+  /*
+   * a bolha gira ao contrário do anel, no mesmo tempo, então o ícone nunca tomba;
+   * entra depois do anel, com um leve crescimento
+   */
+  .sat :global(.orb) {
+    --s: var(--b);
+    position: absolute;
+    translate: -50% -50%;
+    border: 1.5px solid color-mix(in srgb, var(--c) var(--edge), var(--paper));
+    background: var(--paper);
+    box-shadow:
+      inset 0 0 0 3px var(--paper),
+      inset 0 0 0 4px color-mix(in srgb, var(--c) 10%, var(--paper)),
+      0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent),
+      0 6px 14px -8px color-mix(in srgb, var(--ink) 18%, transparent);
+    animation:
+      turn var(--t) linear infinite,
+      pop 0.9s var(--ease-out) var(--pop) both;
+  }
+
+  .right .sat :global(.orb) {
+    animation-direction: reverse, normal;
+  }
+
+  .sat :global(.orb .icon) {
+    width: 44%;
+    height: 44%;
+  }
+
+  .l1 {
+    --edge: 100%;
+  }
+
+  .l2 {
+    --edge: 90%;
+  }
+
+  .l3 {
+    --edge: 80%;
+  }
+
+  /* fora da abertura, tudo para onde está e continua dali na volta */
+  .dial[data-paused] .layer,
+  .dial[data-paused] :global(.orb) {
+    animation-play-state: paused;
+  }
+
+  @keyframes turn {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @keyframes open {
+    from {
+      opacity: 0;
+      scale: 0.94;
+    }
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .dial {
+      --u: calc(100vw / 1300);
+    }
+  }
+
+  /* celular: a órbita envolve o ícone do app, no topo, e some antes do título */
+  @media (max-width: 560px) {
+    .dial {
+      --cy: 238px;
+      --r1: var(--r1-m);
+      --r2: var(--r2-m);
+      --r3: var(--r3-m);
+      mask-image: linear-gradient(#000 0 262px, transparent 360px);
+    }
+
+    .layer {
+      --b: var(--b-m);
+    }
+
+    .layer {
+      --track: var(--track-m);
+    }
+
+    .hours {
+      stroke-width: 1.5;
+    }
+
+    .hours-d {
+      display: none;
+    }
+
+    .hours-m {
+      display: inline;
+    }
+
+    .dots {
+      stroke-width: 2.4;
+    }
+
+    .rule {
+      stroke-width: 4;
+    }
+
+    .sat {
+      --a: var(--angle-m);
+    }
+  }
+</style>

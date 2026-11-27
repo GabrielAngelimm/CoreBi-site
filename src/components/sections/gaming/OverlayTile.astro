@@ -1,0 +1,157 @@
+---
+import { features } from "@/data/features";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+
+interface Props {
+  class?: string;
+}
+
+// mesma ordem do OverlayBi no app: FPS, CPU, GPU, VRAM e RAM
+const rows = [
+  ["CPU", "Ryzen 7 5700X", "38 %", "61 °C"],
+  ["GPU", "RTX 4060 Ti", "97 %", "66 °C"],
+  ["VRAM", "6,1 GB", "76 %", ""],
+  ["RAM", "19,6 GB", "62 %", ""],
+] as const;
+---
+
+<FeatureTile {...features.overlay} class={Astro.props.class} dark>
+  <div
+    class="scene"
+    data-overlay
+    role="group"
+    aria-label="Exemplo do OverlayBi por cima de um jogo"
+  >
+    <svg class="land" viewBox="0 0 600 340" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="600" height="340" class="sky"></rect>
+      <circle cx="430" cy="120" r="34" class="moon"></circle>
+      <polygon
+        points="0,220 90,150 160,200 250,120 340,195 420,140 510,200 600,160 600,340 0,340"
+        class="far"
+      ></polygon>
+      <polygon
+        points="0,260 110,205 200,245 300,190 390,240 490,205 600,245 600,340 0,340"
+        class="near"
+      ></polygon>
+      <polygon
+        points="0,340 0,290 140,268 280,296 420,272 600,292 600,340"
+        class="ground"
+      ></polygon>
+      <polygon points="70,292 84,240 98,292" class="ground"></polygon>
+      <polygon points="96,292 112,226 128,292" class="ground"></polygon>
+      <polygon points="500,294 515,236 530,294" class="ground"></polygon>
+    </svg>
+    <div class="hud num" aria-hidden="true">
+      <div class="fps">
+        <b data-fps>144</b>
+        <span>FPS</span>
+        <span data-frametime>6,9 ms</span>
+      </div>
+      <table>
+        {rows.map((r) => (
+          <tr>
+            <td>{r[0]}</td>
+            <td>{r[1]}</td>
+            <td class="v">{r[2]}</td>
+            <td class="v">{r[3]}</td>
+          </tr>
+        ))}
+      </table>
+    </div>
+  </div>
+</FeatureTile>
+
+<script>
+  import "./overlay.client";
+</script>
+
+<style>
+  .land .sky {
+    fill: var(--scene-sky);
+  }
+
+  .land .moon {
+    fill: var(--scene-moon);
+  }
+
+  .land .far {
+    fill: var(--scene-far);
+  }
+
+  .land .near {
+    fill: var(--scene-near);
+  }
+
+  .land .ground {
+    fill: var(--scene-ground);
+  }
+
+  /* a tela do jogo em 16:9, como um monitor de verdade */
+  .scene {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    margin: 24px;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--scene-sky);
+  }
+
+  .land {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hud {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 10px 12px 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--night) 92%, transparent);
+    font: 500 var(--text-2xs)/1.3 var(--font-readout);
+    color: var(--night-fg);
+  }
+
+  .fps {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .fps b {
+    font: 600 var(--text-3xl)/1 var(--font-readout);
+    color: var(--signal-hi);
+  }
+
+  .fps span {
+    color: var(--night-muted);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 2px 0;
+    white-space: nowrap;
+  }
+
+  td:first-child {
+    padding-right: 10px;
+    color: var(--night-faint);
+  }
+
+  td.v {
+    padding-left: 10px;
+    text-align: right;
+  }
+
+  @media (max-width: 700px) {
+    .scene {
+      margin-inline: var(--pad);
+    }
+  }
+</style>

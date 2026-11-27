@@ -1,0 +1,103 @@
+---
+import { features } from "@/data/features";
+import FeatureTile from "@/components/ui/FeatureTile.astro";
+import TileStats from "@/components/ui/TileStats.astro";
+
+interface Props {
+  class?: string;
+}
+
+// Gráfico de 600 × 170: 60 pontos, um por segundo, entre 46 °C e 72 °C.
+const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
+---
+
+<FeatureTile {...features.sensors} class={Astro.props.class}>
+  <div
+    class="visual"
+    data-sensors
+    role="img"
+    aria-label="Exemplo da temperatura do processador no último minuto"
+  >
+    <svg class="trace" viewBox="0 0 600 170" preserveAspectRatio="none" aria-hidden="true">
+      <path class="grid" d={grid}></path>
+      <path class="area" data-area></path>
+      <path class="line" data-line></path>
+      <circle class="tip" r="4.5" cx="600" data-tip></circle>
+    </svg>
+    <div class="axis" aria-hidden="true">
+      <span>−60 s</span>
+      <span>−30 s</span>
+      <span>agora</span>
+    </div>
+  </div>
+  <TileStats
+    slot="foot"
+    items={[
+      { label: "Processador", value: "61,4", unit: "°C", hook: "temp", color: "var(--cpu)" },
+      { label: "Clock", value: "4.650", unit: "MHz", hook: "clock" },
+    ]}
+  />
+</FeatureTile>
+
+<script>
+  import "./sensors.client";
+</script>
+
+<style>
+  .visual {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: calc(var(--visual-h) + 24px);
+    margin: auto var(--pad) 24px;
+    padding-top: 24px;
+  }
+
+  .trace {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .grid {
+    fill: none;
+    stroke: var(--line);
+    stroke-dasharray: 3 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .area {
+    fill: var(--cpu-soft);
+  }
+
+  .line {
+    fill: none;
+    stroke: var(--cpu);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .tip {
+    fill: var(--cpu);
+    stroke: var(--paper);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* antes de aparecer, só a grade: a curva e a ponta nascem quando o cartão entra na tela */
+  :global(.armed) .tip,
+  :global(.armed) .line,
+  :global(.armed) .area {
+    opacity: 0;
+  }
+
+  .axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font: 500 var(--text-xs)/1 var(--font-readout);
+    color: var(--faint);
+  }
+</style>

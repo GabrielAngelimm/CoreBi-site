@@ -1,0 +1,175 @@
+/*
+ * Tokens de design do CoreBi.
+ * Cores, tipos, sombras e movimento vêm daqui. Componentes não usam valores soltos.
+ */
+:root {
+  /* superfícies */
+  --bg: #f5f7f8;
+  --paper: #ffffff;
+  --paper-soft: #fbfcfc;
+  --tint: #eef2f4;
+  --glass: rgb(255 255 255 / 86%); /* superfície clara sobre o fundo pontilhado */
+  --glass-soft: rgb(255 255 255 / 55%);
+  --glass-strong: rgb(255 255 255 / 78%); /* cabeçalho depois da abertura */
+
+  /* texto */
+  --ink: #0f1a20;
+  --ink-2: #1e2a31;
+  --text: #24313a;
+  --muted: #55636b;
+  --faint: #68737a; /* 4,5:1 sobre o fundo, para texto pequeno */
+  --soft: #848f96; /* 3:1 sobre o fundo, só para texto grande */
+  --on-ink: #ffffff; /* texto sobre fundo escuro ou colorido */
+
+  /* linhas */
+  --line: #e2e7ea;
+  --line-2: #d2d9de;
+  --tick: #aab5bb;
+
+  /* mostradores (anéis, trilhos e marcas dos medidores), do mais claro ao mais escuro */
+  --dial-ring: #e3e8eb;
+  --dial-line: #d6dee2;
+  --dial-tick: #cdd5da;
+  --dial-major: #8d9aa2;
+
+  /* marca */
+  --signal: #0a857c;
+  --signal-hi: #27c9bc;
+  --signal-text: #087a72; /* o verde da marca escurecido para texto corrido */
+  --danger: #c8392e;
+  --danger-soft: #fbe9e7;
+  --danger-text: #8a2a22;
+  --success: #2f8f4e;
+
+  /* cor de cada peça, como no app */
+  --cpu: #17703a;
+  --gpu: #c55f1d;
+  --memory: #8a66d9;
+  --storage: #1f5fa8;
+  --board: #9a7430;
+  --net: #8c7a00;
+  --cpu-soft: #e3f1e8;
+
+  /* superfícies escuras (OverlayBi, código) */
+  --night: #0e1214;
+  --night-2: #15191c;
+  --night-line: #2a2f33;
+  --night-fg: #e6eaec;
+  --night-muted: #a3aaae;
+  --night-faint: #80878b;
+  --night-soft: #6f797f; /* segunda linha dos títulos sobre o fundo escuro */
+  --night-signal: #10373a; /* botão marcado sobre fundo escuro */
+
+  /* o aviso do SmartScreen do Windows, desenhado na seção Instalar */
+  --win-blue: #0f4c95;
+
+  /* cena de jogo por trás do OverlayBi */
+  --scene-sky: #2e3e4c;
+  --scene-moon: #dce4e8;
+  --scene-far: #3d5061;
+  --scene-near: #2a3845;
+  --scene-ground: #1c2730;
+
+  /* tipografia */
+  --font-display: "Barlow", "Bahnschrift", "Segoe UI", sans-serif;
+  --font-readout: "Barlow Semi Condensed", "Bahnschrift SemiCondensed", "Barlow", sans-serif;
+  --font-text: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  /*
+   * Escala de tipo: todo tamanho do site sai daqui, sem meio pixel.
+   * text-* para texto e rótulos, num-* para os números grandes das demonstrações,
+   * display-* para os títulos de seção (md) e das duas aberturas (lg).
+   * Pesos: 400 no texto corrido, 500 em títulos, rótulos e botões, 600 só nos números.
+   */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 28px;
+  --num-sm: 32px;
+  --num-md: 40px;
+  --num-lg: 48px;
+  --num-xl: 56px;
+  --num-2xl: 72px;
+  --display-md: clamp(36px, 4.6vw, 72px);
+  --display-lg: clamp(46px, 6vw, 96px);
+
+  /* raios */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* sombras */
+  --shadow-sm: 0 1px 2px rgb(15 26 32 / 6%), 0 2px 6px rgb(15 26 32 / 5%);
+  --shadow-md: 0 2px 4px rgb(15 26 32 / 4%), 0 10px 28px -6px rgb(15 26 32 / 12%);
+  --shadow-icon:
+    0 1px 0 #fff inset, 0 2px 4px rgb(15 26 32 / 6%), 0 26px 56px -18px rgb(15 26 32 / 34%);
+
+  /* layout */
+  --wrap: 1280px;
+  --gutter: 24px;
+  --nav-height: 64px;
+  --nav-top: 14px;
+  /* espaço que o cabeçalho fixo ocupa no topo de cada tela */
+  --header-space: calc(var(--nav-top) + var(--nav-height) + 24px);
+  /*
+   * Escala do conteúdo das seções. Cada seção ocupa uma tela; em telas mais baixas
+   * o conteúdo encolhe junto para caber inteiro, e em telas altas cresce um pouco.
+   */
+  --fit: 1;
+
+  /* movimento */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.6, 0, 0.4, 1);
+
+  color-scheme: light;
+}
+
+@media (min-height: 1000px) and (min-width: 1600px) {
+  :root {
+    --fit: 1.1;
+  }
+}
+
+@media (max-height: 899px) {
+  :root {
+    --fit: 0.92;
+  }
+}
+
+@media (max-height: 819px) {
+  :root {
+    --fit: 0.84;
+  }
+}
+
+@media (max-height: 779px) {
+  :root {
+    --fit: 0.8;
+  }
+}
+
+@media (max-height: 739px) {
+  :root {
+    --fit: 0.76;
+  }
+}
+
+/* sem rolagem por seção (celular, tablet, janela baixa): tamanho natural */
+@media (max-width: 900px), (max-height: 639px) {
+  :root {
+    --fit: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --gutter: 16px;
+  }
+}
