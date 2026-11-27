@@ -1,15 +1,10 @@
 ---
 /**
  * O fim da página, no celular: uma segunda abertura, escura. O símbolo do CoreBi grande em
- * traço, o título, os dois botões (baixar e GitHub) e, no pé da tela, a mesma faixa da versão
- * do computador, com as leituras passando. Depois da tela, o rodapé com os links.
+ * traço, o título e os dois botões (baixar e GitHub). Depois da tela, o rodapé com os links.
  */
-import Icon from "@/components/ui/Icon.astro";
 import Logo from "@/components/ui/Logo.astro";
 import { footerLinks } from "@/config/site";
-import { readings } from "@/data/final";
-import { parts } from "@/data/parts";
-import { decimal } from "@/lib/format";
 import type { Release } from "@/lib/release";
 import PhoneActions from "./PhoneActions.astro";
 
@@ -19,10 +14,6 @@ interface Props {
 
 const { release } = Astro.props;
 const year = new Date().getFullYear();
-
-/** Quantos caracteres o maior valor de uma leitura ao vivo ocupa, para fixar a largura dele. */
-const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
-  Math.max(decimal(live.min, live.digits).length, decimal(live.max, live.digits).length);
 ---
 
 <section
@@ -56,41 +47,6 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
       <PhoneActions release={release} tone="dark" />
     </div>
   </div>
-
-  <!-- a faixa da versão do computador: leituras ao vivo passando, sem parar -->
-  <div class="ticker" aria-hidden="true" data-m-ticker>
-    <div class="track">
-      {[0, 1].map(() => (
-        <ul>
-          {readings.map((r, i) => (
-            <li style={`--c:${parts[r.part].color}`}>
-              <Icon name={parts[r.part].icon} />
-              <span class="label">{r.label}</span>
-              {r.live ? (
-                <span class="value">
-                  <b
-                    class="num"
-                    data-tick={i}
-                    data-min={r.live.min}
-                    data-max={r.live.max}
-                    data-digits={r.live.digits}
-                    style={`--chars:${liveChars(r.live)}`}
-                  >
-                    {decimal((r.live.min + r.live.max) / 2, r.live.digits)}
-                  </b>
-                  <small>{r.live.unit}</small>
-                </span>
-              ) : (
-                <span class="value">
-                  <b class="num">{r.value}</b>
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      ))}
-    </div>
-  </div>
 </section>
 
 <footer class="foot">
@@ -110,14 +66,10 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
   </div>
 </footer>
 
-<script>
-  import "./final.client";
-</script>
-
 <style>
   .m-final {
-    /* o símbolo fica com a altura que sobra depois do título, dos botões e da faixa */
-    --mark: clamp(120px, 100svh - 432px, min(64vw, 260px));
+    /* o símbolo fica com a altura que sobra depois do título e dos botões */
+    --mark: clamp(120px, 100svh - 376px, min(64vw, 260px));
     position: relative;
     isolation: isolate;
     display: flex;
@@ -152,7 +104,7 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
     flex: 1;
     flex-direction: column;
     justify-content: center;
-    padding-block: 8px 32px;
+    padding-block: 8px 40px;
   }
 
   /* ---- o símbolo em traço, como o gigante da versão do computador ---- */
@@ -222,89 +174,9 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
     margin-top: 28px;
   }
 
-  /* ---- faixa ---- */
-  .ticker {
-    border-top: 1px solid var(--night-line);
-    overflow: hidden;
-    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-  }
-
-  /*
-   * As duas cópias da lista andam juntas e a faixa volta ao início quando a primeira saiu
-   * inteira (-50%). Cada número ao vivo tem largura fixa e as duas cópias mostram o mesmo
-   * valor, então a volta não dá tranco.
-   */
-  .track {
-    display: flex;
-    width: max-content;
-    animation: m-final-ticker 48s linear infinite;
-    will-change: transform;
-  }
-
-  .ticker ul {
-    display: flex;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .ticker li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 28px calc(env(safe-area-inset-bottom, 0px) + 18px);
-    border-right: 1px solid var(--night-line);
-    white-space: nowrap;
-  }
-
-  .ticker :global(.icon) {
-    width: 18px;
-    height: 18px;
-    color: var(--c);
-  }
-
-  .label {
-    font: 500 var(--text-sm)/1 var(--font-display);
-    color: var(--night-muted);
-  }
-
-  .value {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-  }
-
-  .value b {
-    font: 600 var(--text-lg)/1 var(--font-readout);
-    color: var(--night-fg);
-  }
-
-  .value b[data-tick] {
-    display: inline-block;
-    min-width: calc(var(--chars) * 1ch);
-    text-align: right;
-  }
-
-  .value small {
-    font: 500 var(--text-xs)/1 var(--font-display);
-    color: var(--night-faint);
-  }
-
-  @keyframes m-final-ticker {
-    to {
-      transform: translate3d(-50%, 0, 0);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .track {
-      animation: none;
-    }
-  }
-
   @media (max-height: 620px) {
     .m-final {
-      --mark: clamp(96px, 100svh - 404px, 200px);
+      --mark: clamp(96px, 100svh - 348px, 200px);
     }
 
     .title {

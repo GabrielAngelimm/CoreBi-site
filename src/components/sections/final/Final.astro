@@ -1,15 +1,12 @@
 ---
 /**
  * A última tela: uma segunda abertura, escura. Título e botões à esquerda, o símbolo do
- * CoreBi gigante em traço à direita e, embaixo, uma faixa com leituras ao vivo passando.
+ * CoreBi gigante em traço à direita e, embaixo, o rodapé.
  */
 import SiteFooter from "@/components/layout/SiteFooter.astro";
 import Button from "@/components/ui/Button.astro";
-import Icon from "@/components/ui/Icon.astro";
 import { site } from "@/config/site";
-import { readings } from "@/data/final";
-import { parts } from "@/data/parts";
-import { decimal, formatSize } from "@/lib/format";
+import { formatSize } from "@/lib/format";
 import type { Release } from "@/lib/release";
 
 interface Props {
@@ -18,10 +15,6 @@ interface Props {
 
 const { release } = Astro.props;
 const { installer } = release;
-
-/** Quantos caracteres o maior valor de uma leitura ao vivo ocupa, para fixar a largura dele. */
-const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
-  Math.max(decimal(live.min, live.digits).length, decimal(live.max, live.digits).length);
 ---
 
 <section id="baixar" class="final" data-tone="dark" aria-labelledby="final-title">
@@ -54,46 +47,8 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
     </div>
   </div>
 
-  <div class="ticker" aria-hidden="true" data-ticker>
-    <div class="track">
-      {[0, 1].map(() => (
-        <ul>
-          {readings.map((r, i) => (
-            <li style={`--c:${parts[r.part].color}`}>
-              <Icon name={parts[r.part].icon} />
-              <span class="label">{r.label}</span>
-              {r.live ? (
-                <span class="value">
-                  <b
-                    class="num"
-                    data-live={i}
-                    data-min={r.live.min}
-                    data-max={r.live.max}
-                    data-digits={r.live.digits}
-                    style={`--chars:${liveChars(r.live)}`}
-                  >
-                    {decimal((r.live.min + r.live.max) / 2, r.live.digits)}
-                  </b>
-                  <small>{r.live.unit}</small>
-                </span>
-              ) : (
-                <span class="value">
-                  <b class="num">{r.value}</b>
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      ))}
-    </div>
-  </div>
-
   <SiteFooter tone="dark" />
 </section>
-
-<script>
-  import "./final.client";
-</script>
 
 <style>
   .final {
@@ -195,85 +150,6 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
     margin-top: 48px;
   }
 
-  /* faixa de leituras ao vivo, como o painel do app: ícone na cor da peça, nome e número */
-  .ticker {
-    border-top: 1px solid var(--night-line);
-    overflow: hidden;
-    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  }
-
-  /*
-   * As duas cópias da lista andam juntas e a faixa volta ao início quando a primeira saiu
-   * inteira (-50%). Para a volta não dar tranco, as duas precisam ter sempre a mesma largura:
-   * cada número ao vivo tem largura fixa e as duas cópias mostram o mesmo valor.
-   */
-  .track {
-    display: flex;
-    width: max-content;
-    animation: ticker 64s linear infinite;
-    will-change: transform;
-  }
-
-  .ticker ul {
-    display: flex;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .ticker li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 24px 48px;
-    border-right: 1px solid var(--night-line);
-    white-space: nowrap;
-  }
-
-  .ticker :global(.icon) {
-    width: 22px;
-    height: 22px;
-    color: var(--c);
-  }
-
-  .label {
-    font: 500 var(--text-md)/1 var(--font-display);
-    color: var(--night-muted);
-  }
-
-  .value {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-  }
-
-  .value b {
-    font: 600 var(--text-xl)/1 var(--font-readout);
-    color: var(--night-fg);
-  }
-
-  /* largura do maior valor possível, para a troca do número não empurrar a faixa */
-  .value b[data-live] {
-    display: inline-block;
-    min-width: calc(var(--chars) * 1ch);
-    text-align: right;
-  }
-
-  .value small {
-    font: 500 var(--text-sm)/1 var(--font-display);
-    color: var(--night-faint);
-  }
-
-  @keyframes ticker {
-    from {
-      transform: translate3d(0, 0, 0);
-    }
-
-    to {
-      transform: translate3d(-50%, 0, 0);
-    }
-  }
-
   @media (max-width: 900px), (max-height: 639px) {
     .final {
       min-height: 0;
@@ -301,10 +177,6 @@ const liveChars = (live: NonNullable<(typeof readings)[number]["live"]>) =>
 
     .actions :global(.btn) {
       justify-content: center;
-    }
-
-    .ticker li {
-      padding-block: 16px;
     }
   }
 </style>

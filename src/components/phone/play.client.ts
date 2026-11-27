@@ -90,16 +90,14 @@ export function arm(root: HTMLElement): void {
 }
 
 /** Toca a demonstração do começo. Devolve quando os números terminam de subir. */
-export function play(root: HTMLElement): Promise<void> {
+export async function play(root: HTMLElement): Promise<void> {
   const round = (rounds.get(root) ?? 0) + 1;
   rounds.set(root, round);
   root.classList.remove("armed", "playing");
   void root.offsetWidth; // recomeça as animações CSS
   root.classList.add("playing");
-  const ms = countUp(root, round);
-  return wait(ms).then(() => {
-    if (rounds.get(root) === round) live(root);
-  });
+  await wait(countUp(root, round));
+  if (rounds.get(root) === round) live(root);
 }
 
 if (!prefersReducedMotion()) {
