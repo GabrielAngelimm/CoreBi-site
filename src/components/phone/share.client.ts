@@ -1,6 +1,6 @@
 /**
- * Botões "Enviar para o PC". Com o compartilhar do sistema, abre a lista de apps; sem ele
- * (ou se falhar), copia o link e avisa no próprio botão.
+ * O botão "Enviar o link para o PC" do aviso do Windows. Com o compartilhar do sistema, abre a
+ * lista de apps; sem ele (ou se falhar), copia o link e avisa no próprio botão.
  */
 const CONFIRM_MS = 1800;
 

@@ -1,30 +1,17 @@
 ---
 /**
- * "Enviar para o PC": no celular não dá para instalar o CoreBi, então o botão principal
- * abre o compartilhar do sistema (WhatsApp, e-mail, Telegram) com o link do site, para a
- * pessoa abrir no computador. Sem o compartilhar, copia o link.
+ * Manda o link do site para o computador: abre o compartilhar do sistema (WhatsApp, e-mail,
+ * Telegram) com o endereço. Sem o compartilhar, copia o link e avisa no próprio botão.
  */
 import Icon from "@/components/ui/Icon.astro";
 import { shareText } from "@/data/phone";
 
-interface Props {
-  /** ink sobre fundo claro, light sobre fundo escuro. */
-  variant?: "ink" | "light";
-}
-
-const { variant = "ink" } = Astro.props;
 const url = Astro.site?.href ?? "/";
 ---
 
-<button
-  type="button"
-  class:list={["share", variant]}
-  data-share
-  data-url={url}
-  data-text={shareText}
->
+<button type="button" class="share" data-share data-url={url} data-text={shareText}>
   <Icon name="send" />
-  <span data-share-label>Enviar para o PC</span>
+  <span data-share-label>Enviar o link para o PC</span>
 </button>
 
 <script>
@@ -37,10 +24,14 @@ const url = Astro.site?.href ?? "/";
     align-items: center;
     justify-content: center;
     gap: 10px;
+    width: 100%;
     height: 52px;
     padding: 0 24px;
     border: 0;
     border-radius: var(--radius-pill);
+    background: var(--ink);
+    color: var(--on-ink);
+    box-shadow: var(--shadow-sm);
     font: 500 var(--text-base)/1 var(--font-display);
     white-space: nowrap;
     cursor: pointer;
@@ -55,16 +46,5 @@ const url = Astro.site?.href ?? "/";
   .share :global(.icon) {
     width: 18px;
     height: 18px;
-  }
-
-  .ink {
-    background: var(--ink);
-    color: var(--on-ink);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .light {
-    background: var(--night-fg);
-    color: var(--night);
   }
 </style>

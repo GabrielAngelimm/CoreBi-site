@@ -1,46 +1,34 @@
 ---
 /**
  * Cartões lado a lado que a pessoa passa com o dedo, com o próximo aparecendo na borda.
- * `labels` dá nome a cada cartão: vira os pontinhos embaixo ("dots") ou os botões em cima
- * ("tabs"). Os filhos do slot são os cartões, um por rótulo, cada um com a classe "slide".
+ * `labels` dá nome a cada cartão, nos pontinhos embaixo. Os filhos do slot são os cartões, um
+ * por rótulo, cada um com a classe "slide".
  */
 interface Props {
   labels: readonly string[];
   label: string;
-  kind?: "dots" | "tabs";
   tone?: "light" | "dark";
 }
 
-const { labels, label, kind = "dots", tone = "light" } = Astro.props;
+const { labels, label, tone = "light" } = Astro.props;
 ---
 
-<div class:list={["pager", `with-${kind}`, tone]} data-pager role="group" aria-label={label}>
-  {kind === "tabs" && (
-    <div class="switch">
-      {labels.map((name, i) => (
-        <button type="button" data-go={i} aria-current={i === 0 ? "true" : "false"}>
-          {name}
-        </button>
-      ))}
-    </div>
-  )}
+<div class:list={["pager", tone]} data-pager role="group" aria-label={label}>
   <div class="track" data-track>
     <slot />
   </div>
-  {kind === "dots" && (
-    <div class="dots">
-      {labels.map((name, i) => (
-        <button
-          type="button"
-          data-go={i}
-          aria-current={i === 0 ? "true" : "false"}
-          aria-label={`Mostrar ${name}`}
-        >
-          <i />
-        </button>
-      ))}
-    </div>
-  )}
+  <div class="dots">
+    {labels.map((name, i) => (
+      <button
+        type="button"
+        data-go={i}
+        aria-current={i === 0 ? "true" : "false"}
+        aria-label={`Mostrar ${name}`}
+      >
+        <i />
+      </button>
+    ))}
+  </div>
 </div>
 
 <script>
@@ -73,17 +61,6 @@ const { labels, label, kind = "dots", tone = "light" } = Astro.props;
     flex: 0 0 calc(100% - 36px);
     scroll-snap-align: start;
     scroll-snap-stop: always;
-  }
-
-  /* com abas em cima, cada cartão ocupa a largura toda (as abas já dizem que há mais) e fica
-     com a própria altura, sem esticar até o mais alto */
-  .with-tabs .track {
-    align-items: flex-start;
-    gap: calc(2 * var(--gutter));
-  }
-
-  .with-tabs .track > :global(.slide) {
-    flex-basis: 100%;
   }
 
   .dots {
@@ -125,38 +102,5 @@ const { labels, label, kind = "dots", tone = "light" } = Astro.props;
 
   .dark .dots [aria-current="true"] i {
     background: var(--night-fg);
-  }
-
-  .switch {
-    display: grid;
-    grid-auto-columns: 1fr;
-    grid-auto-flow: column;
-    gap: 4px;
-    margin: 0 var(--gutter) 16px;
-    padding: 4px;
-    border-radius: var(--radius-pill);
-    background: var(--tint);
-  }
-
-  .switch button {
-    height: 40px;
-    padding: 0 8px;
-    border: 0;
-    border-radius: var(--radius-pill);
-    background: none;
-    color: var(--muted);
-    font: 500 var(--text-md)/1 var(--font-display);
-    white-space: nowrap;
-    cursor: pointer;
-    transition:
-      background-color 0.25s,
-      color 0.25s,
-      box-shadow 0.25s;
-  }
-
-  .switch [aria-current="true"] {
-    background: var(--paper);
-    color: var(--ink);
-    box-shadow: var(--shadow-sm);
   }
 </style>

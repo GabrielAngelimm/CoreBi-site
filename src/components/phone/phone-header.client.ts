@@ -5,11 +5,12 @@
  */
 import { phoneFinal, phoneSections } from "@/data/phone";
 import { prefersReducedMotion, required } from "@/scripts/motion";
+import { openSheet } from "./sheet.client";
 
 const site = required(document, "[data-phone]");
 const header = required(site, "[data-m-header]");
 const where = required(header, "[data-m-where]");
-const sheet = required<HTMLDialogElement>(document, "[data-m-sheet]");
+const sheet = required<HTMLDialogElement>(document, "#m-menu");
 const links = [...sheet.querySelectorAll<HTMLAnchorElement>("[data-m-link]")];
 const hero = required(site, "[data-m-hero]");
 const sections = [...site.querySelectorAll<HTMLElement>("[data-m-section]")];
@@ -54,16 +55,7 @@ const observer = new IntersectionObserver(
 sections.forEach((s) => observer.observe(s));
 
 // ---- folha com as seções ----
-required(header, "[data-m-open]").addEventListener("click", () => sheet.showModal());
-required(sheet, "[data-m-close]").addEventListener("click", () => sheet.close());
-
-// tocar fora da folha (no fundo escurecido) fecha
-sheet.addEventListener("click", (event) => {
-  if (event.target === sheet) {
-    const box = sheet.getBoundingClientRect();
-    if (event.clientY < box.top) sheet.close();
-  }
-});
+required(header, "[data-m-open]").addEventListener("click", () => openSheet(sheet));
 
 for (const link of links) {
   link.addEventListener("click", (event) => {

@@ -1,4 +1,4 @@
-/** Tempos das demonstrações de Ferramentas, usados pelo componente (CSS) e pelo script. */
+/** Tempos das demonstrações de Teste de carga e de Drivers e apps, usados pelo CSS e pelos scripts. */
 
 /** Quanto a curva do teste de carga leva para atravessar os 10 minutos do gráfico. */
 export const STRESS_DRAW_MS = 3600;

@@ -3,19 +3,16 @@
  * Cabeçalho do celular: o logo e um botão que mostra em que seção a pessoa está. Tocar nele
  * abre a folha de baixo com as seções e os botões de baixar, como num app.
  */
-import Button from "@/components/ui/Button.astro";
 import Icon from "@/components/ui/Icon.astro";
 import Logo from "@/components/ui/Logo.astro";
 import { phoneSections } from "@/data/phone";
-import { formatSize } from "@/lib/format";
 import type { Release } from "@/lib/release";
-import ShareButton from "./ShareButton.astro";
+import PhoneActions from "./PhoneActions.astro";
+import PhoneSheet from "./PhoneSheet.astro";
 
 interface Props {
   release: Release;
 }
-
-const { installer } = Astro.props.release;
 ---
 
 <header class="m-header" data-m-header>
@@ -40,14 +37,7 @@ const { installer } = Astro.props.release;
   </div>
 </header>
 
-<dialog id="m-menu" class="sheet" aria-labelledby="m-menu-title" data-m-sheet>
-  <div class="grip" aria-hidden="true"></div>
-  <div class="sheet-head">
-    <h2 id="m-menu-title">Seções</h2>
-    <button type="button" class="close" data-m-close aria-label="Fechar">
-      <Icon name="close" />
-    </button>
-  </div>
+<PhoneSheet id="m-menu" title="Seções">
   <nav aria-label="Seções">
     {phoneSections.map((s) => (
       <a href={`#${s.id}`} data-m-link={s.id}>
@@ -57,17 +47,9 @@ const { installer } = Astro.props.release;
     ))}
   </nav>
   <div class="sheet-actions">
-    <ShareButton />
-    <Button
-      href={installer.url}
-      variant="line"
-      icon="download"
-      aria-label={`Baixar para Windows, ${formatSize(installer.sizeBytes)}`}
-    >
-      Baixar
-    </Button>
+    <PhoneActions release={Astro.props.release} />
   </div>
-</dialog>
+</PhoneSheet>
 
 <script>
   import "./phone-header.client";
@@ -185,95 +167,7 @@ const { installer } = Astro.props.release;
     }
   }
 
-  /* ---- folha de baixo ---- */
-  .sheet {
-    position: fixed;
-    inset: auto 0 0;
-    width: 100%;
-    max-width: 560px;
-    max-height: calc(100svh - 24px);
-    margin: auto auto 0;
-    padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
-    overflow-y: auto;
-    border: 0;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    background: var(--paper);
-    color: var(--text);
-    box-shadow: 0 -12px 40px -12px rgb(15 26 32 / 30%);
-    transform: translateY(100%);
-    transition:
-      transform 0.36s var(--ease-out),
-      overlay 0.36s allow-discrete,
-      display 0.36s allow-discrete;
-  }
-
-  .sheet[open] {
-    transform: none;
-  }
-
-  @starting-style {
-    .sheet[open] {
-      transform: translateY(100%);
-    }
-  }
-
-  .sheet::backdrop {
-    background: rgb(15 26 32 / 0%);
-    transition:
-      background-color 0.36s,
-      overlay 0.36s allow-discrete,
-      display 0.36s allow-discrete;
-  }
-
-  .sheet[open]::backdrop {
-    background: rgb(15 26 32 / 40%);
-  }
-
-  @starting-style {
-    .sheet[open]::backdrop {
-      background: rgb(15 26 32 / 0%);
-    }
-  }
-
-  .grip {
-    width: 40px;
-    height: 4px;
-    margin: 0 auto 8px;
-    border-radius: var(--radius-pill);
-    background: var(--line-2);
-  }
-
-  .sheet-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 0 8px 8px;
-  }
-
-  .sheet-head h2 {
-    margin: 0;
-    font: 500 var(--text-2xl)/1 var(--font-display);
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-
-  .close {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 0;
-    border-radius: 50%;
-    background: var(--tint);
-    color: var(--ink);
-    cursor: pointer;
-  }
-
-  .close :global(.icon) {
-    width: 18px;
-    height: 18px;
-  }
-
+  /* ---- seções, dentro da folha ---- */
   nav {
     display: grid;
     margin-top: 4px;
@@ -282,7 +176,7 @@ const { installer } = Astro.props.release;
   nav a {
     display: grid;
     gap: 4px;
-    padding: 14px 8px;
+    padding: 11px 8px;
     border-top: 1px solid var(--line);
     border-radius: 4px;
     text-decoration: none;
@@ -316,26 +210,22 @@ const { installer } = Astro.props.release;
     content: "";
   }
 
-  /* os mesmos dois botões da abertura, lado a lado, para a folha caber na tela */
   .sheet-actions {
-    display: grid;
-    grid-template-columns: 1.35fr 1fr;
-    gap: 10px;
     margin-top: 12px;
   }
 
-  .sheet-actions > :global(*) {
-    width: 100%;
-    padding-inline: 16px;
-  }
-
-  @media (max-width: 359px) {
-    .sheet-actions {
-      grid-template-columns: 1fr;
+  /* telas baixas: cabeçalho mais baixo (o --m-top de PhoneSite acompanha) e lista mais junta */
+  @media (max-height: 620px) {
+    .bar {
+      height: 48px;
     }
-  }
 
-  :global(html:has(.sheet[open])) {
-    overflow: hidden;
+    .open {
+      height: 40px;
+    }
+
+    nav a {
+      padding-block: 6px;
+    }
   }
 </style>

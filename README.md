@@ -62,17 +62,18 @@ Regras que o projeto segue:
 - **Uma seção, uma tela.** `Section.astro` dá a cada seção a altura da janela e o encaixe da rolagem (`scroll-snap`, só no computador). O conteúdo fica num `.frame` que encolhe por `--fit` em telas baixas (a abertura e o rodapé também), então nada é cortado num notebook de 720 px.
 - **Seção escura é um tom, não uma cópia.** `<Section tone="dark">` troca as cores e marca `data-tone="dark"`, que o cabeçalho lê para escurecer junto.
 - **Estilo com escopo.** Cada componente tem o próprio `<style>`; `:global()` só para elementos de componentes filhos.
-- **Keyframes com prefixo.** O Astro põe escopo nas classes, mas não nos `@keyframes`: dois componentes com `@keyframes fill` brigam entre si. Cada nome leva o prefixo do componente (`m-tools-fill`, `m-hero-pop`).
+- **Keyframes com prefixo.** O Astro põe escopo nas classes, mas não nos `@keyframes`: dois componentes com `@keyframes fill` brigam entre si. Cada nome leva o prefixo do componente (`m-stress-trace`, `m-hero-pop`).
 
 ## A versão do celular
 
 O celular não recebe a página do computador apertada: recebe outra, pensada para o dedo e para a tela em pé. As duas saem no mesmo HTML; `styles/global.css` mostra uma e esconde a outra com `display: none` (celular é tela de até 640 px de largura, ou deitado com até 500 px de altura e toque). Escondida, a outra versão não anima nem observa a rolagem, e as imagens dela não baixam.
 
 - **Tudo em `components/phone/`.** `PhoneSite.astro` monta a página; cada seção é um `Phone*.astro`. A versão do computador não importa nada daqui, então mexer no celular não muda o computador.
-- **Mesmo conteúdo, outra forma.** Textos e números vêm dos mesmos arquivos de `src/data/`. O que é só do celular (as seções do menu, o texto de compartilhar) fica em `data/phone.ts`. Os ids levam o prefixo `m-` (`#m-instalar`), e um link da versão do computador aberto no celular (`/#drivers`) cai na seção certa pelos `aliases` de `data/phone.ts`.
-- **Seções com a altura do conteúdo.** Sem encaixe de rolagem: a página corre como um app. Onde o computador mostra três blocos lado a lado, o celular mostra cartões que passam com o dedo (`Pager.astro`, com pontinhos ou com abas em cima).
-- **Cabeçalho que diz onde você está.** O botão do cabeçalho mostra o nome da seção atual e abre uma folha de baixo (`<dialog>` nativo) com as seções e os botões de baixar.
-- **Enviar para o PC.** No celular não dá para instalar o CoreBi, então o botão principal abre o compartilhar do sistema com o link do site; sem ele, copia o link.
+- **Mesmo conteúdo, outra forma.** Textos e números vêm dos mesmos arquivos de `src/data/`. O que é só do celular (as seções do menu, o texto de compartilhar, os três passos curtos da instalação) fica em `data/phone.ts`. Os ids levam o prefixo `m-` (`#m-instalar`), e um link da versão do computador aberto no celular (`/#drivers`) cai na seção certa pelos `aliases` de `data/phone.ts`.
+- **Uma seção, uma tela.** Cada seção tem pelo menos a altura da tela (`100svh`) e centraliza o conteúdo entre o cabeçalho fixo (`--m-top`) e a folga do pé (`--m-bottom`), definidos em `PhoneSite.astro`. Sem encaixe de rolagem: a página corre como um app. Em telas baixas (até 620 px, como o iPhone SE no Safari) títulos, cartões e folgas descem um passo, e cada seção continua cabendo. O Playwright confere isso de 320×568 a 412×839.
+- **Cartões para passar com o dedo.** Onde o computador mostra três blocos lado a lado, o celular mostra cartões que passam com o dedo (`Pager.astro`, com pontinhos embaixo). Teste de carga e Drivers e apps são duas seções, sem botões: as demonstrações tocam sozinhas.
+- **Cabeçalho que diz onde você está.** O botão do cabeçalho mostra o nome da seção atual e abre uma folha de baixo com as seções e os botões de baixar. As folhas (`PhoneSheet.astro`) são `<dialog>` nativos; `sheet.client.ts` abre uma de cada vez.
+- **Os mesmos dois botões do computador.** `PhoneActions.astro` põe "Baixar para Windows" e "GitHub" na abertura, na folha de seções e no fim. No celular, tocar em baixar abre o aviso `WindowsNotice.astro` ("O CoreBi é para o PC"): ele manda o link para o computador pelo compartilhar do sistema (ou copia o link) e ainda deixa baixar o instalador mesmo assim. Sem JavaScript, o botão baixa direto.
 - **Animações declaradas na marcação** (`play.client.ts`): `data-play` toca a demonstração quando ela entra na tela (classe `armed` antes, `playing` durante); `data-count` faz o número subir do zero (`data-digits`, `data-ms`, `data-delay`, `data-format="clock"`); `data-live` varia o número entre `data-min` e `data-max` por alguns segundos. `data-play="manual"` deixa o script da própria demonstração decidir (teste de carga e apps). Com movimento reduzido nada é armado e tudo aparece no estado final.
 - **Estado inicial legível.** O ponto de partida de uma animação não pode esconder texto com transparência: o Lighthouse mede o contraste no meio dela. Um passo pendente é um aro vazio, não uma linha apagada.
 
@@ -102,7 +103,7 @@ Para o site acompanhar cada release nova sem ninguém mexer aqui, crie um Deploy
 O CI (`.github/workflows/ci.yml`) roda em todo PR:
 
 1. Prettier, ESLint, `astro check` e build.
-2. Playwright em três telas (1920×1080, 1366×768 e celular), depois do build. Nas duas versões: página sem erros no console, sem rolagem lateral, todas as seções visíveis, links de download válidos, FAQ abrindo uma pergunta por vez, botão Copiar e movimento reduzido. Só no computador: a seta da abertura, o cabeçalho com vidro e as abas da instalação. Só no celular: a folha de seções, os links da versão do computador, as abas das ferramentas e o Enviar para o PC. As capturas de cada seção ficam no relatório do job.
+2. Playwright em três telas (1920×1080, 1366×768 e celular), depois do build. Nas duas versões: página sem erros no console, sem rolagem lateral, todas as seções visíveis, links de download válidos, FAQ abrindo uma pergunta por vez, botão Copiar e movimento reduzido. Só no computador: a seta da abertura, o cabeçalho com vidro e as abas da instalação. Só no celular: a folha de seções, os links da versão do computador, cada seção cabendo numa tela (de 320×568 a 412×839), o aviso de que o CoreBi é para o PC e o Enviar o link para o PC. As capturas de cada seção ficam no relatório do job.
 3. Lighthouse no computador e no celular, com nota mínima de 90 em desempenho, 95 em boas práticas e 100 em acessibilidade e SEO (hoje tudo dá 100 nos dois).
 
 ## Licença

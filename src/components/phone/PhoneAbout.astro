@@ -1,7 +1,7 @@
 ---
 /**
- * Sobre, no celular: os seis programas que viram um (seis ícones soltos, uma seta e o ícone
- * do CoreBi) e os quatro números, que sobem do zero quando aparecem.
+ * Sobre, no celular: os seis programas que viram um (seis ícones com o nome, uma seta e o
+ * ícone do CoreBi) e os quatro números, que sobem do zero quando aparecem.
  */
 import AppTile from "@/components/ui/AppTile.astro";
 import Icon from "@/components/ui/Icon.astro";
@@ -14,20 +14,15 @@ import PhoneSection from "./PhoneSection.astro";
   <h2 id="m-sobre-title" class="h2">
     Um app no lugar de seis. <span class="soft">Sem pilha de programas.</span>
   </h2>
-  <p class="lead">
-    Para ver sensores, FPS, saúde do disco, benchmark, rede e drivers, normalmente você precisa de
-    seis programas. No CoreBi, está tudo num app só.
-  </p>
-  <div
-    class="merge"
-    data-play
-    role="img"
-    aria-label={`${replacedTools.map((t) => t.label).join(", ")}: seis programas num app só`}
-  >
-    <ul class="tools" aria-hidden="true">
+
+  <div class="merge" data-play>
+    <ul class="tools" aria-label="Os seis programas que o CoreBi junta">
       {replacedTools.map((t, i) => (
         <li style={`--c:${parts[t.part].color};--i:${i}`}>
-          <Icon name={t.icon ?? parts[t.part].icon} />
+          <span class="tool-icon" aria-hidden="true">
+            <Icon name={t.icon ?? parts[t.part].icon} />
+          </span>
+          {t.label}
         </li>
       ))}
     </ul>
@@ -36,10 +31,6 @@ import PhoneSection from "./PhoneSection.astro";
     </svg>
     <AppTile size="sm" class="one" />
   </div>
-
-  <p class="more">
-    E tudo roda no seu PC, sem servidor, sem conta e sem anúncio. O&nbsp;código é aberto.
-  </p>
 
   <dl class="facts" data-play data-threshold="0.15">
     {facts.map((f, i) => (
@@ -57,10 +48,9 @@ import PhoneSection from "./PhoneSection.astro";
   .merge {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin: 32px 0 28px;
-    padding: 20px;
+    gap: 12px;
+    margin-top: 24px;
+    padding: 16px 16px 12px;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--paper);
@@ -69,8 +59,9 @@ import PhoneSection from "./PhoneSection.astro";
 
   .tools {
     display: grid;
-    grid-template-columns: repeat(3, 40px);
-    gap: 8px;
+    flex: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 4px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -78,25 +69,34 @@ import PhoneSection from "./PhoneSection.astro";
 
   .tools li {
     display: grid;
+    justify-items: center;
+    gap: 6px;
+    font: 500 var(--text-2xs)/1.2 var(--font-display);
+    color: var(--muted);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .tool-icon {
+    display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--paper-soft);
     color: var(--c);
   }
 
-  .tools :global(.icon) {
-    width: 20px;
-    height: 20px;
+  .tool-icon :global(.icon) {
+    width: 18px;
+    height: 18px;
   }
 
   .arrow {
-    flex: 1;
-    min-width: 32px;
-    max-width: 56px;
-    height: 24px;
+    flex: none;
+    width: 28px;
+    height: 16px;
     fill: none;
     stroke: var(--tick);
     stroke-width: 1.5;
@@ -105,12 +105,12 @@ import PhoneSection from "./PhoneSection.astro";
   }
 
   .merge :global(.one) {
-    --s: 76px;
+    --s: 68px;
     flex: none;
   }
 
   /* os seis acendem, a seta se desenha e o CoreBi aparece no fim */
-  .armed .tools li,
+  .armed .tool-icon,
   .armed :global(.one) {
     opacity: 0;
   }
@@ -120,7 +120,7 @@ import PhoneSection from "./PhoneSection.astro";
     stroke-dashoffset: 60;
   }
 
-  .playing .tools li {
+  .playing .tool-icon {
     animation: m-about-in 0.5s var(--ease-out) both;
     animation-delay: calc(var(--i) * 0.07s);
   }
@@ -147,35 +147,53 @@ import PhoneSection from "./PhoneSection.astro";
     }
   }
 
-  .more {
-    margin: 0;
-    font-size: var(--text-base);
-    line-height: 1.6;
-    color: var(--muted);
-  }
-
   .facts {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 16px;
-    margin: 32px 0 0;
+    margin: 24px 0 0;
   }
 
   .facts div {
-    padding: 20px 0 4px;
+    padding: 14px 0 12px;
     border-top: 1px solid var(--line);
   }
 
   dt {
-    font: 600 var(--num-lg)/1 var(--font-readout);
+    font: 600 var(--num-md)/1 var(--font-readout);
     letter-spacing: -0.01em;
     color: var(--ink);
   }
 
   dd {
-    margin: 8px 0 0;
-    font-size: var(--text-md);
-    line-height: 1.45;
+    margin: 6px 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.4;
     color: var(--muted);
+  }
+
+  /* telas baixas: cartão, ícones e números um passo menores */
+  @media (max-height: 620px) {
+    .merge {
+      margin-top: 20px;
+      padding: 12px 12px 8px;
+    }
+
+    .tool-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .facts {
+      margin-top: 20px;
+    }
+
+    .facts div {
+      padding: 10px 0 8px;
+    }
+
+    dt {
+      font-size: var(--num-sm);
+    }
   }
 </style>

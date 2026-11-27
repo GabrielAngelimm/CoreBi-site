@@ -1,12 +1,13 @@
 ---
 /**
- * Instalar, no celular: os quatro passos numa linha do tempo, cada um com o que aparece no PC
- * (o comando que confere o arquivo, o aviso do Windows, os extras). Quando a lista entra na
- * tela, a linha se preenche de cima para baixo e cada passo acende ao ser alcançado.
+ * Instalar, no celular: três passos curtos, porque quem lê está no celular e vai instalar
+ * depois, no PC. O código de conferência (SHA256) fica guardado em "Conferir o arquivo",
+ * para quem quiser comparar; as perguntas frequentes apontam para ele.
  */
 import CopyButton from "@/components/ui/CopyButton.astro";
 import Icon from "@/components/ui/Icon.astro";
-import { installerExtras, installSteps } from "@/data/install";
+import { phoneInstallSteps } from "@/data/phone";
+import { emphasis, formatSize } from "@/lib/format";
 import type { Release } from "@/lib/release";
 import PhoneSection from "./PhoneSection.astro";
 
@@ -17,174 +18,159 @@ interface Props {
 const { installer } = Astro.props.release;
 const command = `Get-FileHash .\\${installer.name}`;
 const hash = installer.sha256;
-const [conferir, aviso, extras, pronto] = installSteps;
+const size = formatSize(installer.sizeBytes);
 ---
 
 <PhoneSection id="m-instalar" name="Instalar" label="m-install-title">
   <h2 id="m-install-title" class="h2">
     Pronto em um minuto. <span class="soft">Em três passos.</span>
   </h2>
-  <p class="lead">Do download ao app aberto, sem nada escondido no caminho.</p>
+  <p class="lead">Abra este site no computador e siga do download ao app aberto.</p>
 
-  <ol class="steps" data-play data-threshold="0.2">
-    <li style="--i:0">
-      <span class="marker num" aria-hidden="true">
-        1
-      </span>
-      <h3>{conferir.title}</h3>
-      <p>No PC, {conferir.text.charAt(0).toLowerCase() + conferir.text.slice(1)}</p>
-      {hash && (
-        <div class="shell">
-          <code class="cmd">
-            <span class="ps">PS&gt;</span> {command}
-          </code>
-          <span class="label">Tem que dar este código</span>
-          <code class="hash" title={hash}>
-            {[hash.slice(0, 32), hash.slice(32)].map((half) => (
-              <span>{half.toUpperCase()}</span>
-            ))}
-          </code>
-          <div class="copy">
-            <CopyButton
-              text={`${command} -Algorithm SHA256`}
-              label="Copiar comando do PowerShell"
-              tone="dark"
-            >
-              Copiar comando
-            </CopyButton>
-            <CopyButton text={hash} label="Copiar código SHA256 esperado" tone="dark">
-              Copiar código
-            </CopyButton>
-          </div>
-        </div>
-      )}
-    </li>
-
-    <li style="--i:1">
-      <span class="marker num" aria-hidden="true">
-        2
-      </span>
-      <h3>{aviso.title}</h3>
-      <p>{aviso.text}</p>
-      <div
-        class="warning"
-        aria-label="No aviso do Windows: Mais informações, depois Executar assim mesmo"
-      >
-        <b>O Windows protegeu o computador</b>
-        <span class="path" aria-hidden="true">
-          <span class="link">Mais informações</span>
-          <Icon name="chevronDown" class="then" />
-          <span class="run">Executar assim mesmo</span>
+  <ol class="steps">
+    {phoneInstallSteps.map((s, i) => (
+      <li>
+        <span class="n num" aria-hidden="true">
+          {i + 1}
         </span>
-      </div>
-    </li>
-
-    <li style="--i:2">
-      <span class="marker num" aria-hidden="true">
-        3
-      </span>
-      <h3>{extras.title}</h3>
-      <p>{extras.text}</p>
-      <ul class="extras">
-        {installerExtras.map((x) => (
-          <li>
-            <span class="box" aria-hidden="true">
-              <Icon name="check" />
-            </span>
-            <span>
-              <b>{x.name}</b> {x.detail}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </li>
-
-    <li style="--i:3">
-      <span class="marker last" aria-hidden="true">
-        <Icon name="check" />
-      </span>
-      <h3>{pronto.title}</h3>
-      <p>{pronto.text}</p>
-    </li>
+        <div>
+          <h3>{s.title}</h3>
+          <p set:html={emphasis(s.text.replace("{size}", size))} />
+        </div>
+      </li>
+    ))}
   </ol>
+
+  {hash && (
+    <details class="verify">
+      <summary>
+        Conferir o arquivo
+        <span class="sha">SHA256</span>
+        <Icon name="chevronDown" class="chev" />
+      </summary>
+      <div class="shell">
+        <span class="label">No PowerShell, na pasta do download:</span>
+        <code class="cmd">
+          <span class="ps">PS&gt;</span> {command}
+        </code>
+        <span class="label">Tem que dar este código:</span>
+        <code class="hash" title={hash}>
+          {[hash.slice(0, 32), hash.slice(32)].map((half) => (
+            <span>{half.toUpperCase()}</span>
+          ))}
+        </code>
+        <div class="copy">
+          <CopyButton
+            text={`${command} -Algorithm SHA256`}
+            label="Copiar comando do PowerShell"
+            tone="dark"
+          >
+            Copiar comando
+          </CopyButton>
+          <CopyButton text={hash} label="Copiar código SHA256 esperado" tone="dark">
+            Copiar código
+          </CopyButton>
+        </div>
+      </div>
+    </details>
+  )}
 </PhoneSection>
 
 <style>
   .steps {
-    position: relative;
     display: grid;
-    gap: 32px;
-    margin: 36px 0 0;
+    margin: 24px 0 0;
     padding: 0;
     list-style: none;
   }
 
-  /* a linha do tempo, por trás dos números */
-  .steps::before,
-  .steps::after {
-    position: absolute;
-    top: 16px;
-    bottom: 16px;
-    left: 15px;
-    width: 2px;
-    border-radius: 1px;
-    content: "";
-  }
-
-  .steps::before {
-    background: var(--line);
-  }
-
-  .steps::after {
-    background: var(--signal-hi);
-    transform-origin: top;
-  }
-
-  .steps > li {
-    position: relative;
-    padding-left: 52px;
-  }
-
-  .marker {
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    left: 0;
+  .steps li {
     display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--signal-hi);
-    border-radius: 50%;
-    background: var(--signal);
-    color: var(--on-ink);
-    font: 600 var(--text-md)/1 var(--font-readout);
+    grid-template-columns: 40px 1fr;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
   }
 
-  .marker :global(.icon) {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2.25;
+  .n {
+    font: 600 var(--num-sm)/0.8 var(--font-readout);
+    color: var(--signal-text);
   }
 
   h3 {
-    margin: 4px 0 6px;
+    margin: 0 0 4px;
     font: 500 var(--text-xl)/1.2 var(--font-display);
     color: var(--ink);
   }
 
-  .steps > li > p {
+  .steps p {
     margin: 0;
     font-size: var(--text-base);
-    line-height: 1.55;
+    line-height: 1.5;
     color: var(--muted);
+    text-wrap: pretty;
   }
 
-  /* ---- passo 1: o PowerShell ---- */
+  .steps p :global(b) {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ---- conferir o arquivo ---- */
+  .verify {
+    border-block: 1px solid var(--line);
+    interpolate-size: allow-keywords;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 52px;
+    font: 500 var(--text-base)/1 var(--font-display);
+    color: var(--ink);
+    list-style: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .sha {
+    font: 500 var(--text-xs)/1 var(--font-mono);
+    color: var(--faint);
+  }
+
+  summary :global(.chev) {
+    width: 18px;
+    height: 18px;
+    margin-left: auto;
+    color: var(--muted);
+    transition: rotate 0.3s var(--ease-out);
+  }
+
+  .verify[open] summary :global(.chev) {
+    rotate: 180deg;
+  }
+
+  .verify::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height 0.32s var(--ease-in-out),
+      content-visibility 0.32s allow-discrete;
+  }
+
+  .verify[open]::details-content {
+    height: auto;
+  }
+
   .shell {
     display: grid;
     gap: 8px;
-    margin-top: 16px;
+    margin-bottom: 16px;
     padding: 16px;
     border-radius: var(--radius-md);
     background: var(--night);
@@ -194,9 +180,6 @@ const [conferir, aviso, extras, pronto] = installSteps;
 
   .shell code {
     font: inherit;
-  }
-
-  .cmd {
     overflow-wrap: anywhere;
   }
 
@@ -205,8 +188,7 @@ const [conferir, aviso, extras, pronto] = installSteps;
   }
 
   .label {
-    margin-top: 4px;
-    font: 500 var(--text-xs)/1 var(--font-display);
+    font: 500 var(--text-xs)/1.3 var(--font-display);
     color: var(--night-muted);
   }
 
@@ -220,7 +202,7 @@ const [conferir, aviso, extras, pronto] = installSteps;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 6px;
+    margin-top: 4px;
   }
 
   .copy :global(.copy) {
@@ -228,121 +210,36 @@ const [conferir, aviso, extras, pronto] = installSteps;
     padding-inline: 14px;
   }
 
-  /* ---- passo 2: o aviso do Windows ---- */
-  .warning {
-    margin-top: 16px;
-    padding: 14px 16px 16px;
-    border-radius: var(--radius-md);
-    background: var(--win-blue);
-    color: var(--on-ink);
-  }
+  /* telas baixas: passos mais juntos e texto um passo menor */
+  @media (max-height: 620px), (max-width: 370px) and (max-height: 720px) {
+    .steps {
+      margin-top: 20px;
+    }
 
-  .warning b {
-    display: block;
-    font: 500 var(--text-md)/1.3 var(--font-display);
-  }
+    .steps li {
+      padding: 12px 0;
+    }
 
-  .path {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 8px;
-    margin-top: 12px;
-    font: 500 var(--text-xs)/1 var(--font-display);
-  }
+    h3 {
+      font-size: var(--text-lg);
+    }
 
-  .link {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  .path :global(.then) {
-    width: 14px;
-    height: 14px;
-    rotate: -90deg;
-    opacity: 0.7;
-  }
-
-  .run {
-    padding: 8px 12px;
-    border: 1px solid rgb(255 255 255 / 70%);
-    border-radius: 4px;
-  }
-
-  /* ---- passo 3: os extras ---- */
-  .extras {
-    display: grid;
-    gap: 8px;
-    margin: 16px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .extras li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--paper);
-    font-size: var(--text-md);
-    color: var(--muted);
-  }
-
-  .extras b {
-    font-weight: 500;
-    color: var(--ink);
-  }
-
-  .box {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    background: var(--signal);
-    color: var(--on-ink);
-  }
-
-  .box :global(.icon) {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2.5;
-  }
-
-  /* ---- a linha se preenche e cada passo acende quando ela chega ---- */
-  .armed::after {
-    scale: 1 0;
-  }
-
-  .armed .marker {
-    border-color: var(--line-2);
-    background: var(--paper);
-    color: var(--faint);
-  }
-
-  .playing::after {
-    animation: m-install-fill 1.8s var(--ease-in-out) 0.2s both;
-  }
-
-  .playing .marker {
-    animation: m-install-reach 0.35s ease-out both;
-    animation-delay: calc(0.2s + var(--i) * 0.55s);
-  }
-
-  @keyframes m-install-fill {
-    from {
-      scale: 1 0;
+    .steps p {
+      font-size: var(--text-md);
     }
   }
 
-  @keyframes m-install-reach {
-    from {
-      border-color: var(--line-2);
-      background: var(--paper);
-      color: var(--faint);
+  @media (max-height: 620px) {
+    .steps {
+      margin-top: 16px;
+    }
+
+    .steps li {
+      padding: 10px 0;
+    }
+
+    summary {
+      min-height: 44px;
     }
   }
 </style>

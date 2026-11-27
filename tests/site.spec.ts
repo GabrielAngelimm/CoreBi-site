@@ -18,7 +18,8 @@ const phoneSections = [
   "m-sobre",
   "m-monitoramento",
   "m-jogos",
-  "m-ferramentas",
+  "m-teste",
+  "m-drivers",
   "m-instalar",
   "m-perguntas",
   "m-baixar",
@@ -58,10 +59,12 @@ test.describe("página inicial", () => {
     }
   });
 
-  test("o botão Copiar copia o hash", async ({ page, context, browserName }) => {
+  test("o botão Copiar copia o hash", async ({ page, context, browserName, isMobile }) => {
     test.skip(browserName !== "chromium", "permissão de área de transferência só no Chromium");
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.goto("/");
+    // no celular o código fica guardado em "Conferir o arquivo"
+    if (isMobile) await page.locator("#m-instalar summary").click();
     const button = page.getByRole("button", { name: /SHA256 esperado$/ });
     await button.scrollIntoViewIfNeeded();
     await button.click();
@@ -184,25 +187,32 @@ test.describe("versão do celular", () => {
     await page.goto("/#drivers");
     await expect
       .poll(() =>
-        page.locator("#m-ferramentas").evaluate((el) => Math.abs(el.getBoundingClientRect().top)),
+        page.locator("#m-drivers").evaluate((el) => Math.abs(el.getBoundingClientRect().top)),
       )
       .toBeLessThan(40);
   });
 
-  test("as abas das ferramentas trocam o cartão", async ({ page }) => {
-    await page.goto("/");
-    const tools = page.getByRole("group", { name: "Ferramentas do CoreBi" });
-    await tools.scrollIntoViewIfNeeded();
-    const drivers = tools.getByRole("button", { name: "Drivers" });
-    await drivers.click();
-    await expect(drivers).toHaveAttribute("aria-current", "true");
-    await expect(tools.getByRole("button", { name: "Teste de carga" })).toHaveAttribute(
-      "aria-current",
-      "false",
-    );
-    await expect
-      .poll(() => tools.locator("[data-track]").evaluate((el) => el.scrollLeft))
-      .toBeGreaterThan(0);
+  test("cada seção cabe numa tela, do iPhone SE ao Android grande", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    for (const [width, height] of [
+      [412, 839],
+      [390, 664],
+      [360, 640],
+      [375, 548],
+      [320, 568],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await page.goto("/");
+      // a medida vale com as fontes do site, não com a de reserva
+      await page.evaluate(() => document.fonts.ready);
+      const tall = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>(".phone-site section")]
+          .filter((s) => s.getBoundingClientRect().height > window.innerHeight + 1)
+          .map((s) => s.id),
+      );
+      expect(tall, `${width}x${height}`).toEqual([]);
+      expect(await horizontalOverflow(page), `${width}x${height}`).toBeLessThanOrEqual(0);
+    }
   });
 
   test("as perguntas abrem uma de cada vez", async ({ page }) => {
@@ -217,7 +227,20 @@ test.describe("versão do celular", () => {
     await expect(page.locator("#m-perguntas details[open]")).toHaveCount(1);
   });
 
-  test("Enviar para o PC copia o link quando não há compartilhar", async ({
+  test("Baixar para Windows avisa que o CoreBi é para o PC", async ({ page }) => {
+    await page.goto("/");
+    const notice = page.getByRole("dialog", { name: "O CoreBi é para o PC" });
+    await expect(notice).toBeHidden();
+    await page.locator("#m-abertura [data-m-download]").click();
+    await expect(notice).toBeVisible();
+    await expect(
+      notice.getByRole("link", { name: /^Baixar o instalador mesmo assim/ }),
+    ).toHaveAttribute("href", /-win-x64-setup\.exe$/);
+    await notice.getByRole("button", { name: "Fechar" }).click();
+    await expect(notice).toBeHidden();
+  });
+
+  test("Enviar o link para o PC copia o link quando não há compartilhar", async ({
     page,
     context,
     browserName,
@@ -227,9 +250,10 @@ test.describe("versão do celular", () => {
     // o compartilhar do sistema abriria uma janela fora da página; aqui testamos a cópia
     await page.addInitScript(() => Object.defineProperty(navigator, "share", { value: undefined }));
     await page.goto("/");
+    await page.locator("#m-baixar [data-m-download]").click();
     // o nome do botão muda depois do toque, então o localizador não pode depender dele
-    const button = page.locator("#m-abertura [data-share]");
-    await expect(button).toHaveText("Enviar para o PC");
+    const button = page.locator("#m-windows [data-share]");
+    await expect(button).toHaveText("Enviar o link para o PC");
     await button.click();
     await expect(button).toHaveText("Link copiado");
     const copied = await page.evaluate(() => navigator.clipboard.readText());

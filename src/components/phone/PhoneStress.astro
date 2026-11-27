@@ -1,0 +1,474 @@
+---
+/**
+ * Teste de carga, no celular: uma seção só para ele, sem botões. Quando aparece, o gráfico
+ * roda o PC com cooler bom (aprovado), espera no resultado e roda o PC com cooler fraco, que
+ * para sozinho no limite. A legenda em cima diz qual dos dois está na tela.
+ */
+import { scenarios, stress } from "@/data/stress";
+import { clock, decimal } from "@/lib/format";
+import PhoneSection from "./PhoneSection.astro";
+import { STRESS_DRAW_MS } from "./tools-timing";
+
+// as curvas saem do mesmo modelo da versão do computador, sem ruído
+const { min, max, cut, steps, start } = stress;
+const W = 320;
+const H = 132;
+const x = (step: number) => (step / steps) * W;
+const y = (t: number) => H - ((t - min) / (max - min)) * H;
+const curve = (top: number, k: number, step: number) => top - (top - start) * Math.exp(-k * step);
+
+const runs = scenarios.map((s) => {
+  const cpu: number[] = [];
+  const gpu: number[] = [];
+  for (let step = 0; step <= steps; step++) {
+    const c = Math.min(curve(s.cpu, s.k, step), cut);
+    cpu.push(c);
+    gpu.push(curve(s.gpu, s.k * 0.8, step));
+    if (c >= cut) break;
+  }
+  const path = (values: number[]) =>
+    values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+  const last = cpu.length - 1;
+  const stopped = (cpu[last] ?? 0) >= cut;
+  return {
+    label: s.label,
+    cpuLine: path(cpu),
+    gpuLine: path(gpu),
+    area: `${path(cpu)}L${x(last).toFixed(1)} ${H}L0 ${H}Z`,
+    tip: { x: x(last), cpu: y(cpu[last] ?? start), gpu: y(gpu[last] ?? start) },
+    cpu: cpu[last] ?? start,
+    gpu: gpu[last] ?? start,
+    seconds: last * 5,
+    stopped,
+    // a linha anda sempre na mesma velocidade: o teste que para antes desenha menos
+    ms: Math.round((STRESS_DRAW_MS * last) / steps),
+    message: stopped
+      ? `Parou aos ${clock(last * 5)}, com o processador a ${cut} °C. Confira o cooler.`
+      : `Aprovado. Estável por 10 min, sem erros, máxima de ${decimal(Math.max(...cpu))} °C.`,
+  };
+});
+const cutY = y(cut);
+const grid = [40, 60, 80].map((t) => ({ t, y: y(t) }));
+const last = runs.length - 1;
+---
+
+<PhoneSection id="m-teste" name="Teste de carga" label="m-stress-title">
+  <h2 id="m-stress-title" class="h2">
+    Aguenta horas de jogo? <span class="soft">Descubra antes.</span>
+  </h2>
+  <p class="lead">
+    O teste deixa o PC no máximo por alguns minutos e para sozinho se passar do limite de calor.
+  </p>
+
+  <div
+    class="card"
+    data-play="manual"
+    data-m-stress
+    data-scenario={last}
+    role="img"
+    aria-label={`Exemplo do teste de carga. ${runs.map((r) => `${r.label}: ${r.message}`).join(" ")}`}
+  >
+    <ol class="legend" aria-hidden="true">
+      {runs.map((r, i) => (
+        <li data-scene-label={i}>
+          <i />
+          {r.label}
+        </li>
+      ))}
+    </ol>
+
+    <div class="chart" aria-hidden="true">
+      <svg viewBox={`0 0 ${W} ${H}`}>
+        {grid.map((g) => (
+          <path class="grid" d={`M0 ${g.y.toFixed(1)}H${W}`} />
+        ))}
+        <path class="cut" d={`M0 ${cutY.toFixed(1)}H${W}`}></path>
+        {runs.map((r, i) => (
+          <g data-scene={i} class:list={{ stopped: r.stopped }} style={`--ms:${r.ms}ms`}>
+            <path class="area" d={r.area} />
+            <path class="gpu" d={r.gpuLine} pathLength="1" />
+            <path class="cpu" d={r.cpuLine} pathLength="1" />
+            <circle class="tip gpu-tip" cx={r.tip.x} cy={r.tip.gpu} r="4" />
+            <circle class="tip cpu-tip" cx={r.tip.x} cy={r.tip.cpu} r="4" />
+          </g>
+        ))}
+      </svg>
+      <div class="y-labels">
+        {grid.map((g) => (
+          <span style={`top:${((g.y / H) * 100).toFixed(1)}%`}>{g.t}°</span>
+        ))}
+      </div>
+      <span class="cut-label" style={`top:${((cutY / H) * 100).toFixed(1)}%`}>
+        limite {cut} °C
+      </span>
+      <div class="x-labels">
+        <span>0</span>
+        <span>5 min</span>
+        <span>10 min</span>
+      </div>
+    </div>
+
+    {runs.map((r, i) => (
+      <div class="result" data-scene={i} style={`--ms:${r.ms}ms`} aria-hidden="true">
+        <dl class="reads">
+          <div>
+            <dt style="--c:var(--cpu)">
+              <i />
+              Processador
+            </dt>
+            <dd>
+              <span
+                class="num"
+                data-count={r.cpu.toFixed(1)}
+                data-digits="1"
+                data-ms={r.ms}
+                data-ease="linear"
+              >
+                {decimal(r.cpu)}
+              </span>
+              <small>°C</small>
+            </dd>
+          </div>
+          <div>
+            <dt style="--c:var(--gpu)">
+              <i />
+              Placa de vídeo
+            </dt>
+            <dd>
+              <span
+                class="num"
+                data-count={r.gpu.toFixed(1)}
+                data-digits="1"
+                data-ms={r.ms}
+                data-ease="linear"
+              >
+                {decimal(r.gpu)}
+              </span>
+              <small>°C</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Tempo</dt>
+            <dd>
+              <span
+                class="num"
+                data-count={r.seconds}
+                data-format="clock"
+                data-ms={r.ms}
+                data-ease="linear"
+              >
+                {clock(r.seconds)}
+              </span>
+            </dd>
+          </div>
+        </dl>
+        <p class:list={["message", r.stopped ? "stop" : "ok"]}>
+          <i />
+          <span>{r.message}</span>
+        </p>
+      </div>
+    ))}
+  </div>
+</PhoneSection>
+
+<script>
+  import "./stress.client";
+</script>
+
+<style>
+  .card {
+    margin-top: 24px;
+    padding: 16px 16px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* qual PC está na tela: uma legenda, não um botão */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--faint);
+    transition: color 0.3s;
+  }
+
+  .legend i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line-2);
+    transition: background-color 0.3s;
+  }
+
+  .card[data-scenario="0"] [data-scene-label="0"],
+  .card[data-scenario="1"] [data-scene-label="1"] {
+    color: var(--ink);
+  }
+
+  .card[data-scenario="0"] [data-scene-label="0"] i {
+    background: var(--success);
+  }
+
+  .card[data-scenario="1"] [data-scene-label="1"] i {
+    background: var(--danger);
+  }
+
+  .chart {
+    position: relative;
+    margin-left: 28px;
+  }
+
+  .chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .grid {
+    stroke: var(--line);
+    stroke-dasharray: 3 4;
+  }
+
+  .cut {
+    stroke: var(--danger);
+    stroke-width: 1.25;
+    stroke-dasharray: 5 4;
+  }
+
+  .area {
+    fill: var(--cpu-soft);
+  }
+
+  .cpu,
+  .gpu {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .cpu {
+    stroke: var(--cpu);
+    stroke-width: 2.25;
+  }
+
+  .gpu {
+    stroke: var(--gpu);
+    stroke-width: 1.75;
+  }
+
+  .tip {
+    stroke: var(--paper);
+    stroke-width: 2;
+  }
+
+  .cpu-tip {
+    fill: var(--cpu);
+  }
+
+  .gpu-tip {
+    fill: var(--gpu);
+  }
+
+  /* no cooler fraco o teste para no limite: a curva do processador fica vermelha */
+  .stopped .cpu {
+    stroke: var(--danger);
+  }
+
+  .stopped .area {
+    fill: var(--danger-soft);
+  }
+
+  .stopped .cpu-tip {
+    fill: var(--danger);
+  }
+
+  .y-labels span {
+    position: absolute;
+    left: -28px;
+    translate: 0 -50%;
+    font: 500 var(--text-2xs)/1 var(--font-readout);
+    color: var(--faint);
+  }
+
+  .cut-label {
+    position: absolute;
+    right: 0;
+    translate: 0 calc(-100% - 4px);
+    font: 500 var(--text-2xs)/1 var(--font-display);
+    color: var(--danger-text);
+  }
+
+  .x-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font: 500 var(--text-2xs)/1 var(--font-readout);
+    color: var(--faint);
+  }
+
+  /* só o PC da vez aparece */
+  .card[data-scenario="0"] [data-scene="1"],
+  .card[data-scenario="1"] [data-scene="0"] {
+    display: none;
+  }
+
+  .reads {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .reads dt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .reads dt i {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--c);
+  }
+
+  .reads dd {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    margin: 0;
+  }
+
+  .reads .num {
+    font: 600 var(--num-sm)/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  .reads small {
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  .message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 56px;
+    margin: 16px 0 0;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--tint);
+    font: 500 var(--text-sm)/1.4 var(--font-display);
+    color: var(--text);
+  }
+
+  .message i {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+
+  .message.stop {
+    background: var(--danger-soft);
+    color: var(--danger-text);
+  }
+
+  .message.stop i {
+    background: var(--danger);
+  }
+
+  .armed .cpu,
+  .armed .gpu {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  .armed .area,
+  .armed .tip,
+  .armed .message {
+    opacity: 0;
+  }
+
+  .playing .cpu,
+  .playing .gpu {
+    stroke-dasharray: 1;
+    animation: m-stress-trace var(--ms) linear both;
+  }
+
+  .playing .area {
+    animation: m-stress-fade 0.5s ease-out var(--ms) both;
+  }
+
+  .playing .tip {
+    animation: m-stress-fade 0.3s ease-out var(--ms) both;
+  }
+
+  .playing .message {
+    animation: m-stress-fade 0.4s ease-out var(--ms) both;
+  }
+
+  @keyframes m-stress-trace {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes m-stress-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* telas baixas: o mesmo cartão, com menos ar entre as partes */
+  @media (max-height: 620px) {
+    .card {
+      margin-top: 20px;
+    }
+
+    .legend {
+      margin-bottom: 12px;
+    }
+
+    .reads {
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+
+    .reads dt {
+      margin-bottom: 6px;
+    }
+
+    .reads .num {
+      font-size: var(--text-2xl);
+    }
+
+    .message {
+      margin-top: 12px;
+      padding-block: 8px;
+    }
+  }
+</style>

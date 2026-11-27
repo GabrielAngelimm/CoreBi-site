@@ -1,75 +1,88 @@
 ---
 /**
- * A abertura no celular: um anel só, acima do título, com as seis peças do PC presas nele e o
- * ícone do app no centro. O anel entra girando um pouco e para no lugar, as peças acendem uma
- * a uma, e depois tudo fica parado, sem nada passando por trás do texto.
- * Como o CoreBi é para Windows, o botão principal manda o link para o PC.
+ * A abertura no celular: o ícone do CoreBi grande, no centro de um mostrador com seis medidores
+ * em gomos, um por peça do PC, na cor dela, como os medidores segmentados do app. O mostrador
+ * acende girando uma vez, os medidores variam por alguns segundos, como leituras ao vivo, e
+ * param. O título não espera animação: aparece junto com a página.
+ * O mostrador ocupa o espaço que a tela tiver acima do texto, então tudo cabe na primeira tela.
  */
 import AppTile from "@/components/ui/AppTile.astro";
-import Bubble from "@/components/ui/Bubble.astro";
-import Button from "@/components/ui/Button.astro";
+import Icon from "@/components/ui/Icon.astro";
 import { parts, type Part } from "@/data/parts";
 import { formatSize } from "@/lib/format";
 import type { Release } from "@/lib/release";
-import ShareButton from "./ShareButton.astro";
+import PhoneActions from "./PhoneActions.astro";
 
 interface Props {
   release: Release;
 }
 
-const { installer } = Astro.props.release;
+const { release } = Astro.props;
+const { installer } = release;
 
-/** Do topo, no sentido horário: as cores vão do verde ao azul, como um espectro. */
-const order: readonly Part[] = ["cpu", "net", "board", "gpu", "memory", "storage"];
-const STEP = 360 / order.length;
-/** Raio do anel e do traço de fora, em % do lado do mostrador. */
-const RING = 34.5;
-const OUTER = 47;
+/**
+ * Do topo, no sentido horário: as cores vão do verde ao azul, como um espectro. `level` é
+ * quantos gomos acendem (de 6); `live` é entre quanto a leitura varia depois.
+ */
+const meters: readonly { part: Part; level: number; live: readonly [number, number] }[] = [
+  { part: "cpu", level: 4, live: [3, 5] },
+  { part: "net", level: 3, live: [2, 5] },
+  { part: "board", level: 2, live: [2, 3] },
+  { part: "gpu", level: 6, live: [5, 6] },
+  { part: "memory", level: 5, live: [4, 5] },
+  { part: "storage", level: 6, live: [6, 6] },
+];
+
+// geometria em unidades do viewBox (-100 a 100): raio do anel, gomos por medidor e folgas
+const R = 76;
+const SEGMENTS = 6;
+const STEP = 360 / meters.length;
+const GAP = 12; // entre um medidor e outro, em graus
+const SEG_GAP = 2; // entre os gomos
+const SPAN = (STEP - GAP - (SEGMENTS - 1) * SEG_GAP) / SEGMENTS;
+const ICON_R = 93;
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
-const bubbles = order.map((part, i) => {
-  const a = rad(i * STEP);
+const at = (r: number, deg: number) =>
+  `${(r * Math.sin(rad(deg))).toFixed(2)} ${(-r * Math.cos(rad(deg))).toFixed(2)}`;
+
+const rings = meters.map((m, i) => {
+  const center = i * STEP;
+  const first = center - (STEP - GAP) / 2;
   return {
-    part,
-    x: (50 + RING * Math.sin(a)).toFixed(2),
-    y: (50 - RING * Math.cos(a)).toFixed(2),
+    ...m,
+    color: parts[m.part].color,
+    icon: parts[m.part].icon,
+    // posição do ícone em % do lado do mostrador
+    x: (50 + (ICON_R / 2) * Math.sin(rad(center))).toFixed(2),
+    y: (50 - (ICON_R / 2) * Math.cos(rad(center))).toFixed(2),
+    segments: Array.from({ length: SEGMENTS }, (_, j) => {
+      const a = first + j * (SPAN + SEG_GAP);
+      return `M${at(R, a)}A${R} ${R} 0 0 1 ${at(R, a + SPAN)}`;
+    }),
   };
 });
-
-// a linha do anel pega a cor da peça que está em cada ponto, misturando entre uma e outra
-const track = [
-  ...order.map((p, i) => `${parts[p].color} ${i * STEP - 10}deg ${i * STEP + 10}deg`),
-  `${parts[order[0] ?? "cpu"].color} 350deg`,
-].join(", ");
-
-// marcas finas cruzando a linha a cada 15°, menos onde fica uma peça
-const marks = Array.from({ length: 24 }, (_, i) => i * 15)
-  .filter((deg) => deg % STEP !== 0)
-  .map((deg) => {
-    const a = rad(deg);
-    const r1 = RING * 2 - 3.2;
-    const r2 = RING * 2 + 3.2;
-    const p = (r: number) => `${(r * Math.sin(a)).toFixed(2)} ${(-r * Math.cos(a)).toFixed(2)}`;
-    return `M${p(r1)}L${p(r2)}`;
-  })
-  .join("");
 ---
 
 <section id="m-abertura" class="m-hero" aria-labelledby="m-hero-title" data-m-hero>
-  <div class="dial" aria-hidden="true">
-    <svg class="lines" viewBox="-100 -100 200 200">
-      <circle class="outer" r={OUTER * 2}></circle>
-      <path class="marks" d={marks}></path>
-    </svg>
-    <div class="layer">
-      <span class="track" style={`--track: conic-gradient(in oklab, ${track})`}></span>
-      {bubbles.map((b, i) => (
-        <span class="sat" style={`--x:${b.x}%;--y:${b.y}%;--i:${i}`}>
-          <Bubble part={b.part} class="orb" />
+  <div class="dial" aria-hidden="true" data-m-dial>
+    <div class="ring">
+      <svg viewBox="-100 -100 200 200">
+        {rings.map((m) => (
+          <g style={`--c:${m.color}`} data-meter data-min={m.live[0]} data-max={m.live[1]}>
+            {m.segments.map((d, j) => (
+              <path class:list={["seg", { on: j < m.level }]} d={d} />
+            ))}
+          </g>
+        ))}
+      </svg>
+      {rings.map((m) => (
+        <span class="glyph" style={`--c:${m.color};--x:${m.x}%;--y:${m.y}%`}>
+          <Icon name={m.icon} />
         </span>
       ))}
     </div>
-    <AppTile size="md" class="core" />
+    <AppTile class="core" />
   </div>
 
   <div class="wrap text">
@@ -82,49 +95,29 @@ const marks = Array.from({ length: 24 }, (_, i) => i * 15)
       Sensores, discos, FPS, teste de carga, apps e drivers. Grátis e de código aberto.
     </p>
     <div class="actions">
-      <ShareButton />
-      <Button
-        href={installer.url}
-        variant="line"
-        icon="download"
-        aria-label={`Baixar para Windows, ${formatSize(installer.sizeBytes)}`}
-      >
-        Baixar
-      </Button>
+      <PhoneActions release={release} />
     </div>
     <p class="note">Para Windows 10 e 11 · instalador de {formatSize(installer.sizeBytes)}</p>
   </div>
 </section>
 
+<script>
+  import "./hero.client";
+</script>
+
 <style>
   .m-hero {
-    --size: min(70vw, 32svh, 300px);
-    --top: calc(env(safe-area-inset-top, 0px) + 76px);
+    /* o mostrador fica com a altura que sobra depois do texto, entre um mínimo e um máximo */
+    --text-block: 436px;
+    --size: clamp(160px, 100svh - var(--text-block), min(86vw, 340px));
     position: relative;
     isolation: isolate;
     display: flex;
     flex-direction: column;
     justify-content: center;
     min-height: 100svh;
-    padding: var(--top) 0 32px;
+    padding: var(--m-top) 0 var(--m-bottom);
     overflow: hidden;
-  }
-
-  /* os pontinhos de radar da versão do computador, só em volta do mostrador */
-  .m-hero::before {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-image: radial-gradient(circle, var(--dial-tick) 1px, transparent 1.3px);
-    background-position: center calc(var(--top) + var(--size) / 2);
-    background-size: 20px 20px;
-    mask-image: radial-gradient(
-      circle at 50% calc(var(--top) + var(--size) / 2),
-      #000 0,
-      rgb(0 0 0 / 45%) calc(var(--size) * 0.55),
-      transparent calc(var(--size) * 0.95)
-    );
-    content: "";
   }
 
   /* ---- mostrador ---- */
@@ -133,79 +126,109 @@ const marks = Array.from({ length: 24 }, (_, i) => i * 15)
     flex: none;
     width: var(--size);
     aspect-ratio: 1;
-    margin: 0 auto 28px;
+    margin: 0 auto 24px;
   }
 
-  .lines {
+  /* os pontinhos de radar da versão do computador, só em volta do mostrador */
+  .dial::before {
+    position: absolute;
+    inset: -40%;
+    z-index: -1;
+    background-image: radial-gradient(circle, var(--dial-tick) 1px, transparent 1.3px);
+    background-position: center;
+    background-size: 20px 20px;
+    mask-image: radial-gradient(closest-side, #000 30%, rgb(0 0 0 / 45%) 60%, transparent);
+    content: "";
+  }
+
+  .ring {
     position: absolute;
     inset: 0;
+  }
+
+  .ring svg {
+    width: 100%;
+    height: 100%;
     overflow: visible;
   }
 
-  .outer {
+  .seg {
     fill: none;
-    stroke: var(--dial-tick);
-    stroke-width: 0.9;
-    stroke-dasharray: 0.01 3.6;
-    stroke-linecap: round;
+    stroke: var(--dial-ring);
+    stroke-width: 9;
+    transition: stroke 0.35s ease-out;
   }
 
-  .marks {
-    stroke: var(--dial-major);
-    stroke-width: 0.5;
-    opacity: 0.5;
+  .seg.on {
+    stroke: var(--c);
   }
 
-  .layer {
-    position: absolute;
-    inset: 0;
-    animation: m-hero-settle 1.6s var(--ease-out) both;
-  }
-
-  .track {
-    position: absolute;
-    inset: calc(50% - 34.5%);
-    border-radius: 50%;
-    background: var(--track);
-    mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
-    opacity: 0.85;
-  }
-
-  .sat {
+  .glyph {
     position: absolute;
     top: var(--y);
     left: var(--x);
+    display: grid;
     translate: -50% -50%;
-    animation: m-hero-upright 1.6s var(--ease-out) both;
+    color: var(--c);
   }
 
-  .sat :global(.orb) {
-    --s: calc(var(--size) * 0.155);
-    border-color: color-mix(in srgb, var(--c) 22%, var(--line));
-    animation: m-hero-pop 0.6s var(--ease-out) both;
-    animation-delay: calc(0.35s + var(--i) * 0.09s);
+  .glyph :global(.icon) {
+    width: calc(var(--size) * 0.072);
+    height: calc(var(--size) * 0.072);
   }
 
   .dial :global(.core) {
-    --s: calc(var(--size) * 0.3);
+    --s: calc(var(--size) * 0.46);
     position: absolute;
     top: 50%;
     left: 50%;
     translate: -50% -50%;
-    animation: m-hero-pop 0.7s var(--ease-out) both;
+  }
+
+  /*
+   * Entrada: o anel acende girando uma volta, do topo no sentido horário, e o ícone chega
+   * junto. Com movimento reduzido, tudo já está no lugar.
+   */
+  @property --m-sweep {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 360deg;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ring {
+      mask-image: conic-gradient(#000 var(--m-sweep), transparent 0);
+      animation: m-hero-sweep 1.1s var(--ease-out) 0.1s both;
+    }
+
+    .dial :global(.core) {
+      animation: m-hero-pop 0.6s var(--ease-out) both;
+    }
+  }
+
+  @keyframes m-hero-sweep {
+    from {
+      --m-sweep: 0deg;
+    }
+
+    to {
+      --m-sweep: 360deg;
+    }
+  }
+
+  @keyframes m-hero-pop {
+    from {
+      opacity: 0;
+      scale: 0.9;
+    }
   }
 
   /* ---- texto ---- */
-  .text {
-    animation: m-hero-rise 0.8s var(--ease-out) 0.15s both;
-  }
-
   .title {
     margin: 0;
     font: 500 var(--display-lg) / 1 var(--font-display);
     letter-spacing: -0.035em;
     color: var(--ink);
-    text-wrap: balance;
   }
 
   .title span {
@@ -213,66 +236,46 @@ const marks = Array.from({ length: 24 }, (_, i) => i * 15)
   }
 
   .lead {
-    margin: 14px 0 0;
+    margin: 12px 0 0;
     font-size: var(--text-lg);
     line-height: 1.5;
     color: var(--muted);
   }
 
   .actions {
-    display: grid;
-    grid-template-columns: 1.35fr 1fr;
-    gap: 10px;
-    margin-top: 24px;
-  }
-
-  .actions > :global(*) {
-    width: 100%;
-    padding-inline: 16px;
-  }
-
-  /* telas bem estreitas: um botão embaixo do outro */
-  @media (max-width: 359px) {
-    .actions {
-      grid-template-columns: 1fr;
-    }
+    margin-top: 20px;
   }
 
   .note {
-    margin: 14px 0 0;
+    margin: 12px 0 0;
     font-size: var(--text-sm);
     line-height: 1.5;
     color: var(--faint);
   }
 
-  @keyframes m-hero-settle {
-    from {
-      opacity: 0;
-      rotate: -36deg;
+  /* telas baixas: título um passo menor, e o mostrador fica com o resto */
+  @media (max-height: 620px) {
+    .m-hero {
+      --text-block: 392px;
+    }
+
+    .title {
+      font-size: var(--display-md);
+    }
+
+    .lead {
+      font-size: var(--text-base);
     }
   }
 
-  @keyframes m-hero-upright {
-    from {
-      rotate: 36deg;
+  /* telas estreitas e baixas (iPhone SE de 1ª geração): o texto quebra mais, o mostrador cede */
+  @media (max-width: 340px) and (max-height: 620px) {
+    .m-hero {
+      --text-block: 440px;
+      --size: clamp(128px, 100svh - var(--text-block), 200px);
     }
   }
 
-  @keyframes m-hero-pop {
-    from {
-      opacity: 0;
-      scale: 0.6;
-    }
-  }
-
-  @keyframes m-hero-rise {
-    from {
-      opacity: 0;
-      translate: 0 12px;
-    }
-  }
-
-  /* celular deitado: mostrador ao lado do texto */
   /* celular deitado: mostrador à esquerda e texto à direita, tudo na primeira tela */
   @media (orientation: landscape) {
     .m-hero {
@@ -281,19 +284,7 @@ const marks = Array.from({ length: 24 }, (_, i) => i * 15)
       flex-direction: row;
       align-items: center;
       gap: 40px;
-      padding: var(--top) max(24px, env(safe-area-inset-right, 0px)) 20px var(--left);
-    }
-
-    .m-hero::before {
-      --center: calc(var(--left) + var(--size) / 2)
-        calc(var(--top) + (100% - var(--top) - 20px) / 2);
-      background-position: var(--center);
-      mask-image: radial-gradient(
-        circle at var(--center),
-        #000 0,
-        rgb(0 0 0 / 45%) calc(var(--size) * 0.55),
-        transparent calc(var(--size) * 0.95)
-      );
+      padding: var(--m-top) max(24px, env(safe-area-inset-right, 0px)) 20px var(--left);
     }
 
     .dial {
@@ -314,7 +305,7 @@ const marks = Array.from({ length: 24 }, (_, i) => i * 15)
     }
 
     .actions {
-      max-width: 400px;
+      max-width: 420px;
       margin-top: 16px;
     }
 

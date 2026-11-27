@@ -1,0 +1,126 @@
+---
+/**
+ * Folha que sobe do pé da tela, como nos apps de celular: a do menu e a do aviso do Windows.
+ * É um <dialog> nativo, então o foco fica preso nela, Esc fecha e o resto da página some para
+ * o leitor de tela. Tocar no fundo escurecido, acima da folha, também fecha.
+ */
+import Icon from "@/components/ui/Icon.astro";
+
+interface Props {
+  id: string;
+  title: string;
+}
+
+const { id, title } = Astro.props;
+---
+
+<dialog id={id} class="sheet" aria-labelledby={`${id}-title`} data-m-sheet>
+  <div class="grip" aria-hidden="true"></div>
+  <div class="head">
+    <h2 id={`${id}-title`}>{title}</h2>
+    <button type="button" class="close" data-m-close aria-label="Fechar">
+      <Icon name="close" />
+    </button>
+  </div>
+  <slot />
+</dialog>
+
+<script>
+  import "./sheet.client";
+</script>
+
+<style>
+  .sheet {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: 560px;
+    max-height: calc(100svh - 24px);
+    margin: auto auto 0;
+    padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+    overflow-y: auto;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--paper);
+    color: var(--text);
+    box-shadow: 0 -12px 40px -12px rgb(15 26 32 / 30%);
+    transform: translateY(100%);
+    transition:
+      transform 0.36s var(--ease-out),
+      overlay 0.36s allow-discrete,
+      display 0.36s allow-discrete;
+  }
+
+  .sheet[open] {
+    transform: none;
+  }
+
+  @starting-style {
+    .sheet[open] {
+      transform: translateY(100%);
+    }
+  }
+
+  .sheet::backdrop {
+    background: rgb(15 26 32 / 0%);
+    transition:
+      background-color 0.36s,
+      overlay 0.36s allow-discrete,
+      display 0.36s allow-discrete;
+  }
+
+  .sheet[open]::backdrop {
+    background: rgb(15 26 32 / 40%);
+  }
+
+  @starting-style {
+    .sheet[open]::backdrop {
+      background: rgb(15 26 32 / 0%);
+    }
+  }
+
+  .grip {
+    width: 40px;
+    height: 4px;
+    margin: 0 auto 8px;
+    border-radius: var(--radius-pill);
+    background: var(--line-2);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 0 0 4px 8px;
+  }
+
+  h2 {
+    margin: 0;
+    font: 500 var(--text-2xl)/1 var(--font-display);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-left: auto;
+    border: 0;
+    border-radius: 50%;
+    background: var(--tint);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .close :global(.icon) {
+    width: 18px;
+    height: 18px;
+  }
+
+  :global(html:has(.sheet[open])) {
+    overflow: hidden;
+  }
+</style>
