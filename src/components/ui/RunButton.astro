@@ -3,13 +3,13 @@
 import type { HTMLAttributes } from "astro/types";
 import Icon from "./Icon.astro";
 
-type Props = HTMLAttributes<"button"> & { play?: boolean };
+type Props = HTMLAttributes<"button">;
 
-const { play = true, class: className, ...rest } = Astro.props;
+const { class: className, ...rest } = Astro.props;
 ---
 
 <button type="button" class:list={["run", className]} {...rest}>
-  {play && <Icon name="play" />}
+  <Icon name="play" />
   <span data-label>
     <slot />
   </span>

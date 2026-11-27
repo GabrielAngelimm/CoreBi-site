@@ -24,22 +24,17 @@
   /* linhas */
   --line: #e2e7ea;
   --line-2: #d2d9de;
-  --rule: #c3cdd3;
-  --rule-soft: #dce3e7;
   --tick: #aab5bb;
 
   /* mostradores (anéis, trilhos e marcas dos medidores), do mais claro ao mais escuro */
-  --dial-track: #edf1f3;
   --dial-ring: #e3e8eb;
   --dial-line: #d6dee2;
   --dial-tick: #cdd5da;
-  --dial-mark: #b7c1c7;
   --dial-major: #8d9aa2;
 
   /* marca */
   --signal: #0a857c;
   --signal-hi: #27c9bc;
-  --signal-soft: #ddf3f1;
   --signal-text: #087a72; /* o verde da marca escurecido para texto corrido */
   --danger: #c8392e;
   --danger-soft: #fbe9e7;
@@ -54,7 +49,6 @@
   --board: #9a7430;
   --net: #8c7a00;
   --cpu-soft: #e3f1e8;
-  --gpu-soft: #fbeadf;
 
   /* superfícies escuras (OverlayBi, código) */
   --night: #0e1214;

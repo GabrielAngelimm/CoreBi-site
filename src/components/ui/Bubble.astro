@@ -1,5 +1,5 @@
 ---
-/** Bolha branca com o ícone de uma peça na cor dela. */
+/** Bolha branca com o ícone de uma peça na cor dela; sem peça, um ícone na cor do CoreBi. */
 import { parts, type Part } from "@/data/parts";
 import Icon from "./Icon.astro";
 import type { IconName } from "./icons";
@@ -7,13 +7,12 @@ import type { IconName } from "./icons";
 interface Props {
   part?: Part | undefined;
   icon?: IconName | undefined;
-  color?: string | undefined;
   class?: string;
 }
 
 const { part, class: className } = Astro.props;
 const icon = Astro.props.icon ?? (part ? parts[part].icon : "cpu");
-const color = Astro.props.color ?? (part ? parts[part].color : "var(--signal)");
+const color = part ? parts[part].color : "var(--signal)";
 ---
 
 <span class:list={["bubble", className]} style={`--c:${color}`}>

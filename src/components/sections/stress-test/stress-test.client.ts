@@ -6,7 +6,13 @@
  */
 import { scenarios, stress } from "@/data/stress";
 import { clock, decimal } from "@/lib/format";
-import { loopWhileVisible, prefersReducedMotion, random, required } from "@/scripts/motion";
+import {
+  loopWhileVisible,
+  onEachEntry,
+  prefersReducedMotion,
+  random,
+  required,
+} from "@/scripts/motion";
 
 const card = required(document, "[data-stress]");
 const cpuLine = required<SVGPathElement>(card, "[data-cpu-line]");
@@ -119,16 +125,13 @@ for (const b of buttons) {
 }
 
 // a sequência começa do zero quando o cartão aparece pela primeira vez ou depois de sair da tela
-if (!prefersReducedMotion()) {
-  let away = true;
-  new IntersectionObserver((entries) => {
-    const visible = entries.some((e) => e.isIntersecting);
-    if (visible && away) {
-      auto = true;
-      pick(0);
-    }
-    away = !visible;
-  }).observe(card);
-}
+onEachEntry(
+  card,
+  () => {
+    auto = true;
+    pick(0);
+  },
+  0,
+);
 
 loopWhileVisible(card, tick, 50);

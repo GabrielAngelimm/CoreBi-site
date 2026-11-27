@@ -1,9 +1,8 @@
 import type { IconName } from "@/components/ui/icons";
 import type { Part } from "./parts";
 
-/** Os três anéis da abertura, de dentro para fora: o primeiro colorido, o último em cinza. */
+/** Os três anéis da abertura, de dentro para fora: o primeiro colorido, o do meio mais claro, o último cinza. */
 export type RingId = 1 | 2 | 3;
-export type RingTone = "vivid" | "medium" | "mono";
 
 /**
  * Cada anel gira inteiro, com as peças presas nele, e o vizinho gira ao contrário: o de dentro
@@ -14,7 +13,6 @@ export type RingTone = "vivid" | "medium" | "mono";
 export interface Ring {
   readonly radius: number;
   readonly mobile: number;
-  readonly tone: RingTone;
   readonly turn: "left" | "right";
   readonly seconds: number;
   readonly bubble: number;
@@ -25,7 +23,6 @@ export const rings: Readonly<Record<RingId, Ring>> = {
   1: {
     radius: 500,
     mobile: 100,
-    tone: "vivid",
     turn: "left",
     seconds: 260,
     bubble: 62,
@@ -34,7 +31,6 @@ export const rings: Readonly<Record<RingId, Ring>> = {
   2: {
     radius: 700,
     mobile: 134,
-    tone: "medium",
     turn: "right",
     seconds: 360,
     bubble: 54,
@@ -43,7 +39,6 @@ export const rings: Readonly<Record<RingId, Ring>> = {
   3: {
     radius: 900,
     mobile: 166,
-    tone: "mono",
     turn: "left",
     seconds: 470,
     bubble: 46,

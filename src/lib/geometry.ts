@@ -47,7 +47,3 @@ export function ticks(options: {
 /** Mostrador de 270°, aberto em baixo (de 135° a 405°): o formato dos medidores do app. */
 export const GAUGE_START = 135;
 export const GAUGE_END = 405;
-
-export function gaugeAngle(fraction: number): number {
-  return GAUGE_START + (GAUGE_END - GAUGE_START) * Math.min(1, Math.max(0, fraction));
-}

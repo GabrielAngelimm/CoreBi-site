@@ -3,7 +3,7 @@
  * termina em uns dois segundos. Roda uma vez quando a seção aparece e de novo só quando a
  * pessoa sai e volta; parado, mostra tudo instalado.
  */
-import { prefersReducedMotion, required, wait } from "@/scripts/motion";
+import { onEachEntry, required, wait } from "@/scripts/motion";
 
 const FILL_MS = 480;
 const STAGGER_MS = 150;
@@ -18,7 +18,6 @@ const segs = [...queueBox.querySelectorAll<HTMLElement>(".segs i")];
 demo.style.setProperty("--fill-ms", `${FILL_MS}ms`);
 
 let running = false;
-let armed = true;
 
 async function play(): Promise<void> {
   running = true;
@@ -51,18 +50,6 @@ async function play(): Promise<void> {
   running = false;
 }
 
-if (!prefersReducedMotion()) {
-  new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        // volta a armar só quando a seção sai quase toda da tela
-        if (!entry.isIntersecting) armed = true;
-        else if (entry.intersectionRatio >= 0.4 && armed && !running) {
-          armed = false;
-          void play();
-        }
-      }
-    },
-    { threshold: [0, 0.4] },
-  ).observe(demo);
-}
+onEachEntry(demo, () => {
+  if (!running) void play();
+});
