@@ -32,8 +32,8 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
         {apps.map((app) => (
           <li class="done" style={`--x:${app.x}%;--y:${app.y}%`}>
             <svg class="progress" viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="47" class="rail" />
-              <circle cx="50" cy="50" r="47" class="bar" pathLength="100" />
+              <circle cx="50" cy="50" r="49" class="rail" />
+              <circle cx="50" cy="50" r="49" class="bar" pathLength="100" />
             </svg>
             <span class="icon-wrap">
               <Image src={app.icon} alt="" width={64} height={64} loading="lazy" />
@@ -103,19 +103,23 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     width: var(--s);
   }
 
+  /* o anel fica em cima da borda do ícone: mesmo tamanho e mesmo centro */
   .progress {
     position: absolute;
-    left: -6px;
-    top: -6px;
-    width: calc(var(--s) + 12px);
-    height: calc(var(--s) + 12px);
+    left: 0;
+    top: 0;
+    z-index: 1;
+    width: var(--s);
+    max-width: none;
+    height: var(--s);
     transform: rotate(-90deg);
     overflow: visible;
+    pointer-events: none;
   }
 
   .progress circle {
     fill: none;
-    stroke-width: 2.2;
+    stroke-width: 2.4;
   }
 
   .rail {
@@ -127,7 +131,13 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     stroke: var(--signal-hi);
     stroke-linecap: round;
     stroke-dasharray: var(--p) 100;
-    transition: opacity 0.3s;
+    opacity: 0;
+    transition: stroke 0.5s;
+  }
+
+  li.active .bar,
+  li.done .bar {
+    opacity: 1;
   }
 
   /* o anel enche sozinho: o script só troca a classe */
@@ -204,13 +214,9 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     color: var(--ink);
   }
 
-  /* instalado */
+  /* instalado: o anel cheio fica, só que mais calmo */
   li.done .bar {
-    opacity: 0;
-  }
-
-  li.done .icon-wrap {
-    border-color: color-mix(in srgb, var(--signal) 28%, transparent);
+    stroke: color-mix(in srgb, var(--signal) 45%, var(--paper));
   }
 
   li.done .ok {

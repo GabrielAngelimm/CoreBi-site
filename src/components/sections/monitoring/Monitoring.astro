@@ -28,7 +28,9 @@ import StorageTile from "./StorageTile.astro";
 
   .grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    /* três cartões iguais: mesmo tamanho, mesma altura de demonstração, mesmo pé */
+    --visual-h: 168px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas: "sensors storage network";
     gap: 16px;
     margin-top: 48px;

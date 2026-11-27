@@ -40,7 +40,6 @@ const nodes = replacedTools.map((tool, i) => {
       <svg class="lines" viewBox="-250 -250 500 500" aria-hidden="true">
         <circle r="200" class="ring"></circle>
         <circle r="118" class="ring inner"></circle>
-        <circle r="232" class="ticks" pathLength="1440"></circle>
         {nodes.map((n) => (
           <path d={n.spoke} class="spoke" />
         ))}
@@ -106,14 +105,6 @@ const nodes = replacedTools.map((tool, i) => {
 
   .ring.inner {
     stroke: var(--dial-ring);
-  }
-
-  .ticks {
-    stroke: var(--dial-line);
-    stroke-width: 6;
-    stroke-dasharray: 1 11; /* 120 marcas exatas: sem emenda visível ao girar */
-    transform-origin: center;
-    animation: spin 240s linear infinite;
   }
 
   .spoke {

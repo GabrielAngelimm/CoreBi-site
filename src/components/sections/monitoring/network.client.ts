@@ -15,8 +15,8 @@ loopWhileVisible(
   1100,
 );
 
-for (const el of tile.querySelectorAll<HTMLElement>("[data-count]")) {
-  const target = Number(el.dataset["count"]);
+for (const el of tile.querySelectorAll<HTMLElement>("[data-stat]")) {
+  const target = Number(el.textContent);
   onceVisible(
     el,
     () => void tween(1400, (k) => (el.textContent = String(Math.round(target * k)))),

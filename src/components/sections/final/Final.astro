@@ -1,14 +1,15 @@
 ---
 /**
- * A última tela: uma segunda abertura, escura. Texto e botões à esquerda, o símbolo do
- * CoreBi gigante em traço à direita e, embaixo, uma faixa com leituras passando.
+ * A última tela: uma segunda abertura, escura. Título e botões à esquerda, o símbolo do
+ * CoreBi gigante em traço à direita e, embaixo, uma faixa com leituras ao vivo passando.
  */
 import SiteFooter from "@/components/layout/SiteFooter.astro";
 import Button from "@/components/ui/Button.astro";
+import Icon from "@/components/ui/Icon.astro";
 import { site } from "@/config/site";
 import { readings } from "@/data/final";
 import { parts } from "@/data/parts";
-import { formatSize, shortHash } from "@/lib/format";
+import { decimal, formatSize } from "@/lib/format";
 import type { Release } from "@/lib/release";
 
 interface Props {
@@ -17,7 +18,6 @@ interface Props {
 
 const { release } = Astro.props;
 const { installer } = release;
-const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem conta"];
 ---
 
 <section id="baixar" class="final" data-tone="dark" aria-labelledby="final-title">
@@ -48,23 +48,33 @@ const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem c
         Ver o código
       </Button>
     </div>
-    <ul class="facts">
-      {facts.map((f) => (
-        <li>{f}</li>
-      ))}
-      {installer.sha256 && <li class="num">SHA256 {shortHash(installer.sha256)}</li>}
-    </ul>
   </div>
 
-  <div class="ticker" aria-hidden="true">
+  <div class="ticker" aria-hidden="true" data-ticker>
     <div class="track">
       {[0, 1].map(() => (
         <ul>
           {readings.map((r) => (
             <li style={`--c:${parts[r.part].color}`}>
-              <i />
-              <span>{r.label}</span>
-              <b class="num">{r.value}</b>
+              <Icon name={parts[r.part].icon} />
+              <span class="label">{r.label}</span>
+              {r.live ? (
+                <span class="value">
+                  <b
+                    class="num"
+                    data-min={r.live.min}
+                    data-max={r.live.max}
+                    data-digits={r.live.digits}
+                  >
+                    {decimal((r.live.min + r.live.max) / 2, r.live.digits)}
+                  </b>
+                  <small>{r.live.unit}</small>
+                </span>
+              ) : (
+                <span class="value">
+                  <b class="num">{r.value}</b>
+                </span>
+              )}
             </li>
           ))}
         </ul>
@@ -74,6 +84,10 @@ const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem c
 
   <SiteFooter tone="dark" />
 </section>
+
+<script>
+  import "./final.client";
+</script>
 
 <style>
   .final {
@@ -175,44 +189,21 @@ const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem c
     margin-top: 48px;
   }
 
-  .facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    margin: 24px 0 0;
-    padding: 0;
-    list-style: none;
-    font: 500 var(--text-md)/1.3 var(--font-display);
-    color: var(--night-faint);
-  }
-
-  .facts li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .facts li + li::before {
-    content: "";
-    width: 4px;
-    height: 4px;
-    margin-left: -16px;
-    border-radius: 50%;
-    background: var(--night-line);
-  }
-
-  /* faixa de leituras correndo, como o painel do app */
+  /* faixa de leituras ao vivo, como o painel do app: ícone na cor da peça, nome e número */
   .ticker {
-    border-block: 1px solid var(--night-line);
-    background: color-mix(in srgb, var(--night-2) 70%, transparent);
+    border-top: 1px solid var(--night-line);
     overflow: hidden;
-    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
   }
 
   .track {
     display: flex;
     width: max-content;
-    animation: ticker 48s linear infinite;
+    animation: ticker 64s linear infinite;
+  }
+
+  .ticker:hover .track {
+    animation-play-state: paused;
   }
 
   .ticker ul {
@@ -225,27 +216,37 @@ const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem c
   .ticker li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 16px 32px;
+    gap: 12px;
+    padding: 24px 48px;
     border-right: 1px solid var(--night-line);
     white-space: nowrap;
   }
 
-  .ticker i {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--c);
+  .ticker :global(.icon) {
+    width: 22px;
+    height: 22px;
+    color: var(--c);
   }
 
-  .ticker span {
+  .label {
     font: 500 var(--text-md)/1 var(--font-display);
     color: var(--night-muted);
   }
 
-  .ticker b {
-    font: 600 var(--text-lg)/1 var(--font-readout);
+  .value {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .value b {
+    font: 600 var(--text-xl)/1 var(--font-readout);
     color: var(--night-fg);
+  }
+
+  .value small {
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--night-faint);
   }
 
   @keyframes ticker {
@@ -283,18 +284,8 @@ const facts = [`Versão ${release.version}`, "Windows 10 e 11", "Grátis e sem c
       justify-content: center;
     }
 
-    .facts {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 16px;
-    }
-
-    .facts li + li::before {
-      display: none;
-    }
-
     .ticker li {
-      padding: 14px 24px;
+      padding-block: 16px;
     }
   }
 </style>

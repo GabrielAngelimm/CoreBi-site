@@ -10,10 +10,7 @@ import OverlayTile from "./OverlayTile.astro";
       <h2 id="gaming-title" class="h2">
         Feito para quem joga. <span class="soft">Sem sair da partida.</span>
       </h2>
-      <p class="lead">
-        O overlay mostra o desempenho por cima do jogo, e o benchmark diz se a troca de peça valeu a
-        pena.
-      </p>
+      <p class="lead one-line">Overlay de FPS por cima do jogo e benchmark para comparar peças.</p>
     </div>
     <div class="grid">
       <OverlayTile class="overlay" />
@@ -27,9 +24,13 @@ import OverlayTile from "./OverlayTile.astro";
     max-width: 22ch;
   }
 
+  .one-line {
+    max-width: none;
+  }
+
   .grid {
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     margin-top: 48px;
   }

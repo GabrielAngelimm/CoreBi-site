@@ -1,6 +1,7 @@
 ---
 import { features } from "@/data/features";
 import FeatureTile from "@/components/ui/FeatureTile.astro";
+import TileStats from "@/components/ui/TileStats.astro";
 
 interface Props {
   class?: string;
@@ -29,19 +30,28 @@ const path = "M30 140 A80 80 0 1 1 170 140";
       </text>
     </svg>
   </div>
+  <TileStats
+    slot="foot"
+    items={[
+      { label: "Já escrito", value: "18,4", unit: "TB" },
+      { label: "Temperatura", value: "41", unit: "°C" },
+    ]}
+  />
 </FeatureTile>
 
 <style>
   .gauge {
     display: flex;
+    align-items: flex-end;
     justify-content: center;
-    margin-top: auto;
-    padding: 14px 0 24px;
+    height: calc(var(--visual-h) + 24px);
+    margin: auto var(--pad) 24px;
+    padding-top: 24px;
   }
 
   svg {
-    width: 190px;
-    height: 150px;
+    width: auto;
+    height: 100%;
   }
 
   path {

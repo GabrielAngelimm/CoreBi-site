@@ -30,7 +30,7 @@ export const faq: readonly FaqItem[] = [
   {
     question: "O CoreBi envia os meus dados para algum lugar?",
     answer: [
-      "Não. Não há conta, telemetria nem servidor do CoreBi. A internet só é usada quando você pede: testar a conexão, buscar drivers na NVIDIA, na AMD ou no Windows Update e instalar apps pelo winget. O relatório exportado sai sem números de série e sem o nome do usuário.",
+      "Não. Não há conta, telemetria nem servidor do CoreBi. A internet só é usada quando você pede: testar a conexão, buscar drivers na NVIDIA ou no Windows Update e instalar apps pelo winget. O relatório exportado sai sem números de série e sem o nome do usuário.",
     ],
   },
   {

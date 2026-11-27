@@ -1,0 +1,86 @@
+---
+/**
+ * A linha de leituras no pé de um cartão: rótulo pequeno em cima, número grande embaixo.
+ * Os três cartões do monitoramento usam a mesma, então todos terminam iguais.
+ * `hook` vira `data-stat`, para o script do cartão atualizar o número.
+ * `color` desenha o traço de legenda quando a leitura é uma série do gráfico.
+ */
+export interface Stat {
+  label: string;
+  value: string;
+  unit: string;
+  hook?: string;
+  color?: string;
+}
+
+interface Props {
+  items: readonly Stat[];
+}
+
+const { items } = Astro.props;
+---
+
+<dl class="stats">
+  {items.map((s) => (
+    <div>
+      <dt style={s.color ? `--c:${s.color}` : undefined}>
+        {s.color && <i />}
+        {s.label}
+      </dt>
+      <dd>
+        <span class="num" data-stat={s.hook}>
+          {s.value}
+        </span>
+        <small>{s.unit}</small>
+      </dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 var(--pad);
+    padding: 20px 0 var(--pad);
+    border-top: 1px solid var(--line);
+  }
+
+  .stats div + div {
+    padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--faint);
+  }
+
+  dt i {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--c);
+  }
+
+  dd {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0;
+  }
+
+  dd .num {
+    font: 600 var(--num-md)/1 var(--font-readout);
+    color: var(--ink);
+  }
+
+  small {
+    font: 500 var(--text-md)/1 var(--font-display);
+    color: var(--faint);
+  }
+</style>

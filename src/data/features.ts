@@ -6,7 +6,7 @@ export const features = {
   },
   overlay: {
     title: "Veja o desempenho sem sair do jogo",
-    text: "FPS e temperaturas por cima da partida. Um atalho liga e desliga.",
+    text: "FPS, CPU, GPU, VRAM e RAM por cima da partida. Lido pelo Windows, sem injetar nada no jogo.",
   },
   benchmark: {
     title: "Descubra se a troca valeu a pena",

@@ -1,6 +1,7 @@
 ---
 import { features } from "@/data/features";
 import FeatureTile from "@/components/ui/FeatureTile.astro";
+import TileStats from "@/components/ui/TileStats.astro";
 
 interface Props {
   class?: string;
@@ -12,63 +13,30 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 
 <FeatureTile {...features.sensors} class={Astro.props.class}>
   <div
-    class="live"
+    class="visual"
     data-sensors
-    role="group"
+    role="img"
     aria-label="Exemplo da temperatura do processador no último minuto"
   >
-    <div class="top">
-      <span class="led"></span>
-      <span>Ao vivo</span>
-      <span class="now">
-        <b class="num" data-now>
-          61,4
-        </b>{" "}
-        °C
-      </span>
-      <span class="range">
-        mín.{" "}
-        <b class="num" data-min>
-          54,0
-        </b>{" "}
-        · máx.{" "}
-        <b class="num" data-max>
-          68,2
-        </b>
-      </span>
-    </div>
     <svg class="trace" viewBox="0 0 600 170" preserveAspectRatio="none" aria-hidden="true">
       <path class="grid" d={grid}></path>
       <path class="area" data-area></path>
       <path class="line" data-line></path>
       <circle class="tip" r="4.5" cx="600" data-tip></circle>
     </svg>
-    <div class="axis">
+    <div class="axis" aria-hidden="true">
       <span>−60 s</span>
       <span>−30 s</span>
       <span>agora</span>
     </div>
-    <dl class="rows">
-      <div>
-        <dt>Tctl/Tdie</dt>
-        <dd class="num" data-row="die">
-          61,4 °C
-        </dd>
-      </div>
-      <div>
-        <dt>CCD1</dt>
-        <dd class="num" data-row="ccd">
-          58,9 °C
-        </dd>
-      </div>
-      <div>
-        <dt>Núcleo mais quente</dt>
-        <dd class="num" data-row="clock">
-          4.650 MHz
-        </dd>
-      </div>
-    </dl>
   </div>
+  <TileStats
+    slot="foot"
+    items={[
+      { label: "Processador", value: "61,4", unit: "°C", hook: "temp", color: "var(--cpu)" },
+      { label: "Clock", value: "4.650", unit: "MHz", hook: "clock" },
+    ]}
+  />
 </FeatureTile>
 
 <script>
@@ -76,58 +44,19 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
 </script>
 
 <style>
-  .live {
+  .visual {
     display: flex;
-    flex: 1;
     flex-direction: column;
-    margin: 24px var(--pad) var(--pad);
-    padding: 16px 20px 16px;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--paper-soft);
-  }
-
-  .top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 10px;
-    font: 500 var(--text-sm)/1 var(--font-display);
-    color: var(--faint);
-  }
-
-  .led {
-    align-self: center;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--signal-hi);
-    animation: blink 2s ease-in-out infinite;
-  }
-
-  .now {
-    margin-left: 8px;
-    font: 500 var(--text-base)/1 var(--font-display);
-  }
-
-  .now b {
-    font: 600 var(--num-sm)/1 var(--font-readout);
-    color: var(--ink);
-  }
-
-  .range {
-    margin-left: auto;
-  }
-
-  .range b {
-    font: 600 var(--text-md)/1 var(--font-readout);
-    color: var(--text);
+    justify-content: flex-end;
+    height: calc(var(--visual-h) + 24px);
+    margin: auto var(--pad) 24px;
+    padding-top: 24px;
   }
 
   .trace {
     width: 100%;
-    height: 150px;
-    margin-top: 12px;
+    flex: 1;
+    min-height: 0;
     overflow: visible;
   }
 
@@ -160,50 +89,8 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
   .axis {
     display: flex;
     justify-content: space-between;
-    margin-top: 6px;
+    margin-top: 8px;
     font: 500 var(--text-xs)/1 var(--font-readout);
     color: var(--faint);
-  }
-
-  .rows {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 16px 0 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .rows div {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 12px 0 0;
-  }
-
-  .rows div + div {
-    padding-left: 14px;
-    border-left: 1px solid var(--line);
-  }
-
-  .rows dt {
-    font: 500 var(--text-sm)/1.2 var(--font-display);
-    color: var(--faint);
-  }
-
-  .rows dd {
-    margin: 0;
-    font: 600 var(--text-xl)/1 var(--font-readout);
-    color: var(--ink);
-  }
-
-  @media (max-width: 700px) {
-    .rows {
-      grid-template-columns: 1fr;
-    }
-
-    .rows div,
-    .rows div + div {
-      padding: 10px 0 0;
-      border-left: 0;
-    }
   }
 </style>

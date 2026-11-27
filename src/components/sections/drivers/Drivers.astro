@@ -12,8 +12,8 @@ import { driverExample as d } from "@/data/drivers";
         Driver novo, <span class="soft">sem medo de quebrar.</span>
       </h2>
       <p class="lead">
-        Baixa o driver da placa de vídeo direto da NVIDIA ou da AMD e guarda um backup antes de
-        instalar. Deu problema? É só restaurar.
+        Baixa o driver da NVIDIA direto do site oficial e guarda um backup de todos os drivers do
+        PC, antes de atualizar ou de formatar. Deu problema ou formatou? É só restaurar.
       </p>
     </div>
 
@@ -247,10 +247,11 @@ import { driverExample as d } from "@/data/drivers";
     transform: none;
   }
 
+  /* o arco que gira fica em cima da borda do círculo, como os anéis dos apps */
   li.busy .mark::after {
     content: "";
     position: absolute;
-    inset: -4px;
+    inset: -1px;
     border: 2px solid transparent;
     border-top-color: var(--signal-hi);
     border-radius: 50%;

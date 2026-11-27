@@ -54,7 +54,7 @@ export const orbit: readonly OrbitItem[] = [
     part: "net",
     size: "md",
     ring: 2,
-    angle: -31,
+    angle: -18,
     mobileAngle: -64,
     readout: { min: 478, max: 492, digits: 0, unit: "Mbps" },
     float: { duration: 6.2, delay: -2.2, amplitude: 6 },

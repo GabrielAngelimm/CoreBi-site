@@ -2,7 +2,7 @@
 /**
  * O mostrador atrás da abertura: três anéis bem espaçados em volta do ícone do app.
  * O de dentro é o mais colorido, o do meio tem cor média e o de fora é cinza.
- * Cada anel leva uma ou duas peças em posições soltas.
+ * Cada anel leva duas peças em posições soltas: bolhas brancas com a borda na cor da peça.
  */
 import Bubble from "@/components/ui/Bubble.astro";
 import { orbit, rings } from "@/data/hero";
@@ -10,7 +10,6 @@ import { decimal } from "@/lib/format";
 
 const items = orbit.map((item) => ({
   ...item,
-  tone: rings[item.ring].tone,
   text: item.readout
     ? decimal((item.readout.min + item.readout.max) / 2, item.readout.digits)
     : undefined,
@@ -33,17 +32,17 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   </svg>
   <span class="sweep s1"></span>
 
-  <!-- anel 2: cor média, tracejado andando devagar -->
+  <!-- anel 2: cor média, pontos correndo em cima da linha -->
   <span class="ring medium"></span>
   <svg class="ticks t2" viewBox="-100 -100 200 200">
-    <circle r="99" pathLength="480" class="dash"></circle>
+    <circle r="99.9" pathLength="480" class="dash"></circle>
   </svg>
   <span class="sweep s2"></span>
 
-  <!-- anel 3: só cinza -->
+  <!-- anel 3: cinza, marcas finas cruzando a linha e girando devagar -->
   <span class="ring mono"></span>
   <svg class="ticks t3" viewBox="-100 -100 200 200">
-    <circle r="99" pathLength="900" class="dots"></circle>
+    <circle r="99.95" pathLength="900" class="dots"></circle>
   </svg>
 
   {items.map((item, i) => (
@@ -59,7 +58,7 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
       }}
     >
       <div class="float">
-        <Bubble part={item.part} class={`orb ${item.size} ${item.tone}`}>
+        <Bubble part={item.part} class={`orb ${item.size} ring-${item.ring}`}>
           {item.readout && (
             <span class="readout">
               <b
@@ -186,26 +185,29 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     stroke-dasharray: 0.7 59.3;
   }
 
+  /* pontos redondos de uns 4 px em cima da linha do anel 2, correndo no sentido do relógio */
   .dash {
-    stroke: color-mix(in srgb, var(--storage) 30%, var(--dial-tick));
-    stroke-width: 0.3;
-    stroke-dasharray: 0.25 3.75;
-    animation: flow 6s linear infinite;
+    stroke: color-mix(in srgb, var(--storage) 55%, var(--dial-tick));
+    stroke-width: 0.55;
+    stroke-linecap: round;
+    stroke-dasharray: 0.01 3.99;
+    animation: flow 5s linear infinite;
   }
 
   .t2 {
-    width: calc(var(--r2) * 2 + 28 * var(--u));
+    width: calc(var(--r2) * 2);
   }
 
+  /* marcas de uns 10 px cruzando a linha do anel 3, girando ao contrário */
   .dots {
     stroke: var(--dial-tick);
-    stroke-width: 0.5;
-    stroke-dasharray: 0.2 2.8;
+    stroke-width: 1.1;
+    stroke-dasharray: 0.16 2.84;
   }
 
   .t3 {
-    width: calc(var(--r3) * 2 - 30 * var(--u));
-    animation: spin 600s linear infinite reverse;
+    width: calc(var(--r3) * 2);
+    animation: spin 240s linear infinite reverse;
   }
 
   /* arcos que correm por cima dos anéis 1 e 2 */
@@ -246,29 +248,34 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   }
 
   .float :global(.xl) {
-    --s: calc(108 * var(--u));
+    --s: calc(88 * var(--u));
   }
 
   .float :global(.md) {
-    --s: calc(86 * var(--u));
+    --s: calc(76 * var(--u));
   }
 
   .float :global(.sm) {
     --s: calc(58 * var(--u));
   }
 
-  /* anel 1: bolhas cheias na cor da peça */
-  .float :global(.vivid) {
-    border-color: transparent;
-    background: var(--c);
+  /* todas as bolhas: fundo branco e borda na cor da peça, mais forte no anel de dentro */
+  .float :global(.orb) {
+    border: 2px solid color-mix(in srgb, var(--c) var(--edge), var(--paper));
+    background: var(--paper);
     box-shadow: var(--shadow-sm);
-    color: var(--on-ink);
   }
 
-  /* anel 3: tudo em cinza */
-  .float :global(.mono) {
-    box-shadow: var(--shadow-sm);
-    color: var(--soft);
+  .float :global(.ring-1) {
+    --edge: 100%;
+  }
+
+  .float :global(.ring-2) {
+    --edge: 85%;
+  }
+
+  .float :global(.ring-3) {
+    --edge: 70%;
   }
 
   .float :global(.orb:has(.readout) .icon) {
@@ -294,15 +301,6 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   .readout small {
     font: 500 calc(11 * var(--u)) / 1 var(--font-display);
     color: var(--faint);
-  }
-
-  .float :global(.vivid) .readout b,
-  .float :global(.vivid) .readout small {
-    color: var(--on-ink);
-  }
-
-  .float :global(.vivid) .readout small {
-    opacity: 0.8;
   }
 
   @media (max-width: 900px) {
@@ -334,12 +332,12 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
       width: calc(var(--r1) * 2 - 14px);
     }
 
-    .t2 {
-      width: calc(var(--r2) * 2 + 12px);
+    .dash {
+      stroke-width: 2.4;
     }
 
-    .t3 {
-      width: calc(var(--r3) * 2 - 12px);
+    .dots {
+      stroke-width: 4;
     }
 
     .sat {
