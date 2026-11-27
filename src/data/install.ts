@@ -1,4 +1,4 @@
-/** Os três passos da seção Instalar. A tela de cada um fica no componente. */
+/** Os três passos da seção Instalar e o fim, com o app aberto. A tela de cada um fica no componente. */
 export const installSteps = [
   {
     id: "conferir",
@@ -15,6 +15,19 @@ export const installSteps = [
     title: "Escolha os extras",
     text: "Dois extras grátis, já marcados. Desmarque se não quiser.",
   },
+  {
+    id: "pronto",
+    title: "Pronto para usar",
+    text: "O CoreBi abre já lendo os sensores. Sem conta e sem configurar nada.",
+  },
+] as const;
+
+/** O que a janela do app mostra no último passo, quando abre pela primeira vez. */
+export const firstOpen = [
+  { part: "cpu", label: "Processador", value: "52", unit: "°C" },
+  { part: "gpu", label: "Placa de vídeo", value: "44", unit: "°C" },
+  { part: "memory", label: "Memória", value: "7,9", unit: "GB" },
+  { part: "storage", label: "SSD", value: "97", unit: "% de vida" },
 ] as const;
 
 /** Quanto tempo cada passo fica na tela antes de ir para o próximo, em ms. */

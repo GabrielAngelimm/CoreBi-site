@@ -169,10 +169,13 @@ const apps = queue.map((app, i) => ({ ...app, ...cells[i] }));
     transition: filter 0.3s;
   }
 
+  /* o selo de pronto fica com o centro em cima do anel, na posição de 1h30 */
   .ok {
     position: absolute;
-    top: -3px;
-    right: -3px;
+    z-index: 2;
+    left: calc(var(--s) * 0.8536);
+    top: calc(var(--s) * 0.1464);
+    translate: -50% -50%;
     display: grid;
     place-items: center;
     width: 24px;

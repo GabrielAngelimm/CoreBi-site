@@ -8,8 +8,13 @@ import Bubble from "@/components/ui/Bubble.astro";
 import { orbit, rings } from "@/data/hero";
 import { decimal } from "@/lib/format";
 
+/*
+ * A animação aumenta o ângulo; numa peça do lado direito (cos > 0) isso a faz descer.
+ * `back` inverte o começo para cada peça sair no sentido que `start` pede.
+ */
 const items = orbit.map((item) => ({
   ...item,
+  back: Math.cos((item.angle * Math.PI) / 180) > 0 === (item.drift.start === "up"),
   text: item.readout
     ? decimal((item.readout.min + item.readout.max) / 2, item.readout.digits)
     : undefined,
@@ -47,14 +52,12 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
 
   {items.map((item, i) => (
     <div
-      class="sat"
+      class:list={["sat", { back: item.back }]}
       style={{
         "--angle": `${item.angle}deg`,
         "--angle-m": `${item.mobileAngle}deg`,
         "--ring": `var(--r${item.ring})`,
-        "--float": `${item.float.duration}s`,
-        "--delay": `${item.float.delay}s`,
-        "--amp": `${-item.float.amplitude}px`,
+        "--swing": `${((item.drift.swing / rings[item.ring].radius) * (180 / Math.PI)).toFixed(2)}deg`,
       }}
     >
       <div class="float">
@@ -225,19 +228,37 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     animation: spin 48s linear infinite reverse;
   }
 
-  /* peças: girar até o ângulo, andar o raio e desgirar para o ícone ficar em pé */
+  /*
+   * peças: girar até o ângulo, andar o raio e desgirar para o ícone ficar em pé.
+   * --drift soma alguns graus para a peça deslizar pela própria linha, sem sair dela;
+   * as peças alternadas (.back) começam no sentido contrário.
+   */
   .sat {
     --a: var(--angle);
     width: 0;
     height: 0;
-    transform: rotate(var(--a)) translateX(var(--ring)) rotate(calc(-1 * var(--a)));
+    transform: rotate(calc(var(--a) + var(--drift))) translateX(var(--ring))
+      rotate(calc(-1 * (var(--a) + var(--drift))));
+    animation: drift 7s ease-in-out infinite alternate;
+  }
+
+  .sat.back {
+    animation-direction: alternate-reverse;
+  }
+
+  @keyframes drift {
+    from {
+      --drift: calc(-1 * var(--swing));
+    }
+
+    to {
+      --drift: var(--swing);
+    }
   }
 
   .float {
     width: max-content;
     translate: -50% -50%;
-    animation: bob var(--float) ease-in-out infinite;
-    animation-delay: var(--delay);
   }
 
   .float :global(.orb) {
@@ -259,11 +280,18 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     --s: calc(58 * var(--u));
   }
 
-  /* todas as bolhas: fundo branco e borda na cor da peça, mais forte no anel de dentro */
+  /*
+   * todas as bolhas: fundo branco e um aro fino na cor da peça, com um anel claro por dentro
+   * (como o bisel de um mostrador) e sombra curta, para pousar na linha em vez de flutuar
+   */
   .float :global(.orb) {
-    border: 2px solid color-mix(in srgb, var(--c) var(--edge), var(--paper));
+    border: 1.5px solid color-mix(in srgb, var(--c) var(--edge), var(--paper));
     background: var(--paper);
-    box-shadow: var(--shadow-sm);
+    box-shadow:
+      inset 0 0 0 3px var(--paper),
+      inset 0 0 0 4px color-mix(in srgb, var(--c) 10%, var(--paper)),
+      0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent),
+      0 6px 16px -8px color-mix(in srgb, var(--ink) 18%, transparent);
   }
 
   .float :global(.ring-1) {
@@ -271,11 +299,11 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   }
 
   .float :global(.ring-2) {
-    --edge: 85%;
+    --edge: 90%;
   }
 
   .float :global(.ring-3) {
-    --edge: 70%;
+    --edge: 80%;
   }
 
   .float :global(.orb:has(.readout) .icon) {

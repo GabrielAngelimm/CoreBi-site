@@ -27,7 +27,12 @@ export interface OrbitItem {
   /** No celular a órbita fica em volta do ícone do app, então cada peça ganha outro ângulo. */
   readonly mobileAngle: number;
   readonly readout?: Readout;
-  readonly float: { readonly duration: number; readonly delay: number; readonly amplitude: number };
+  /**
+   * A peça anda pela linha do próprio anel, indo e voltando `swing` px (medidos na tela de 1920).
+   * Em volta do mostrador, uma peça sobe enquanto a vizinha desce (`start`), todas no mesmo
+   * ritmo, para o movimento parecer um só.
+   */
+  readonly drift: { readonly start: "up" | "down"; readonly swing: number };
 }
 
 /** Posições escolhidas à mão para parecerem soltas, sem simetria. */
@@ -39,7 +44,7 @@ export const orbit: readonly OrbitItem[] = [
     angle: -150,
     mobileAngle: -150,
     readout: { min: 58, max: 64, digits: 0, unit: "°C" },
-    float: { duration: 7.5, delay: 0, amplitude: 8 },
+    drift: { start: "down", swing: 48 },
   },
   {
     part: "gpu",
@@ -48,7 +53,7 @@ export const orbit: readonly OrbitItem[] = [
     angle: 10,
     mobileAngle: -30,
     readout: { min: 95, max: 98, digits: 0, unit: "%" },
-    float: { duration: 8.4, delay: -1.1, amplitude: 9 },
+    drift: { start: "up", swing: 48 },
   },
   {
     part: "net",
@@ -57,7 +62,7 @@ export const orbit: readonly OrbitItem[] = [
     angle: -18,
     mobileAngle: -64,
     readout: { min: 478, max: 492, digits: 0, unit: "Mbps" },
-    float: { duration: 6.2, delay: -2.2, amplitude: 6 },
+    drift: { start: "up", swing: 52 },
   },
   {
     part: "memory",
@@ -66,7 +71,7 @@ export const orbit: readonly OrbitItem[] = [
     angle: 161,
     mobileAngle: -116,
     readout: { min: 19.4, max: 19.8, digits: 1, unit: "GB" },
-    float: { duration: 6.8, delay: -3.4, amplitude: 7 },
+    drift: { start: "down", swing: 52 },
   },
   {
     part: "storage",
@@ -74,7 +79,7 @@ export const orbit: readonly OrbitItem[] = [
     ring: 3,
     angle: -8,
     mobileAngle: -10,
-    float: { duration: 5.6, delay: -4.1, amplitude: 5 },
+    drift: { start: "down", swing: 56 },
   },
   {
     part: "board",
@@ -82,6 +87,6 @@ export const orbit: readonly OrbitItem[] = [
     ring: 3,
     angle: 199,
     mobileAngle: 190,
-    float: { duration: 9.2, delay: -0.6, amplitude: 6 },
+    drift: { start: "up", swing: 56 },
   },
 ];

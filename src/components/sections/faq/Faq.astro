@@ -21,22 +21,26 @@ import { emphasis } from "@/lib/format";
       </p>
     </header>
 
-    <div class="list" data-faq>
-      {faq.map((item, i) => (
-        <details open={i === 0}>
-          <summary>
-            {item.question}
-            <span class="toggle" aria-hidden="true">
-              <Icon name="plus" />
-            </span>
-          </summary>
-          <div class="answer" data-answer>
-            {item.answer.map((paragraph) => (
-              <p set:html={emphasis(paragraph)} />
-            ))}
-          </div>
-        </details>
-      ))}
+    <div class="list-box" data-faq-box>
+      <div class="list" data-faq>
+        {faq.map((item, i) => (
+          <details open={i === 0}>
+            <summary>
+              {item.question}
+              <span class="toggle" aria-hidden="true">
+                <Icon name="plus" />
+              </span>
+            </summary>
+            <div class="answer" data-answer>
+              <div class="answer-inner">
+                {item.answer.map((paragraph) => (
+                  <p set:html={emphasis(paragraph)} />
+                ))}
+              </div>
+            </div>
+          </details>
+        ))}
+      </div>
     </div>
   </div>
 </Section>
@@ -132,11 +136,18 @@ import { emphasis } from "@/lib/format";
     color: var(--on-ink);
   }
 
+  /*
+   * A altura anima no .answer, que não tem padding; o respiro fica no .answer-inner.
+   * Assim fechar chega a zero de verdade, sem os 24 px que sobravam e pulavam no fim.
+   */
   .answer {
     overflow: hidden;
-    padding: 0 48px 24px 0;
     color: var(--muted);
     font-size: var(--text-base);
+  }
+
+  .answer-inner {
+    padding: 0 48px 24px 0;
   }
 
   .answer p {
@@ -168,7 +179,7 @@ import { emphasis } from "@/lib/format";
       font-size: var(--text-lg);
     }
 
-    .answer {
+    .answer-inner {
       padding-right: 0;
     }
   }

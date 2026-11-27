@@ -1,6 +1,7 @@
 /**
- * Instalar: abas com os três passos. Cada passo fica alguns segundos na tela e passa
- * para o próximo; ao clicar num passo, a troca automática para e a pessoa assume.
+ * Instalar: os três passos e o fim, como pontos numa linha. Cada passo fica alguns segundos
+ * na tela e passa para o próximo; os anteriores ficam marcados como feitos. Ao clicar num
+ * passo, a troca automática para e a pessoa assume.
  * As animações de cada tela são CSS e recomeçam quando a tela volta (classe "playing").
  */
 import { prefersReducedMotion, required, whenVisible } from "@/scripts/motion";
@@ -18,6 +19,7 @@ function show(index: number): void {
   tabs.forEach((tab, i) => {
     const selected = i === index;
     tab.setAttribute("aria-selected", String(selected));
+    tab.classList.toggle("done", i < index);
     tab.tabIndex = selected ? 0 : -1;
   });
   panels.forEach((panel, i) => {
