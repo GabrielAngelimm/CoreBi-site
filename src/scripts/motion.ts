@@ -40,6 +40,43 @@ export function loopWhileVisible(el: Element, tick: () => void, ms: number): voi
   document.addEventListener("visibilitychange", sync);
 }
 
+/**
+ * Chama `play` quando `el` aparece na tela (pelo menos `threshold` dele à vista) e de novo
+ * cada vez que volta depois de ter saído por completo. Com movimento reduzido, nunca chama.
+ */
+export function onEachEntry(el: Element, play: () => void, threshold = 0.4): void {
+  if (prefersReducedMotion()) return;
+  let away = true;
+  new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) away = true;
+        else if (away && entry.intersectionRatio >= threshold) {
+          away = false;
+          play();
+        }
+      }
+    },
+    { threshold: [0, threshold] },
+  ).observe(el);
+}
+
+/**
+ * Repete `tick` a cada `ms`, `times` vezes, e para. Chamar de novo cancela a rodada anterior.
+ * Serve para uma animação ficar viva por alguns segundos e depois descansar.
+ */
+export function burst(): (tick: () => void, ms: number, times: number) => void {
+  let timer: number | undefined;
+  return (tick, ms, times) => {
+    window.clearInterval(timer);
+    let left = times;
+    timer = window.setInterval(() => {
+      tick();
+      if (--left <= 0) window.clearInterval(timer);
+    }, ms);
+  };
+}
+
 /** Anima um número de 0 até o valor, com desaceleração. */
 export function tween(duration: number, frame: (progress: number) => void): Promise<void> {
   return new Promise((resolve) => {

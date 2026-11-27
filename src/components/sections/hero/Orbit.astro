@@ -1,12 +1,19 @@
 ---
 /**
  * O mostrador atrás da abertura: três anéis em volta do ícone do app, cada um girando inteiro
- * com as suas duas peças presas nele, e o vizinho girando ao contrário (anti-horário, horário,
- * anti-horário). O de dentro é o mais colorido, o do meio tem cor média e o de fora é cinza.
- * As bolhas são brancas, só com o ícone e o aro na cor da peça, e ficam sempre em pé.
+ * com as suas três bolhas presas nele, e o vizinho girando ao contrário (anti-horário, horário,
+ * anti-horário). As bolhas são brancas, só com o ícone e o aro na cor da peça, e ficam em pé.
+ *
+ * Cada anel tem um caráter, e tudo o que ele desenha fica em cima da própria linha, para
+ * passar por baixo das bolhas em vez de raspar nelas:
+ * 1. linha colorida: em volta de cada bolha a linha tem a cor da peça e vai se misturando até
+ *    a cor da próxima; doze marcas cruzando a linha, como as horas de um relógio, longe das bolhas
+ * 2. linha nas cores das peças dele, mais clara, com pontos cinza em cima
+ * 3. linha cinza com marcas finas cruzando, como uma régua
  */
 import Bubble from "@/components/ui/Bubble.astro";
-import { orbit, rings, type RingId } from "@/data/hero";
+import { orbit, rings, type OrbitItem, type RingId } from "@/data/hero";
+import { parts } from "@/data/parts";
 
 const ids: readonly RingId[] = [1, 2, 3];
 const layers = ids.map((id) => ({
@@ -21,6 +28,75 @@ const radius = (id: RingId) => ({
   [`--r${id}-m`]: `${rings[id].mobile}px`,
 });
 const vars = { ...radius(1), ...radius(2), ...radius(3) };
+
+const mod = (n: number) => ((n % 360) + 360) % 360;
+
+/**
+ * A cor da linha acompanha as bolhas: cada peça segura a própria cor por `hold` graus de cada
+ * lado e o trecho entre duas peças mistura as duas (em oklab, que passa por tons calmos).
+ * O conic-gradient conta a partir do meio-dia; os ângulos das peças, a partir das 3 horas.
+ */
+function trackColors(items: readonly OrbitItem[], key: "angle" | "mobileAngle", tone: number) {
+  const hold = 10;
+  const stops = items
+    .map((item) => ({
+      at: mod(item[key] + 90),
+      color: item.part
+        ? `color-mix(in srgb, ${parts[item.part].color} ${tone}%, var(--dial-line))`
+        : "var(--dial-line)",
+    }))
+    .sort((x, y) => x.at - y.at);
+  const first = stops[0];
+  if (!first) return "none";
+  const body = stops
+    .map((stop) => {
+      const at = stop.at - first.at;
+      return at === 0
+        ? `${stop.color} 0deg ${hold}deg`
+        : `${stop.color} ${at - hold}deg ${at + hold}deg`;
+    })
+    .join(", ");
+  return `conic-gradient(in oklab from ${first.at}deg, ${body}, ${first.color} ${360 - hold}deg)`;
+}
+
+/**
+ * Marcas do anel 1, de 15 em 15°, cruzando a linha. As que cairiam a menos de 8° de uma
+ * bolha não são desenhadas, então cada bolha ocupa o lugar de uma marca, com folga dos dois lados.
+ * Em unidades do viewBox (o raio do anel é 100); `half` é meio comprimento da marca.
+ */
+function hourMarks(items: readonly OrbitItem[], key: "angle" | "mobileAngle", half: number) {
+  const marks: string[] = [];
+  for (let a = 0; a < 360; a += 15) {
+    const near = items.some((item) => {
+      const d = mod(item[key] - a);
+      return Math.min(d, 360 - d) < 8;
+    });
+    if (near) continue;
+    const rad = (a * Math.PI) / 180;
+    const [c, s] = [Math.cos(rad), Math.sin(rad)];
+    const r0 = 99.8 - half;
+    const r1 = 99.8 + half;
+    marks.push(
+      `M${(c * r0).toFixed(2)} ${(s * r0).toFixed(2)}L${(c * r1).toFixed(2)} ${(s * r1).toFixed(2)}`,
+    );
+  }
+  return marks.join("");
+}
+
+const ring1 = layers[0]?.items ?? [];
+const ring2 = layers[1]?.items ?? [];
+const track = {
+  1: {
+    "--track-d": trackColors(ring1, "angle", 100),
+    "--track-m": trackColors(ring1, "mobileAngle", 100),
+  },
+  2: {
+    "--track-d": trackColors(ring2, "angle", 55),
+    "--track-m": trackColors(ring2, "mobileAngle", 55),
+  },
+  3: {},
+};
+const hours = { d: hourMarks(ring1, "angle", 1.2), m: hourMarks(ring1, "mobileAngle", 3) };
 ---
 
 <div class="dial" aria-hidden="true" data-dial style={vars}>
@@ -32,32 +108,31 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
         "--t": `${layer.seconds}s`,
         "--b-d": `calc(${layer.bubble} * var(--u))`,
         "--b-m": `${layer.bubbleMobile}px`,
+        ...track[layer.id],
       }}
     >
       {layer.id === 1 && (
         <>
-          <span class="ring vivid" />
-          <svg class="ticks t1" viewBox="-100 -100 200 200">
-            <circle r="98" pathLength="720" class="minor" />
-            <circle r="98" pathLength="720" class="major" />
+          <span class="ring track vivid" />
+          <svg class="ticks" viewBox="-100 -100 200 200">
+            <path class="hours hours-d" d={hours.d} />
+            <path class="hours hours-m" d={hours.m} />
           </svg>
-          <span class="sweep s1" />
         </>
       )}
       {layer.id === 2 && (
         <>
-          <span class="ring medium" />
+          <span class="ring track medium" />
           <svg class="ticks" viewBox="-100 -100 200 200">
-            <circle r="99.9" pathLength="480" class="dash" />
+            <circle r="99.9" pathLength="480" class="dots" />
           </svg>
-          <span class="sweep s2" />
         </>
       )}
       {layer.id === 3 && (
         <>
           <span class="ring mono" />
           <svg class="ticks" viewBox="-100 -100 200 200">
-            <circle r="99.95" pathLength="900" class="dots" />
+            <circle r="99.95" pathLength="900" class="rule" />
           </svg>
         </>
       )}
@@ -127,34 +202,38 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     animation-delay: 0s, 0.29s;
   }
 
-  .ring,
-  .sweep {
+  .ring {
     position: absolute;
     inset: 0;
     border-radius: 50%;
   }
 
-  /* anel 1: um traço fino com as cores das peças */
-  .ring.vivid {
-    background: conic-gradient(
-      from 20deg,
-      var(--cpu),
-      var(--signal-hi),
-      var(--net),
-      var(--gpu),
-      var(--memory),
-      var(--storage),
-      var(--cpu)
+  /* anéis 1 e 2: a linha é um conic-gradient recortado num traço fino pela máscara */
+  .layer {
+    --track: var(--track-d);
+  }
+
+  .track {
+    background: var(--track);
+    mask: radial-gradient(
+      farthest-side,
+      transparent calc(100% - var(--w) - 0.5px),
+      #000 calc(100% - var(--w)),
+      #000 calc(100% - 0.5px),
+      transparent
     );
-    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
-    opacity: 0.55;
   }
 
-  .ring.medium {
-    border: 1.5px solid color-mix(in srgb, var(--signal-hi) 26%, var(--dial-tick));
+  .vivid {
+    --w: 2px;
+    opacity: 0.8;
   }
 
-  .ring.mono {
+  .medium {
+    --w: 1.5px;
+  }
+
+  .mono {
     border: 1px solid var(--dial-line);
   }
 
@@ -172,49 +251,30 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     fill: none;
   }
 
-  /* marcas logo por dentro do anel 1 */
-  .t1 {
-    width: calc(100% - 36 * var(--u));
+  /* anel 1: marcas de uns 12 px cruzando a linha, de 15 em 15°, com folga em volta das bolhas */
+  .hours {
+    stroke: var(--dial-major);
+    stroke-width: 0.4;
+    stroke-linecap: round;
   }
 
-  .minor {
-    stroke: var(--dial-mark);
-    stroke-width: 1.2;
-    stroke-dasharray: 0.5 5.5;
+  .hours-m {
+    display: none;
   }
 
-  .major {
-    stroke: var(--dial-mark);
-    stroke-width: 1.8;
-    stroke-dasharray: 0.7 59.3;
-  }
-
-  /* pontos redondos de uns 4 px em cima da linha do anel 2 */
-  .dash {
-    stroke: color-mix(in srgb, var(--storage) 55%, var(--dial-tick));
+  /* anel 2: pontos redondos de uns 4 px em cima da linha */
+  .dots {
+    stroke: color-mix(in srgb, var(--dial-major) 75%, transparent);
     stroke-width: 0.55;
     stroke-linecap: round;
     stroke-dasharray: 0.01 3.99;
   }
 
-  /* marcas de uns 10 px cruzando a linha do anel 3 */
-  .dots {
+  /* anel 3: marcas finas de uns 10 px cruzando a linha, como uma régua */
+  .rule {
     stroke: var(--dial-tick);
     stroke-width: 1.1;
     stroke-dasharray: 0.16 2.84;
-  }
-
-  /* um trecho mais forte em cada anel colorido, que mostra o giro */
-  .sweep {
-    border: 2px solid transparent;
-  }
-
-  .s1 {
-    border-top-color: var(--signal-hi);
-  }
-
-  .s2 {
-    border-top-color: color-mix(in srgb, var(--storage) 55%, transparent);
   }
 
   /* peças: do centro do anel, girar até o ângulo, andar o raio e desgirar */
@@ -315,15 +375,27 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
       --b: var(--b-m);
     }
 
-    .t1 {
-      width: calc(100% - 14px);
+    .layer {
+      --track: var(--track-m);
     }
 
-    .dash {
-      stroke-width: 2.4;
+    .hours {
+      stroke-width: 1.5;
+    }
+
+    .hours-d {
+      display: none;
+    }
+
+    .hours-m {
+      display: inline;
     }
 
     .dots {
+      stroke-width: 2.4;
+    }
+
+    .rule {
       stroke-width: 4;
     }
 

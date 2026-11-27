@@ -12,7 +12,7 @@ const path = "M30 140 A80 80 0 1 1 170 140";
 ---
 
 <FeatureTile {...features.storage} class={Astro.props.class}>
-  <div class="gauge">
+  <div class="gauge" data-storage>
     <svg viewBox="0 0 200 160" role="img" aria-label={`Vida útil de ${life} %`}>
       <defs>
         <mask id="storage-life" maskUnits="userSpaceOnUse">
@@ -22,8 +22,10 @@ const path = "M30 140 A80 80 0 1 1 170 140";
       <path class="track" d={path}></path>
       <path class="value" d={path} mask="url(#storage-life)"></path>
       <text x="100" y="112" class="big">
-        {life}
-        <tspan dx="3">%</tspan>
+        <tspan data-life>{life}</tspan>
+        <tspan dx="3" class="unit">
+          %
+        </tspan>
       </text>
       <text x="100" y="136" class="caption">
         vida útil restante
@@ -33,11 +35,15 @@ const path = "M30 140 A80 80 0 1 1 170 140";
   <TileStats
     slot="foot"
     items={[
-      { label: "Já escrito", value: "18,4", unit: "TB" },
-      { label: "Temperatura", value: "41", unit: "°C" },
+      { label: "Já escrito", value: "18,4", unit: "TB", hook: "written" },
+      { label: "Temperatura", value: "41", unit: "°C", hook: "temp" },
     ]}
   />
 </FeatureTile>
+
+<script>
+  import "./storage.client";
+</script>
 
 <style>
   .gauge {
@@ -75,6 +81,21 @@ const path = "M30 140 A80 80 0 1 1 170 140";
     stroke-dasharray: var(--reach);
   }
 
+  /* ao aparecer, os segmentos acendem do zero até a vida útil, e então param */
+  :global(.armed) .reach {
+    stroke-dasharray: 0 100;
+  }
+
+  :global(.play) .reach {
+    animation: reach 1.6s var(--ease-out) both;
+  }
+
+  @keyframes reach {
+    from {
+      stroke-dasharray: 0 100;
+    }
+  }
+
   text {
     text-anchor: middle;
   }
@@ -84,7 +105,7 @@ const path = "M30 140 A80 80 0 1 1 170 140";
     fill: var(--ink);
   }
 
-  .big tspan {
+  .big .unit {
     font-size: var(--text-xl);
     fill: var(--faint);
   }

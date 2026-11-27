@@ -63,6 +63,27 @@ const { release } = Astro.props;
     scroll-snap-align: start;
   }
 
+  /*
+   * pontinhos bem leves, centrados no mostrador e sumindo para fora, como a tela de um radar;
+   * ficam fixos enquanto os anéis giram por cima
+   */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image: radial-gradient(circle, var(--dial-line) 1px, transparent 1.3px);
+    background-position: center;
+    background-size: 24px 24px;
+    mask-image: radial-gradient(
+      circle at 50% 50%,
+      #000 0 28%,
+      rgb(0 0 0 / 50%) 62%,
+      transparent 96%
+    );
+    opacity: 0.9;
+  }
+
   /* fade para a próxima seção */
   .hero::after {
     content: "";

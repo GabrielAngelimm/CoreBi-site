@@ -1,25 +1,55 @@
-/** Rede: as barras de latência variam e as velocidades contam até o valor ao aparecer. */
-import { loopWhileVisible, onceVisible, random, required, tween } from "@/scripts/motion";
+/**
+ * Rede: quando o cartão aparece, as barras sobem do chão uma depois da outra, variam por
+ * alguns segundos e param; as velocidades contam até o valor. Repete ao voltar para a seção.
+ */
+import {
+  burst,
+  onEachEntry,
+  prefersReducedMotion,
+  random,
+  required,
+  tween,
+} from "@/scripts/motion";
 
-const bars = required(document, "[data-network]");
-const tile = bars.closest("article") ?? bars;
+const root = required(document, "[data-network]");
+const tile = root.closest("article") ?? root;
+const bars = [...root.children] as HTMLElement[];
+const stats = [...tile.querySelectorAll<HTMLElement>("[data-stat]")].map((el) => ({
+  el,
+  target: Number(el.textContent),
+}));
+const LIVE_TICKS = 4;
 
-loopWhileVisible(
-  bars,
+function vary(): void {
+  for (const bar of bars) {
+    bar.style.height = `${bar.classList.contains("up") ? random(20, 65) : random(30, 100)}%`;
+  }
+}
+
+function floor(): void {
+  for (const bar of bars) bar.style.height = "0%";
+}
+
+const live = burst();
+// com JavaScript o cartão espera zerado até aparecer, para a contagem não piscar do valor final
+if (!prefersReducedMotion()) {
+  floor();
+  for (const { el } of stats) el.textContent = "0";
+}
+onEachEntry(
+  tile,
   () => {
-    for (const bar of bars.children as HTMLCollectionOf<HTMLElement>) {
-      const up = bar.classList.contains("up");
-      bar.style.height = `${up ? random(20, 65) : random(30, 100)}%`;
+    floor();
+    void root.getBoundingClientRect();
+    bars.forEach((bar, i) => (bar.style.transitionDelay = `${i * 18}ms`));
+    vary();
+    window.setTimeout(() => {
+      for (const bar of bars) bar.style.transitionDelay = "";
+      live(vary, 1100, LIVE_TICKS);
+    }, 1100);
+    for (const { el, target } of stats) {
+      void tween(1400, (k) => (el.textContent = String(Math.round(target * k))));
     }
   },
-  1100,
+  0.5,
 );
-
-for (const el of tile.querySelectorAll<HTMLElement>("[data-stat]")) {
-  const target = Number(el.textContent);
-  onceVisible(
-    el,
-    () => void tween(1400, (k) => (el.textContent = String(Math.round(target * k)))),
-    0.6,
-  );
-}

@@ -86,6 +86,21 @@ const grid = "M0 10H600M0 63H600M0 116H600M0 169H600";
     vector-effect: non-scaling-stroke;
   }
 
+  /* ao aparecer, a curva se desenha da esquerda para a direita */
+  :global(.armed) .trace {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  :global(.play) .trace {
+    animation: wipe 1.2s var(--ease-out) both;
+  }
+
+  @keyframes wipe {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+
   .axis {
     display: flex;
     justify-content: space-between;
