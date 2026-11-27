@@ -12,7 +12,7 @@ import PhoneSection from "./PhoneSection.astro";
 
 // ---- sensores: um minuto da temperatura do processador, um ponto por segundo ----
 const W = 300;
-const H = 84;
+const H = 72;
 const LOW = 50;
 const HIGH = 70;
 const temps = Array.from(
@@ -213,7 +213,7 @@ const bars = Array.from({ length: 32 }, (_, i) => ({
     flex: 1;
     flex-direction: column;
     justify-content: center;
-    min-height: 108px;
+    min-height: 96px;
     padding: 12px var(--pad);
   }
 
@@ -283,7 +283,7 @@ const bars = Array.from({ length: 32 }, (_, i) => ({
 
   /* ---- SSD ---- */
   .storage svg {
-    width: min(100%, 150px);
+    width: min(100%, 136px);
     margin: 0 auto;
   }
 
@@ -339,7 +339,7 @@ const bars = Array.from({ length: 32 }, (_, i) => ({
     display: flex;
     align-items: flex-end;
     gap: 3px;
-    height: 84px;
+    height: 72px;
   }
 
   .bars i {

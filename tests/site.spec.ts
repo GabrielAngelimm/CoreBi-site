@@ -207,8 +207,12 @@ test.describe("versão do celular", () => {
       await page.evaluate(() => document.fonts.ready);
       const tall = await page.evaluate(() =>
         [...document.querySelectorAll<HTMLElement>(".phone-site section")]
-          .filter((s) => s.getBoundingClientRect().height > window.innerHeight + 1)
-          .map((s) => s.id),
+          .map((s) => ({
+            id: s.id,
+            over: Math.ceil(s.getBoundingClientRect().height - innerHeight),
+          }))
+          .filter((s) => s.over > 1)
+          .map((s) => `${s.id} +${s.over}px`),
       );
       expect(tall, `${width}x${height}`).toEqual([]);
       expect(await horizontalOverflow(page), `${width}x${height}`).toBeLessThanOrEqual(0);

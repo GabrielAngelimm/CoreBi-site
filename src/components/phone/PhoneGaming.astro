@@ -292,12 +292,18 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
 
   .scores {
     display: grid;
-    gap: 12px;
+    gap: 16px;
     margin: 0;
   }
 
+  /* rótulo, barra e pontos numa linha só */
+  .row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    align-items: center;
+  }
+
   .row dt {
-    margin-bottom: 6px;
     font: 500 var(--text-sm)/1 var(--font-display);
     color: var(--night-faint);
   }
@@ -373,7 +379,7 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
     }
 
     .scene {
-      min-height: 140px;
+      min-height: 136px;
     }
 
     .bench {
@@ -386,6 +392,12 @@ const width = (score: number) => `${((score / top) * 100).toFixed(1)}%`;
 
     .gain b {
       font-size: var(--num-md);
+    }
+  }
+
+  @media (max-width: 370px) and (max-height: 720px) {
+    .scene {
+      min-height: 148px;
     }
   }
 </style>

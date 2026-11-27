@@ -48,15 +48,15 @@ const { release } = Astro.props;
 <style>
   .phone-site {
     /* espaço do cabeçalho fixo no topo de cada tela, e a folga no pé dela */
-    --m-top: calc(env(safe-area-inset-top, 0px) + 80px);
-    --m-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    --m-top: calc(env(safe-area-inset-top, 0px) + 76px);
+    --m-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
   }
 
   /* telas baixas: cabeçalho mais baixo (veja PhoneHeader) e menos folga no pé */
   @media (max-height: 620px) {
     .phone-site {
       --m-top: calc(env(safe-area-inset-top, 0px) + 68px);
-      --m-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+      --m-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
     }
   }
 </style>
