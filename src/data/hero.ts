@@ -1,92 +1,82 @@
+import type { IconName } from "@/components/ui/icons";
 import type { Part } from "./parts";
-
-/** Uma leitura ao vivo dentro da bolha, que varia entre `min` e `max`. */
-export interface Readout {
-  readonly min: number;
-  readonly max: number;
-  readonly digits: 0 | 1;
-  readonly unit: string;
-}
 
 /** Os três anéis da abertura, de dentro para fora: o primeiro colorido, o último em cinza. */
 export type RingId = 1 | 2 | 3;
 export type RingTone = "vivid" | "medium" | "mono";
 
-export const rings: Readonly<Record<RingId, { radius: number; mobile: number; tone: RingTone }>> = {
-  1: { radius: 500, mobile: 100, tone: "vivid" },
-  2: { radius: 700, mobile: 134, tone: "medium" },
-  3: { radius: 900, mobile: 166, tone: "mono" },
+/**
+ * Cada anel gira inteiro, com as peças presas nele, e o vizinho gira ao contrário: o de dentro
+ * no sentido anti-horário, o do meio no horário, o de fora no anti-horário. As voltas são mais
+ * longas por fora para que tudo ande na mesma velocidade na tela (uns 12 px/s em 1920).
+ * `bubble` é o diâmetro das peças daquele anel, também em px de uma tela de 1920.
+ */
+export interface Ring {
+  readonly radius: number;
+  readonly mobile: number;
+  readonly tone: RingTone;
+  readonly turn: "left" | "right";
+  readonly seconds: number;
+  readonly bubble: number;
+  readonly bubbleMobile: number;
+}
+
+export const rings: Readonly<Record<RingId, Ring>> = {
+  1: {
+    radius: 500,
+    mobile: 100,
+    tone: "vivid",
+    turn: "left",
+    seconds: 260,
+    bubble: 62,
+    bubbleMobile: 40,
+  },
+  2: {
+    radius: 700,
+    mobile: 134,
+    tone: "medium",
+    turn: "right",
+    seconds: 360,
+    bubble: 54,
+    bubbleMobile: 36,
+  },
+  3: {
+    radius: 900,
+    mobile: 166,
+    tone: "mono",
+    turn: "left",
+    seconds: 470,
+    bubble: 46,
+    bubbleMobile: 32,
+  },
 };
 
-/** Uma peça num anel. Ângulo em graus (0° às 3 horas, sentido horário). */
+/**
+ * Uma bolha presa num anel: uma peça do PC (com a cor dela) ou uma ferramenta do app (na cor
+ * do CoreBi). Ângulo em graus (0° às 3 horas, sentido horário) no começo da volta.
+ */
 export interface OrbitItem {
-  readonly part: Part;
-  readonly size: "xl" | "md" | "sm";
+  readonly part?: Part;
+  readonly icon?: IconName;
   readonly ring: RingId;
   readonly angle: number;
   /** No celular a órbita fica em volta do ícone do app, então cada peça ganha outro ângulo. */
   readonly mobileAngle: number;
-  readonly readout?: Readout;
-  /**
-   * A peça anda pela linha do próprio anel, indo e voltando `swing` px (medidos na tela de 1920).
-   * Em volta do mostrador, uma peça sobe enquanto a vizinha desce (`start`), todas no mesmo
-   * ritmo, para o movimento parecer um só.
-   */
-  readonly drift: { readonly start: "up" | "down"; readonly swing: number };
 }
 
-/** Posições escolhidas à mão para parecerem soltas, sem simetria. */
+/**
+ * Três bolhas por anel, a uns 120° uma da outra, para sempre haver algumas na tela enquanto
+ * os anéis giram: dentro as peças principais, no meio o resto do PC, fora as ferramentas.
+ * As posições de partida põem duas de cada anel à vista, entrando na tela, e uma escondida.
+ */
 export const orbit: readonly OrbitItem[] = [
-  {
-    part: "cpu",
-    size: "xl",
-    ring: 1,
-    angle: -150,
-    mobileAngle: -150,
-    readout: { min: 58, max: 64, digits: 0, unit: "°C" },
-    drift: { start: "down", swing: 48 },
-  },
-  {
-    part: "gpu",
-    size: "xl",
-    ring: 1,
-    angle: 10,
-    mobileAngle: -30,
-    readout: { min: 95, max: 98, digits: 0, unit: "%" },
-    drift: { start: "up", swing: 48 },
-  },
-  {
-    part: "net",
-    size: "md",
-    ring: 2,
-    angle: -18,
-    mobileAngle: -64,
-    readout: { min: 478, max: 492, digits: 0, unit: "Mbps" },
-    drift: { start: "up", swing: 52 },
-  },
-  {
-    part: "memory",
-    size: "md",
-    ring: 2,
-    angle: 161,
-    mobileAngle: -116,
-    readout: { min: 19.4, max: 19.8, digits: 1, unit: "GB" },
-    drift: { start: "down", swing: 52 },
-  },
-  {
-    part: "storage",
-    size: "sm",
-    ring: 3,
-    angle: -8,
-    mobileAngle: -10,
-    drift: { start: "down", swing: 56 },
-  },
-  {
-    part: "board",
-    size: "sm",
-    ring: 3,
-    angle: 199,
-    mobileAngle: 190,
-    drift: { start: "up", swing: 56 },
-  },
+  { part: "cpu", ring: 1, angle: -150, mobileAngle: -150 },
+  { part: "gpu", ring: 1, angle: 25, mobileAngle: -30 },
+  { part: "memory", ring: 1, angle: 100, mobileAngle: 90 },
+  { part: "storage", ring: 2, angle: -25, mobileAngle: -64 },
+  { part: "board", ring: 2, angle: 150, mobileAngle: -116 },
+  { part: "net", ring: 2, angle: -105, mobileAngle: 150 },
+  { icon: "gauge", ring: 3, angle: 2, mobileAngle: -10 },
+  { icon: "overlay", ring: 3, angle: 186, mobileAngle: 190 },
+  { icon: "bag", ring: 3, angle: 95, mobileAngle: -90 },
 ];

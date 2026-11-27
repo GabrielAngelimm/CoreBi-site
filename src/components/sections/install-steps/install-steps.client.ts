@@ -23,7 +23,8 @@ function show(index: number): void {
     tab.tabIndex = selected ? 0 : -1;
   });
   panels.forEach((panel, i) => {
-    panel.hidden = i !== index;
+    panel.classList.toggle("current", i === index);
+    panel.inert = i !== index;
     panel.classList.remove("playing");
   });
   const panel = panels[index];

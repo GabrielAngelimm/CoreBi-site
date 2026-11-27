@@ -17,6 +17,23 @@ const { installer } = Astro.props.release;
 const command = `Get-FileHash .\\${installer.name}`;
 const folder = "C:\\Users\\voce\\Downloads";
 const hash = installer.sha256;
+
+// passo 4: o menu do app, os segmentos de cada medidor e a curva do processador desde que abriu
+const appMenu = [
+  { icon: "gauge", label: "Visão geral" },
+  { icon: "cpu", label: "Sensores" },
+  { icon: "gpu", label: "Placa de vídeo" },
+  { icon: "storage", label: "Armazenamento" },
+  { icon: "net", label: "Rede" },
+] as const;
+const METER = 10;
+const TRACE_W = 300;
+const TRACE_H = 56;
+const trace = Array.from({ length: 61 }, (_, i) => {
+  const t = 41 + 11 * (1 - Math.exp(-i / 14)) + Math.sin(i * 1.7) * 0.6 + Math.sin(i * 0.43) * 0.5;
+  const y = TRACE_H - ((t - 36) / (56 - 36)) * TRACE_H;
+  return `${i ? "L" : "M"}${((i / 60) * TRACE_W).toFixed(1)} ${y.toFixed(1)}`;
+}).join("");
 ---
 
 <Section id="instalar" label="install-title">
@@ -46,9 +63,7 @@ const hash = installer.sha256;
             </span>
             <span class="tab-text">
               <b>{step.title}</b>
-              <span class="more">
-                <span>{step.text}</span>
-              </span>
+              <span class="desc">{step.text}</span>
             </span>
             {i < installSteps.length - 1 && <span class="seg" aria-hidden="true"></span>}
           </button>
@@ -58,7 +73,7 @@ const hash = installer.sha256;
       <div class="stage">
         <!-- 1. conferir o arquivo -->
         <div
-          class="panel playing"
+          class="panel current playing"
           role="tabpanel"
           id="panel-conferir"
           aria-labelledby="tab-conferir"
@@ -114,7 +129,7 @@ const hash = installer.sha256;
           id="panel-aviso"
           aria-labelledby="tab-aviso"
           data-panel
-          hidden
+          inert
         >
           <div class="smartscreen" aria-hidden="true">
             <b class="ss-title">O Windows protegeu o computador</b>
@@ -146,7 +161,7 @@ const hash = installer.sha256;
           id="panel-extras"
           aria-labelledby="tab-extras"
           data-panel
-          hidden
+          inert
         >
           <WindowFrame title="Instalação do CoreBi" class="win">
             <div class="setup">
@@ -185,25 +200,34 @@ const hash = installer.sha256;
           id="panel-pronto"
           aria-labelledby="tab-pronto"
           data-panel
-          hidden
+          inert
         >
           <WindowFrame title="CoreBi" class="win">
             <div class="app" aria-hidden="true">
               <nav class="side">
-                <Logo class="side-logo" />
-                {(["cpu", "gpu", "storage", "net", "board"] as const).map((p, i) => (
-                  <span class:list={{ on: i === 0 }} style={`--c:${parts[p].color}`}>
-                    <Icon name={parts[p].icon} />
+                <span class="brand">
+                  <Logo class="side-logo" />
+                  CoreBi
+                </span>
+                {appMenu.map((item, i) => (
+                  <span class:list={["item", { on: i === 0 }]}>
+                    <Icon name={item.icon} />
+                    {item.label}
                   </span>
                 ))}
               </nav>
               <div class="main">
-                <b class="app-title">Visão geral</b>
-                <span class="app-sub">Ryzen 7 5700X · RTX 4060 Ti · 32 GB</span>
-                <div class="reads">
+                <div class="head">
+                  <span>
+                    <b class="app-title">Visão geral</b>
+                    <span class="app-sub">Ryzen 7 5700X · RTX 4060 Ti · 32 GB</span>
+                  </span>
+                  <span class="stamp">Lido às 21:04</span>
+                </div>
+                <div class="band">
                   {firstOpen.map((r, i) => (
-                    <div style={`--c:${parts[r.part].color};--i:${i}`}>
-                      <span>
+                    <div class="read" style={`--c:${parts[r.part].color};--i:${i}`}>
+                      <span class="read-label">
                         <Icon name={parts[r.part].icon} />
                         {r.label}
                       </span>
@@ -211,18 +235,29 @@ const hash = installer.sha256;
                         {r.value}
                         <small>{r.unit}</small>
                       </b>
+                      <span class="meter">
+                        {Array.from({ length: METER }, (_, k) => (
+                          <i
+                            class:list={{ lit: k < Math.round(r.meter * METER) }}
+                            style={`--k:${k}`}
+                          />
+                        ))}
+                      </span>
                     </div>
                   ))}
+                </div>
+                <div class="trace">
+                  <span class="read-label">
+                    Processador nos últimos 60 s<span class="num">41 a 52 °C</span>
+                  </span>
+                  <svg viewBox={`0 0 ${TRACE_W} ${TRACE_H}`} preserveAspectRatio="none">
+                    <path class="trace-area" d={`${trace}L${TRACE_W} ${TRACE_H}L0 ${TRACE_H}Z`} />
+                    <path class="trace-line" d={trace} />
+                  </svg>
                 </div>
               </div>
             </div>
           </WindowFrame>
-          <p class="note ready">
-            <span class="match">
-              <Icon name="check" />
-            </span>
-            Instalado. Os sensores já estão aparecendo.
-          </p>
         </div>
       </div>
     </div>
@@ -365,48 +400,43 @@ const hash = installer.sha256;
     color: var(--ink);
   }
 
-  /* o texto do passo abre pela altura real, sem pular */
-  .more {
-    display: grid;
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transition:
-      grid-template-rows 0.4s var(--ease-out),
-      opacity 0.3s;
-  }
-
-  .more > span {
-    min-height: 0;
-    overflow: hidden;
+  /*
+   * o texto de todos os passos fica sempre à vista, então a lista nunca muda de altura;
+   * só a cor diz qual é o passo da vez
+   */
+  .desc {
+    display: block;
     padding-top: 8px;
     font-size: var(--text-base);
     line-height: 1.5;
+    color: var(--faint);
+    text-wrap: pretty;
+    transition: color 0.3s;
+  }
+
+  .tab[aria-selected="true"] .desc {
     color: var(--muted);
-    text-wrap: balance;
   }
 
-  .tab[aria-selected="true"] .more {
-    grid-template-rows: 1fr;
-    opacity: 1;
-  }
-
-  /* palco à direita: uma tela por passo */
+  /*
+   * palco à direita: as quatro telas ficam empilhadas na mesma célula, então o palco tem
+   * sempre a altura da maior e nada em volta se mexe; a troca é só um cruzamento de opacidade
+   */
   .stage {
     display: grid;
-    min-height: 430px;
     align-items: center;
   }
 
   .panel {
     grid-area: 1 / 1;
-    animation: panel-in 0.45s var(--ease-out);
+    transition:
+      opacity 0.4s var(--ease-out),
+      visibility 0.4s;
   }
 
-  @keyframes panel-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
+  .panel:not(.current) {
+    visibility: hidden;
+    opacity: 0;
   }
 
   .panel :global(.win) {
@@ -757,50 +787,76 @@ const hash = installer.sha256;
     }
   }
 
-  /* passo 4: a janela do app abre e as leituras entram uma a uma */
+  /* passo 4: o app aberto pela primeira vez, igual ao de verdade: menu à esquerda e a visão geral */
   .app {
     display: grid;
-    grid-template-columns: 64px 1fr;
-    min-height: 300px;
+    grid-template-columns: 176px minmax(0, 1fr);
   }
 
   .side {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 0;
+    gap: 4px;
+    padding: 16px 12px;
     border-right: 1px solid var(--line);
     background: var(--paper-soft);
   }
 
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 8px;
+    font: 500 var(--text-md)/1 var(--font-display);
+    color: var(--ink);
+  }
+
   .side :global(.side-logo) {
-    width: 26px;
-    height: 26px;
-    margin: 4px 0 12px;
-  }
-
-  .side span {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    color: var(--faint);
-  }
-
-  .side span.on {
-    background: var(--night-signal);
-    color: var(--on-ink);
-  }
-
-  .side :global(.icon) {
     width: 20px;
     height: 20px;
   }
 
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font: 500 var(--text-sm)/1 var(--font-display);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .item :global(.icon) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--faint);
+  }
+
+  .item.on {
+    background: var(--night-signal);
+    color: var(--on-ink);
+  }
+
+  .item.on :global(.icon) {
+    color: currentColor;
+  }
+
   .main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     padding: 24px;
+    background: var(--bg);
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
   }
 
   .app-title {
@@ -816,35 +872,49 @@ const hash = installer.sha256;
     color: var(--faint);
   }
 
-  .main .reads {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 24px;
+  .stamp {
+    flex: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--tint);
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--muted);
   }
 
-  .main .reads div {
-    padding: 16px;
+  /* as quatro leituras numa faixa só, cada uma com um medidor em segmentos, como no app */
+  .band {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--paper);
   }
 
-  .main .reads span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font: 500 var(--text-sm)/1 var(--font-display);
-    color: var(--faint);
+  .read {
+    padding: 16px;
   }
 
-  .main .reads :global(.icon) {
-    width: 18px;
-    height: 18px;
+  .read + .read {
+    border-left: 1px solid var(--line);
+  }
+
+  .read-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 var(--text-xs)/1 var(--font-display);
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .read-label :global(.icon) {
+    flex: none;
+    width: 16px;
+    height: 16px;
     color: var(--c);
   }
 
-  .main .reads b {
+  .read b {
     display: flex;
     align-items: baseline;
     gap: 4px;
@@ -853,24 +923,92 @@ const hash = installer.sha256;
     color: var(--ink);
   }
 
-  .main .reads small {
-    font: 500 var(--text-md)/1 var(--font-display);
+  .read small {
+    font: 500 var(--text-sm)/1 var(--font-display);
     color: var(--faint);
   }
 
-  /* a janela já vem desenhada; os números chegam em sequência, como a primeira leitura */
-  .playing .main .reads b {
-    animation: show 0.4s calc(0.5s + var(--i) * 0.18s) both;
+  .meter {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
+    margin-top: 12px;
   }
 
-  .ready {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  .meter i {
+    height: 6px;
+    border-radius: 1px;
+    background: var(--line);
   }
 
-  .playing .ready {
-    animation: show 0.4s 1.4s both;
+  .meter i.lit {
+    background: var(--c);
+  }
+
+  .trace {
+    padding: 16px 16px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+  }
+
+  .trace .read-label {
+    justify-content: space-between;
+  }
+
+  .trace .num {
+    color: var(--muted);
+  }
+
+  .trace svg {
+    display: block;
+    width: 100%;
+    height: 56px;
+    margin-top: 12px;
+    overflow: visible;
+  }
+
+  .trace path {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .trace-line {
+    fill: none;
+    stroke: var(--cpu);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  .trace-area {
+    fill: var(--cpu-soft);
+  }
+
+  /*
+   * a janela já vem desenhada e as leituras chegam: os números aparecem um a um, os
+   * medidores acendem segmento por segmento e a curva se desenha da esquerda para a direita
+   */
+  .playing .read b {
+    animation: show 0.4s calc(0.3s + var(--i) * 0.14s) both;
+  }
+
+  .playing .meter i.lit {
+    animation: lit 0.2s calc(0.45s + var(--i) * 0.14s + var(--k) * 0.035s) both;
+  }
+
+  @keyframes lit {
+    from {
+      background: var(--line);
+    }
+  }
+
+  .playing .trace svg {
+    animation: wipe 1.6s 0.6s var(--ease-out) both;
+  }
+
+  @keyframes wipe {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
   }
 
   @media (max-width: 1100px) {
@@ -892,12 +1030,44 @@ const hash = installer.sha256;
 
     .tab::before,
     .seg,
-    .more {
+    .desc {
       display: none;
     }
+  }
 
-    .stage {
-      min-height: 0;
+  @media (max-width: 760px) {
+    .app {
+      grid-template-columns: 56px minmax(0, 1fr);
+    }
+
+    .brand,
+    .item {
+      justify-content: center;
+      font-size: 0;
+    }
+
+    .brand {
+      margin: 0 0 12px;
+    }
+
+    .item {
+      padding: 0;
+    }
+
+    .band {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .read:nth-child(3) {
+      border-left: 0;
+    }
+
+    .read:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+
+    .stamp {
+      display: none;
     }
   }
 

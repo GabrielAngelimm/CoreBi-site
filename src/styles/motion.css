@@ -6,12 +6,6 @@
   inherits: true;
   initial-value: 0;
 }
-/* graus que as peças da abertura deslizam pela linha do anel */
-@property --drift {
-  syntax: "<angle>";
-  inherits: true;
-  initial-value: 0deg;
-}
 
 @keyframes spin {
   to {

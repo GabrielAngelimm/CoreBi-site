@@ -1,6 +1,8 @@
 /**
  * Teste de carga: o gráfico se desenha da esquerda para a direita, um passo a cada 50 ms.
- * Quando acaba (ou bate no limite), espera um pouco e passa para o outro PC.
+ * Ao chegar na seção, roda uma vez o PC com cooler bom, espera um pouco, roda o de cooler
+ * fraco e para no resultado dele (o teste interrompido no limite, que é o que a seção conta).
+ * Só recomeça quando a pessoa sai da seção e volta, ou quando escolhe um PC no botão.
  */
 import { scenarios, stress } from "@/data/stress";
 import { clock, decimal } from "@/lib/format";
@@ -21,7 +23,7 @@ const buttons = [...card.querySelectorAll<HTMLButtonElement>("[data-scenario]")]
 const { min, max, cut, steps, start } = stress;
 const W = 600;
 const H = 220;
-const HOLD = 60; // passos parado no resultado antes de trocar de PC (3 s)
+const HOLD = 60; // passos parado no resultado antes de passar para o outro PC (3 s)
 
 const x = (step: number) => (step / steps) * W;
 const y = (t: number) => H - ((t - min) / (max - min)) * H;
@@ -33,6 +35,8 @@ let step = 0;
 let hold = 0;
 let cpu: number[] = [];
 let gpu: number[] = [];
+let auto = true; // na sequência sozinha; um clique roda só o PC escolhido
+let finished = false;
 
 function say(kind: "" | "ok" | "stop", text: string): void {
   message.className = `message ${kind}`.trim();
@@ -44,6 +48,7 @@ function pick(index: number): void {
   current = index;
   step = 0;
   hold = 0;
+  finished = false;
   cpu = [];
   gpu = [];
   for (const b of buttons)
@@ -72,8 +77,11 @@ function draw(): void {
 }
 
 function tick(): void {
+  if (finished) return;
   if (hold > 0) {
-    if (--hold === 0) pick((current + 1) % scenarios.length);
+    if (--hold > 0) return;
+    if (auto && current < scenarios.length - 1) pick(current + 1);
+    else finished = true;
     return;
   }
   const s = scenarios[current] ?? scenarios[0];
@@ -104,21 +112,23 @@ function tick(): void {
 // com movimento reduzido o clique mostra o resultado do teste inteiro de uma vez
 for (const b of buttons) {
   b.addEventListener("click", () => {
+    auto = false;
     pick(Number(b.dataset["scenario"]));
     if (prefersReducedMotion()) while (hold === 0) tick();
   });
 }
 
-// sem movimento reduzido, a demonstração começa do zero quando o cartão aparece
-let started = false;
-loopWhileVisible(
-  card,
-  () => {
-    if (!started) {
-      started = true;
+// a sequência começa do zero quando o cartão aparece pela primeira vez ou depois de sair da tela
+if (!prefersReducedMotion()) {
+  let away = true;
+  new IntersectionObserver((entries) => {
+    const visible = entries.some((e) => e.isIntersecting);
+    if (visible && away) {
+      auto = true;
       pick(0);
     }
-    tick();
-  },
-  50,
-);
+    away = !visible;
+  }).observe(card);
+}
+
+loopWhileVisible(card, tick, 50);

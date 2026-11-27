@@ -1,27 +1,22 @@
 ---
 /**
- * O mostrador atrás da abertura: três anéis bem espaçados em volta do ícone do app.
- * O de dentro é o mais colorido, o do meio tem cor média e o de fora é cinza.
- * Cada anel leva duas peças em posições soltas: bolhas brancas com a borda na cor da peça.
+ * O mostrador atrás da abertura: três anéis em volta do ícone do app, cada um girando inteiro
+ * com as suas duas peças presas nele, e o vizinho girando ao contrário (anti-horário, horário,
+ * anti-horário). O de dentro é o mais colorido, o do meio tem cor média e o de fora é cinza.
+ * As bolhas são brancas, só com o ícone e o aro na cor da peça, e ficam sempre em pé.
  */
 import Bubble from "@/components/ui/Bubble.astro";
-import { orbit, rings } from "@/data/hero";
-import { decimal } from "@/lib/format";
+import { orbit, rings, type RingId } from "@/data/hero";
 
-/*
- * A animação aumenta o ângulo; numa peça do lado direito (cos > 0) isso a faz descer.
- * `back` inverte o começo para cada peça sair no sentido que `start` pede.
- */
-const items = orbit.map((item) => ({
-  ...item,
-  back: Math.cos((item.angle * Math.PI) / 180) > 0 === (item.drift.start === "up"),
-  text: item.readout
-    ? decimal((item.readout.min + item.readout.max) / 2, item.readout.digits)
-    : undefined,
+const ids: readonly RingId[] = [1, 2, 3];
+const layers = ids.map((id) => ({
+  id,
+  ...rings[id],
+  items: orbit.filter((item) => item.ring === id),
 }));
 
 // raio de cada anel no computador (-d) e no celular (-m); o CSS escolhe qual vale em --rN
-const radius = (id: 1 | 2 | 3) => ({
+const radius = (id: RingId) => ({
   [`--r${id}-d`]: `calc(${rings[id].radius} * var(--u))`,
   [`--r${id}-m`]: `${rings[id].mobile}px`,
 });
@@ -29,55 +24,55 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
 ---
 
 <div class="dial" aria-hidden="true" data-dial style={vars}>
-  <!-- anel 1: colorido, com as marcas finas e um arco que corre -->
-  <span class="ring vivid"></span>
-  <svg class="ticks t1" viewBox="-100 -100 200 200">
-    <circle r="98" pathLength="720" class="minor"></circle>
-    <circle r="98" pathLength="720" class="major"></circle>
-  </svg>
-  <span class="sweep s1"></span>
-
-  <!-- anel 2: cor média, pontos correndo em cima da linha -->
-  <span class="ring medium"></span>
-  <svg class="ticks t2" viewBox="-100 -100 200 200">
-    <circle r="99.9" pathLength="480" class="dash"></circle>
-  </svg>
-  <span class="sweep s2"></span>
-
-  <!-- anel 3: cinza, marcas finas cruzando a linha e girando devagar -->
-  <span class="ring mono"></span>
-  <svg class="ticks t3" viewBox="-100 -100 200 200">
-    <circle r="99.95" pathLength="900" class="dots"></circle>
-  </svg>
-
-  {items.map((item, i) => (
+  {layers.map((layer) => (
     <div
-      class:list={["sat", { back: item.back }]}
+      class:list={["layer", `l${layer.id}`, layer.turn]}
       style={{
-        "--angle": `${item.angle}deg`,
-        "--angle-m": `${item.mobileAngle}deg`,
-        "--ring": `var(--r${item.ring})`,
-        "--swing": `${((item.drift.swing / rings[item.ring].radius) * (180 / Math.PI)).toFixed(2)}deg`,
+        "--r": `var(--r${layer.id})`,
+        "--t": `${layer.seconds}s`,
+        "--b-d": `calc(${layer.bubble} * var(--u))`,
+        "--b-m": `${layer.bubbleMobile}px`,
       }}
     >
-      <div class="float">
-        <Bubble part={item.part} class={`orb ${item.size} ring-${item.ring}`}>
-          {item.readout && (
-            <span class="readout">
-              <b
-                class="num"
-                data-live={i}
-                data-min={item.readout.min}
-                data-max={item.readout.max}
-                data-digits={item.readout.digits}
-              >
-                {item.text}
-              </b>
-              <small>{item.readout.unit}</small>
-            </span>
-          )}
-        </Bubble>
-      </div>
+      {layer.id === 1 && (
+        <>
+          <span class="ring vivid" />
+          <svg class="ticks t1" viewBox="-100 -100 200 200">
+            <circle r="98" pathLength="720" class="minor" />
+            <circle r="98" pathLength="720" class="major" />
+          </svg>
+          <span class="sweep s1" />
+        </>
+      )}
+      {layer.id === 2 && (
+        <>
+          <span class="ring medium" />
+          <svg class="ticks" viewBox="-100 -100 200 200">
+            <circle r="99.9" pathLength="480" class="dash" />
+          </svg>
+          <span class="sweep s2" />
+        </>
+      )}
+      {layer.id === 3 && (
+        <>
+          <span class="ring mono" />
+          <svg class="ticks" viewBox="-100 -100 200 200">
+            <circle r="99.95" pathLength="900" class="dots" />
+          </svg>
+        </>
+      )}
+      {layer.items.map((item, i) => (
+        <div
+          class="sat"
+          style={{
+            "--angle": `${item.angle}deg`,
+            "--angle-m": `${item.mobileAngle}deg`,
+            "--pop": `${0.55 + layer.id * 0.12 + i * 0.08}s`,
+          }}
+        >
+          <Bubble part={item.part} icon={item.icon} class="orb" />
+        </div>
+      ))}
     </div>
   ))}
 </div>
@@ -99,45 +94,47 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     pointer-events: none;
   }
 
-  /* tudo parte do centro do mostrador */
-  .dial > * {
+  /*
+   * Cada anel é uma peça só: a linha, as marcas e as bolhas giram juntas, sem nada
+   * escorregando por cima. A entrada abre de dentro para fora; depois a volta é constante.
+   */
+  .layer {
+    --b: var(--b-d);
     position: absolute;
     left: 50%;
     top: var(--cy);
-  }
-
-  /* anéis se centralizam pelo próprio tamanho; as peças se centralizam no .float */
-  .ring,
-  .ticks,
-  .sweep {
-    translate: -50% -50%;
-  }
-
-  .ring,
-  .ticks,
-  .sweep {
+    width: calc(var(--r) * 2);
     aspect-ratio: 1;
+    translate: -50% -50%;
+    animation:
+      turn var(--t) linear infinite,
+      open 1.6s var(--ease-out) both;
+  }
+
+  .layer.left {
+    animation-direction: reverse, normal;
+  }
+
+  .l1 {
+    animation-delay: 0s, 0.05s;
+  }
+
+  .l2 {
+    animation-delay: 0s, 0.17s;
+  }
+
+  .l3 {
+    animation-delay: 0s, 0.29s;
+  }
+
+  .ring,
+  .sweep {
+    position: absolute;
+    inset: 0;
     border-radius: 50%;
   }
 
-  .vivid,
-  .t1,
-  .s1 {
-    width: calc(var(--r1) * 2);
-  }
-
-  .medium,
-  .t2,
-  .s2 {
-    width: calc(var(--r2) * 2);
-  }
-
-  .mono,
-  .t3 {
-    width: calc(var(--r3) * 2);
-  }
-
-  /* anel 1: um traço com as cores das peças, girando devagar */
+  /* anel 1: um traço fino com as cores das peças */
   .ring.vivid {
     background: conic-gradient(
       from 20deg,
@@ -151,7 +148,6 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     );
     mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
     opacity: 0.55;
-    animation: spin 90s linear infinite;
   }
 
   .ring.medium {
@@ -163,6 +159,12 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
   }
 
   .ticks {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
     overflow: visible;
   }
 
@@ -172,8 +174,7 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
 
   /* marcas logo por dentro do anel 1 */
   .t1 {
-    width: calc(var(--r1) * 2 - 36 * var(--u));
-    animation: spin 400s linear infinite;
+    width: calc(100% - 36 * var(--u));
   }
 
   .minor {
@@ -188,161 +189,115 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
     stroke-dasharray: 0.7 59.3;
   }
 
-  /* pontos redondos de uns 4 px em cima da linha do anel 2, correndo no sentido do relógio */
+  /* pontos redondos de uns 4 px em cima da linha do anel 2 */
   .dash {
     stroke: color-mix(in srgb, var(--storage) 55%, var(--dial-tick));
     stroke-width: 0.55;
     stroke-linecap: round;
     stroke-dasharray: 0.01 3.99;
-    animation: flow 5s linear infinite;
   }
 
-  .t2 {
-    width: calc(var(--r2) * 2);
-  }
-
-  /* marcas de uns 10 px cruzando a linha do anel 3, girando ao contrário */
+  /* marcas de uns 10 px cruzando a linha do anel 3 */
   .dots {
     stroke: var(--dial-tick);
     stroke-width: 1.1;
     stroke-dasharray: 0.16 2.84;
   }
 
-  .t3 {
-    width: calc(var(--r3) * 2);
-    animation: spin 240s linear infinite reverse;
-  }
-
-  /* arcos que correm por cima dos anéis 1 e 2 */
+  /* um trecho mais forte em cada anel colorido, que mostra o giro */
   .sweep {
     border: 2px solid transparent;
   }
 
   .s1 {
     border-top-color: var(--signal-hi);
-    animation: spin 26s linear infinite;
   }
 
   .s2 {
     border-top-color: color-mix(in srgb, var(--storage) 55%, transparent);
-    animation: spin 48s linear infinite reverse;
   }
 
-  /*
-   * peças: girar até o ângulo, andar o raio e desgirar para o ícone ficar em pé.
-   * --drift soma alguns graus para a peça deslizar pela própria linha, sem sair dela;
-   * as peças alternadas (.back) começam no sentido contrário.
-   */
+  /* peças: do centro do anel, girar até o ângulo, andar o raio e desgirar */
   .sat {
     --a: var(--angle);
+    position: absolute;
+    left: 50%;
+    top: 50%;
     width: 0;
     height: 0;
-    transform: rotate(calc(var(--a) + var(--drift))) translateX(var(--ring))
-      rotate(calc(-1 * (var(--a) + var(--drift))));
-    animation: drift 7s ease-in-out infinite alternate;
-  }
-
-  .sat.back {
-    animation-direction: alternate-reverse;
-  }
-
-  @keyframes drift {
-    from {
-      --drift: calc(-1 * var(--swing));
-    }
-
-    to {
-      --drift: var(--swing);
-    }
-  }
-
-  .float {
-    width: max-content;
-    translate: -50% -50%;
-  }
-
-  .float :global(.orb) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: calc(5 * var(--u));
-  }
-
-  .float :global(.xl) {
-    --s: calc(88 * var(--u));
-  }
-
-  .float :global(.md) {
-    --s: calc(76 * var(--u));
-  }
-
-  .float :global(.sm) {
-    --s: calc(58 * var(--u));
+    transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
   }
 
   /*
-   * todas as bolhas: fundo branco e um aro fino na cor da peça, com um anel claro por dentro
-   * (como o bisel de um mostrador) e sombra curta, para pousar na linha em vez de flutuar
+   * a bolha gira ao contrário do anel, no mesmo tempo, então o ícone nunca tomba;
+   * entra depois do anel, com um leve crescimento
    */
-  .float :global(.orb) {
+  .sat :global(.orb) {
+    --s: var(--b);
+    position: absolute;
+    translate: -50% -50%;
     border: 1.5px solid color-mix(in srgb, var(--c) var(--edge), var(--paper));
     background: var(--paper);
     box-shadow:
       inset 0 0 0 3px var(--paper),
       inset 0 0 0 4px color-mix(in srgb, var(--c) 10%, var(--paper)),
       0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent),
-      0 6px 16px -8px color-mix(in srgb, var(--ink) 18%, transparent);
+      0 6px 14px -8px color-mix(in srgb, var(--ink) 18%, transparent);
+    animation:
+      turn var(--t) linear infinite,
+      pop 0.9s var(--ease-out) var(--pop) both;
   }
 
-  .float :global(.ring-1) {
+  .right .sat :global(.orb) {
+    animation-direction: reverse, normal;
+  }
+
+  .sat :global(.orb .icon) {
+    width: 44%;
+    height: 44%;
+  }
+
+  .l1 {
     --edge: 100%;
   }
 
-  .float :global(.ring-2) {
+  .l2 {
     --edge: 90%;
   }
 
-  .float :global(.ring-3) {
+  .l3 {
     --edge: 80%;
   }
 
-  .float :global(.orb:has(.readout) .icon) {
-    width: 29%;
-    height: 29%;
+  /* fora da abertura, tudo para onde está e continua dali na volta */
+  .dial[data-paused] .layer,
+  .dial[data-paused] :global(.orb) {
+    animation-play-state: paused;
   }
 
-  .readout {
-    display: flex;
-    align-items: baseline;
-    gap: 2px;
+  @keyframes turn {
+    to {
+      rotate: 360deg;
+    }
   }
 
-  .readout b {
-    font: 600 calc(20 * var(--u)) / 1 var(--font-readout);
-    color: var(--ink);
+  @keyframes open {
+    from {
+      opacity: 0;
+      scale: 0.94;
+    }
   }
 
-  .float :global(.md) .readout b {
-    font-size: calc(17 * var(--u));
-  }
-
-  .readout small {
-    font: 500 calc(11 * var(--u)) / 1 var(--font-display);
-    color: var(--faint);
+  @keyframes pop {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
   }
 
   @media (max-width: 900px) {
     .dial {
       --u: calc(100vw / 1300);
-    }
-
-    .readout {
-      display: none;
-    }
-
-    .float :global(.orb:has(.readout) .icon) {
-      width: 47%;
-      height: 47%;
     }
   }
 
@@ -356,8 +311,12 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
       mask-image: linear-gradient(#000 0 262px, transparent 360px);
     }
 
+    .layer {
+      --b: var(--b-m);
+    }
+
     .t1 {
-      width: calc(var(--r1) * 2 - 14px);
+      width: calc(100% - 14px);
     }
 
     .dash {
@@ -370,18 +329,6 @@ const vars = { ...radius(1), ...radius(2), ...radius(3) };
 
     .sat {
       --a: var(--angle-m);
-    }
-
-    .float :global(.xl) {
-      --s: 52px;
-    }
-
-    .float :global(.md) {
-      --s: 46px;
-    }
-
-    .float :global(.sm) {
-      --s: 38px;
     }
   }
 </style>

@@ -63,17 +63,7 @@ const { release } = Astro.props;
     scroll-snap-align: start;
   }
 
-  /* textura de pontos e fade para a próxima seção */
-  .hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    background-image: radial-gradient(circle at 1px 1px, var(--dial-line) 1px, transparent 1.2px);
-    background-size: 22px 22px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 85%);
-  }
-
+  /* fade para a próxima seção */
   .hero::after {
     content: "";
     position: absolute;

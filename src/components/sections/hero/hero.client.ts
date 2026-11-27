@@ -1,15 +1,9 @@
-/** Abertura: as leituras das peças variam como no app. */
-import { decimal } from "@/lib/format";
-import { loopWhileVisible, random, required } from "@/scripts/motion";
+/** Abertura: os anéis só giram enquanto ela está na tela; ao voltar, seguem de onde pararam. */
+import { required } from "@/scripts/motion";
 
-const dial = required(document, "[data-dial]");
-const readouts = [...dial.querySelectorAll<HTMLElement>("[data-live]")];
+const hero = required(document, "[data-hero]");
+const dial = required(hero, "[data-dial]");
 
-function tick(): void {
-  for (const el of readouts) {
-    const { min, max, digits } = el.dataset;
-    el.textContent = decimal(random(Number(min), Number(max)), Number(digits));
-  }
-}
-
-loopWhileVisible(dial, tick, 1400);
+new IntersectionObserver((entries) => {
+  dial.toggleAttribute("data-paused", !entries.some((e) => e.isIntersecting));
+}).observe(hero);

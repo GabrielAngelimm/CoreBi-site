@@ -65,7 +65,7 @@ function setup(box: HTMLElement): void {
       }
       animate(item, willOpen);
     });
-    if (item.open) item.dataset["target"] = "open";
+    item.dataset["target"] = item.open ? "open" : "";
   }
 
   reserve();

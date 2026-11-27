@@ -24,10 +24,10 @@ export const installSteps = [
 
 /** O que a janela do app mostra no último passo, quando abre pela primeira vez. */
 export const firstOpen = [
-  { part: "cpu", label: "Processador", value: "52", unit: "°C" },
-  { part: "gpu", label: "Placa de vídeo", value: "44", unit: "°C" },
-  { part: "memory", label: "Memória", value: "7,9", unit: "GB" },
-  { part: "storage", label: "SSD", value: "97", unit: "% de vida" },
+  { part: "cpu", label: "Processador", value: "52", unit: "°C", meter: 0.52 },
+  { part: "gpu", label: "Placa de vídeo", value: "44", unit: "°C", meter: 0.44 },
+  { part: "memory", label: "Memória", value: "7,9", unit: "GB", meter: 0.25 },
+  { part: "storage", label: "SSD", value: "97", unit: "% vida", meter: 0.97 },
 ] as const;
 
 /** Quanto tempo cada passo fica na tela antes de ir para o próximo, em ms. */

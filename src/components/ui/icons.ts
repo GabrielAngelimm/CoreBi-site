@@ -16,6 +16,8 @@ export const icons = {
     '<path d="M5.28 20.22A9.5 9.5 0 1 1 18.72 20.22M12 13.5l4.6-4.6"/><circle class="dot" cx="12" cy="13.5" r="1.6"/>',
   download: '<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',
   driver: '<path d="M12 3.5v11.5M7.5 10.5l4.5 4.5 4.5-4.5M4.5 20h15"/>',
+  overlay:
+    '<rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 17v3.5M6.5 8h3.5M6.5 10.5h2"/>',
   bag: '<rect x="4.5" y="7" width="15" height="14" rx="2"/><path d="M9 7V5.5a3 3 0 0 1 6 0V7"/>',
   check: '<path d="M6 12.5l4 4 8-9"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
